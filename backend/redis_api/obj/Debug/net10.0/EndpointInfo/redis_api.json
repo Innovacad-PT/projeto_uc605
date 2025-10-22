@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "redis_api",
+    "version": "1.0"
+  },
+  "paths": {
+    "/Redis/get/{key}": {
+      "get": {
+        "tags": [
+          "Redis"
+        ],
+        "summary": "Gets a value by key",
+        "description": "Retrieves the value associated with the specified key from Redis.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/Redis/set/{key}/{value}": {
+      "post": {
+        "tags": [
+          "Redis"
+        ],
+        "summary": "Sets a value by key",
+        "description": "Retrieves the value associated with the specified key from Redis.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { }
+}

@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\UC00605\\projeto_uc605\\backend\\redis_api\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5D1B612D-A4D7-C973-E075-CE93923B75A5}|redis_api.csproj|d:\\uc00605\\projeto_uc605\\backend\\redis_api\\controllers\\rediscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5D1B612D-A4D7-C973-E075-CE93923B75A5}|redis_api.csproj|solutionrelative:controllers\\rediscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5D1B612D-A4D7-C973-E075-CE93923B75A5}|redis_api.csproj|d:\\uc00605\\projeto_uc605\\backend\\redis_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5D1B612D-A4D7-C973-E075-CE93923B75A5}|redis_api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\UC00605\\projeto_uc605\\backend\\redis_api\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\UC00605\\projeto_uc605\\backend\\redis_api\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-22T00:42:48.853Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RedisController.cs",
+              "DocumentMoniker": "D:\\UC00605\\projeto_uc605\\backend\\redis_api\\Controllers\\RedisController.cs",
+              "RelativeDocumentMoniker": "Controllers\\RedisController.cs",
+              "ToolTip": "D:\\UC00605\\projeto_uc605\\backend\\redis_api\\Controllers\\RedisController.cs",
+              "RelativeToolTip": "Controllers\\RedisController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T23:43:09.243Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
