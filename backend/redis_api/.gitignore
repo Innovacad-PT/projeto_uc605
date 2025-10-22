@@ -1,0 +1,7 @@
+# IDES
+.vs
+.vscode
+
+# BUILD FOLDERS
+bin
+obj
