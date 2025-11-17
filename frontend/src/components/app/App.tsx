@@ -2,12 +2,14 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthEnum } from "@_types/auth";
 import NotFound from "@components/notfound/NotFound";
 import Auth from "@components/auth/Auth";
+import LojaLanding from "@components/landing";
 
 const App = () => {
   return (
     <>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<LojaLanding />} />
           <Route path="/auth/login" element={<Auth type={AuthEnum.LOGIN} />} />
           <Route
             path="/auth/register"
