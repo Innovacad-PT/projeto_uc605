@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +20,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Conn
         Password = builder.Configuration["Redis:Password"]!,
     }
 ));
+
+// JWT
+
+/*
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.Authority = builder.Configuration["JWT:Authority"];
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JWT:Audience"]!,
+    };
+});*/
 
 var app = builder.Build();
 
