@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   AppShell,
-  AppShellHeader,
   Container,
   Text,
   Group,
@@ -16,9 +15,8 @@ import {
   Title,
 } from "@mantine/core";
 import { IconSearch, IconShoppingCart } from "@tabler/icons-react";
-import { hideNotification } from "@mantine/notifications";
 
-export default function LojaLanding() {
+export default function Landing() {
   const [cart, setCart] = useState(0);
   const [query, setQuery] = useState("");
 
