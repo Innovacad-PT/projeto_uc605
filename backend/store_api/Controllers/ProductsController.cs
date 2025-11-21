@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using store_api.Dtos.Products;
 using store_api.Entities;
 using store_api.Services;
 using store_api.Utils;
@@ -8,7 +7,6 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace store_api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("/products")]
 public class ProductsController : Controller
@@ -18,7 +16,7 @@ public class ProductsController : Controller
     [HttpGet("")]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(Json(await _productsService.GetAll()));
+        return Ok(await _productsService.GetAll());
     }
 
     [HttpGet("{id}")]
@@ -31,50 +29,49 @@ public class ProductsController : Controller
             var failure = (Failure<ProductEntity>)res;
 
             if (res.GetCode() == ResultCode.USER_NOT_FOUND)
-                return NotFound(Json(failure));
+                return NotFound(failure);
             
-            return BadRequest(Json(failure));
+            return BadRequest(failure);
         }
         
         var success = (Success<ProductEntity>)res;
 
-        return Ok(Json(success));
+        return Ok(success);
     }
 
+    [Authorize]
     [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] ProductCreateDto product)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDto product)
     {
         var res = await _productsService.CreateProduct(product);
 
-        if (res.HasError)
+        if (res.HasError || res is Failure<ProductEntity>)
         {
             var failure = (Failure<ProductEntity>)res;
-            return BadRequest(Json(failure));
+            return BadRequest(failure);
         }
         
-        var success = (Success<ProductEntity>)res;
-        return Ok(Json(success));
+        return Ok(res);
     }
 
+    [Authorize]
     [HttpPut]
-    public async Task<IActionResult> UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto product)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UpdateProduct([FromQuery] Guid id, [FromForm] ProductUpdateDto product)
     {
         var res = await _productsService.UpdateProduct(id, product);
 
-        if (res.HasError)
+        if (res.HasError || res is Failure<ProductEntity>)
         {
             var failure = (Failure<ProductEntity>)res;
-
-            if(res.GetCode() == ResultCode.PRODUCT_NOT_FOUND)
-                return NotFound(Json(failure));
-
-            return BadRequest(Json(failure));
+            return BadRequest(failure);
         }
-
-        var success = (Success<ProductEntity>)res;
-        return Ok(Json(success));
+        
+        return Ok(res);
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(String id)
     {
@@ -85,12 +82,12 @@ public class ProductsController : Controller
             var failure = (Failure<ProductEntity>)res;
 
             if(res.GetCode() == ResultCode.PRODUCT_NOT_FOUND)
-                return NotFound(Json(failure));
+                return NotFound(failure);
 
-            return BadRequest(Json(failure));
+            return BadRequest(failure);
         }
 
         var success = (Success<ProductEntity>)res;
-        return Ok(Json(success));
+        return Ok(success);
     }
 }

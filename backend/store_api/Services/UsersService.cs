@@ -10,7 +10,32 @@ public class UsersService
     
     private readonly UsersRepository _repository = new UsersRepository();
 
-    public async Task<List<UserEntity>> GetAll()
+    public UserEntity? Register(UserRegisterDto registerDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UserEntity? Login(UserLoginDto loginDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UserEntity? GetProfile(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UserEntity? UpdateProfile(Guid id, UserProfileUpdateDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UserEntity? ChangePassword(Guid id, UserChangePasswordDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    /*public async Task<List<UserEntity>> GetAll()
     {
         return await _repository.GetAll();
     }
@@ -46,6 +71,6 @@ public class UsersService
     public async Task<List<UserEntity>> Delete(String id)
     {
         return await _repository.Delete(id);
-    }
+    }*/
 
 }

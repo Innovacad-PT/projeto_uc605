@@ -1,62 +1,67 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using store_api.Dtos.Products;
+﻿using store_api.Controllers;
 using store_api.Entities;
+using store_api.Utils;
 
 namespace store_api.Repositories;
 
-public class ProductsRepository
+public class ProductsRepository : IBaseRepository<ProductEntity>
 {
     
     static List<ProductEntity> products = new ([
-        new(Guid.NewGuid(), "Pipocas Doces", 3.99, "Pipocas doces com manteiga", ""),
-        new(Guid.NewGuid(), "Pipocas Salgadas", 3.99, "Pipocas doces com sal", ""),
-        new(Guid.NewGuid(), "Pão Caseiro", 3.99, "", ""),
-        new(Guid.NewGuid(), "Salsichas Frankfurt", 3.99, "", ""),
+       /* new(Guid.NewGuid(), "Pipocas Doces", [], "",3.99, "Pipocas doces com manteiga", ""),
+        new(Guid.NewGuid(), "Pipocas Salgadas", [],"",3.99, "Pipocas doces com sal", ""),
+        new(Guid.NewGuid(), "Pão Caseiro", [], "",3.99, "", ""),
+        new(Guid.NewGuid(), "Salsichas Frankfurt",[],"", 3.99, "", ""),*/
     ]);
 
-    public async Task<List<ProductEntity>> GetAll()
+
+    public Result<ProductEntity> Add(ProductEntity entity)
     {
-        return products;
-    }
-    
-    public async Task<ProductEntity?> GetById(Guid id)
-    {
-        return products.FirstOrDefault((p) => p.Id == id);
+        throw new NotImplementedException();
     }
 
-    public async Task<ProductEntity> CreateProduct(ProductCreateDto product)
+    public Result<ProductEntity> Update(ProductEntity entity)
     {
-
-        ProductEntity newProduct = product.ToEntity();
-        products.Add(newProduct);
-        
-        return newProduct;
+        throw new NotImplementedException();
     }
 
-    public async Task<ProductEntity?> UpdateProduct(Guid id, ProductUpdateDto product)
+    public Result<ProductEntity> Delete(ProductEntity entity)
     {
-        int productIndex  = products.FindIndex(x => x.Id == id);
-
-        if (productIndex == -1) return null;
-        
-        ProductEntity oldProduct = products.ElementAt(productIndex);
-
-        oldProduct.Update(product);
-        
-        return oldProduct;
+        throw new NotImplementedException();
     }
 
-    public async Task<ProductEntity?> DeleteProduct(String id)
+    public Result<ProductEntity> GetById(int id)
     {
-        int productIndex  = products.FindIndex(x => x.Id == Guid.Parse(id));
+        throw new NotImplementedException();
+    }
 
-        if (productIndex == -1)
-        {
-            return null;
-        }
+    public Result<ProductEntity> GetById(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 
-        ProductEntity oldProduct = products.ElementAt(productIndex);    
-        products.RemoveAt(productIndex);
-        return oldProduct;
+    public Result<IEnumerable<ProductEntity>> GetAll()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Result<IEnumerable<ProductEntity>> GetAllWithFilters(string search, Guid categoryId, Guid brandId, decimal minPrice, decimal maxPrice)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Result<IEnumerable<ProductEntity>> GetProductsInStock()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Result<IEnumerable<ProductEntity>> AddSpecs(Guid productId, List<TechnicalSpecsEntity> specs)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Result<DiscountEntity> GetDiscount(Guid productId)
+    {
+        throw new NotImplementedException();
     }
 }

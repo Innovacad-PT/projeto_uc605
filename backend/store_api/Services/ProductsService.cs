@@ -1,5 +1,4 @@
-﻿using store_api.Dtos.Products;
-using store_api.Entities;
+﻿using store_api.Entities;
 using store_api.Repositories;
 using store_api.Utils;
 
@@ -9,7 +8,44 @@ public class ProductsService
 {
     private readonly ProductsRepository _productsRepository = new ProductsRepository();
 
-    public async Task<Result<List<ProductEntity>>> GetAll()
+    public ProductEntity? CreateProduct(ProductCreateDto productDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? UpdateProduct(ProductUpdateDto productDto){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? DeleteProduct(Guid id){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? GetProductById(Guid id){
+        throw new NotImplementedException();
+    }
+
+    public IEnumerable<ProductEntity>? GetAllProducts(List<FilterEntity> filters){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? ApplyDiscount(Guid productId){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? IncreaseStock(Guid productId, int amount){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? DecreaseStock(Guid productId, int amount){
+        throw new NotImplementedException();
+    }
+
+    public ProductEntity? AddTechnicalSpecs(Guid productId, List<TechnicalSpecsEntity> list){
+        throw new NotImplementedException();
+    }
+
+    /*public async Task<Result<List<ProductEntity>>> GetAll()
     {
         var products = await _productsRepository.GetAll();
 
@@ -36,17 +72,105 @@ public class ProductsService
 
     public async Task<Result<ProductEntity>> CreateProduct(ProductCreateDto product)
     {
+        
+        Guid productId = Guid.NewGuid();
 
-        var newProduct = await _productsRepository.CreateProduct(product);
+        string? imageUrl = null;
 
-        return new Success<ProductEntity>(ResultCode.PRODUCT_CREATED, "Product created successfully", newProduct);
+        if (product.Image != null)
+        {
+            string folder = Path.Combine("wwwroot", "images");
+
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            
+            string filename = $"{productId}{Path.GetExtension(product.Image.FileName)}";
+            string filePath = Path.Combine(folder, filename);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await product.Image.CopyToAsync(stream);
+            }
+            
+            imageUrl = $"/images/{filename}";
+        }
+        
+        var entity = new ProductEntity(productId, product.Name, product.Categories ?? [], imageUrl, product.Price, product.Details ?? "", product.TechInfo ?? "");
+        ProductEntity prod = await _productsRepository.CreateProduct(entity);
+
+        return new Success<ProductEntity>(ResultCode.PRODUCT_CREATED, "Product created successfully", prod);
     }
 
     public async Task<Result<ProductEntity>> UpdateProduct(Guid id, ProductUpdateDto product)
     {
-        var newProduct = await _productsRepository.UpdateProduct(id, product);
+        
+        var productEntity = await _productsRepository.GetById(id);
 
-        if(newProduct == null) return new Failure<ProductEntity>(ResultCode.PRODUCT_NOT_FOUND, "Product not found.");
+        if (productEntity == null)
+        {
+            return new Failure<ProductEntity>(ResultCode.PRODUCT_NOT_FOUND, "Product not found.");
+        }
+
+        if (product.Name != null)
+        {
+            productEntity.Name = product.Name;
+        } 
+        
+        if (product.Price != null)
+        {
+            productEntity.Price = product.Price.Value;
+        } 
+        
+        if (product.Details != null)
+        {
+            productEntity.Details = product.Details;
+        } 
+        
+        if (product.TechInfo != null)
+        {
+            productEntity.TechInfo = product.TechInfo;
+        }
+
+        if (product.Categories != null)
+        {
+            productEntity.Categories = product.Categories;
+        }
+
+        if (product.Image != null)
+        {
+            string folder = Path.Combine("wwwroot", "images");
+            
+            if(!Directory.Exists(folder)) {
+                Directory.CreateDirectory(folder);
+            }
+
+            if (!string.IsNullOrEmpty(productEntity.ImageUrl))
+            {
+                string oldFilePath = Path.Combine(folder, productEntity.ImageUrl);
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+                
+                string fileName = $"{productEntity.Id}{Path.GetExtension(productEntity.ImageUrl)}";
+
+                using (var stream = new FileStream(oldFilePath, FileMode.Create))
+                {
+                    await product.Image.CopyToAsync(stream);
+                }
+                
+                productEntity.ImageUrl = $"/images/{fileName}";
+            }
+
+            await _productsRepository.UpdateProduct(id, product);
+            
+            return new Success<ProductEntity>(ResultCode.PRODUCT_UPDATED, "Product updated successfully", productEntity);
+        }
+            
+        
+        var newProduct = await _productsRepository.UpdateProduct(id, product);
 
         return new Success<ProductEntity>(ResultCode.PRODUCT_UPDATED, "Product updated successfully", newProduct);
     }
@@ -58,5 +182,5 @@ public class ProductsService
         if(oldProduct == null) return new Failure<ProductEntity>(ResultCode.PRODUCT_NOT_FOUND, "Product not found.");
 
         return new Success<ProductEntity>(ResultCode.PRODUCT_DELETED, "Product updated successfully", oldProduct);
-    }
+    }*/
 }

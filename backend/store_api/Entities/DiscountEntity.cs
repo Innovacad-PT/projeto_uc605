@@ -1,6 +1,6 @@
 ﻿namespace store_api.Entities;
 
-public class DiscountEntity
+/*public class DiscountEntity
 {
     public Guid Id { get; set; }
     public string Code { get; set; }
@@ -24,4 +24,13 @@ public class DiscountEntity
     {
         return value - (value * DiscountPercentage);
     }
+}*/
+
+public class DiscountEntity
+{
+    public Guid Id { get; set; }
+    public Guid ProductId { get; set; }
+    public double Percentage { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
 }

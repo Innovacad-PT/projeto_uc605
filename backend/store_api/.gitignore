@@ -5,3 +5,6 @@
 # BUILD FOLDERS
 bin
 obj
+
+# OTHER
+wwwroot/images

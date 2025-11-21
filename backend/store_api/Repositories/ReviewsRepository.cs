@@ -1,51 +1,47 @@
 ﻿using store_api.Controllers;
-using store_api.Dtos.Users;
 using store_api.Entities;
 using store_api.Utils;
 
 namespace store_api.Repositories;
 
-public class UsersRepository : IBaseRepository<UserEntity>
+public class ReviewsRepository : IBaseRepository<ReviewEntity>
 {
-    static List<UserEntity> users = new ();
-
-
-    public Result<UserEntity> Add(UserEntity entity)
+    public Result<ReviewEntity> Add(ReviewEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Update(UserEntity entity)
+    public Result<ReviewEntity> Update(ReviewEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Delete(UserEntity entity)
+    public Result<ReviewEntity> Delete(ReviewEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetById(int id)
+    public Result<ReviewEntity> GetById(int id)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetById(Guid id)
+    public Result<ReviewEntity> GetById(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public Result<IEnumerable<UserEntity>> GetAll()
+    public Result<IEnumerable<ReviewEntity>> GetAll()
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetByEmail(String email)
+    public Result<IEnumerable<ReviewEntity>> GetReviewsByProduct(Guid productId)
     {
         throw new NotImplementedException();
     }
 
-    public Result<bool> UserExists(String email)
+    public Result<ReviewEntity> GetUserReview(Guid userId, Guid productId)
     {
         throw new NotImplementedException();
     }

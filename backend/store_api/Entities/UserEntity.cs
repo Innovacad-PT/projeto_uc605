@@ -9,6 +9,8 @@ public class UserEntity
     public string LastName { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
+    public string Role { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public UserEntity(Guid id, string firstName, string lastName, string username, string email)
     {

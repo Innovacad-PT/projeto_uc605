@@ -1,51 +1,47 @@
 ﻿using store_api.Controllers;
-using store_api.Dtos.Users;
 using store_api.Entities;
 using store_api.Utils;
 
 namespace store_api.Repositories;
 
-public class UsersRepository : IBaseRepository<UserEntity>
+public class OrdersRepository : IBaseRepository<OrderEntity>
 {
-    static List<UserEntity> users = new ();
-
-
-    public Result<UserEntity> Add(UserEntity entity)
+    public Result<OrderEntity> Add(OrderEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Update(UserEntity entity)
+    public Result<OrderEntity> Update(OrderEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Delete(UserEntity entity)
+    public Result<OrderEntity> Delete(OrderEntity entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetById(int id)
+    public Result<OrderEntity> GetById(int id)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetById(Guid id)
+    public Result<OrderEntity> GetById(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public Result<IEnumerable<UserEntity>> GetAll()
+    public Result<IEnumerable<OrderEntity>> GetAll()
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> GetByEmail(String email)
+    public Result<IEnumerable<OrderEntity>> GetOrdersByUser(Guid userId)
     {
         throw new NotImplementedException();
     }
 
-    public Result<bool> UserExists(String email)
+    public Result<IEnumerable<OrderEntity>> AddOrderItems(Guid userId, List<OrderItemEntity> orderItems)
     {
         throw new NotImplementedException();
     }
