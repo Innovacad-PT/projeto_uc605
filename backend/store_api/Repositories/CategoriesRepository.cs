@@ -7,9 +7,14 @@ namespace store_api.Repositories;
 
 public class CategoriesRepository : IBaseRepository<CategoryEntity>
 {
-    public Result<CategoryEntity> Add(IBaseDto<CategoryEntity> entity)
+    
+    private readonly static List<CategoryEntity> _categories = new();
+    
+    public Result<CategoryEntity> Add(CategoryEntity entity)
     {
-        throw new NotImplementedException();
+        _categories.Add(entity);
+        
+        return new Success<CategoryEntity>(ResultCode.CATEGORY_CREATED, "Category created", entity);
     }
 
     public Result<CategoryEntity> Update(Guid id, IBaseDto<CategoryEntity> entity)
@@ -22,19 +27,24 @@ public class CategoriesRepository : IBaseRepository<CategoryEntity>
         throw new NotImplementedException();
     }
 
-    public Result<CategoryEntity> GetById(int id)
-    {
-        throw new NotImplementedException();
-    }
-
     public Result<CategoryEntity> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        if (!_categories.Any(x => x.Id == id))
+        {
+            return new Failure<CategoryEntity>(ResultCode.CATEGORY_NOT_FOUND, $"Category with id ({id}) not found");
+        }
+
+        return new Success<CategoryEntity>(ResultCode.CATEGORY_FOUND, "Category found", _categories.First(x => x.Id == id));
     }
 
     public Result<IEnumerable<CategoryEntity>> GetAll()
     {
-        throw new NotImplementedException();
+        if (!_categories.Any())
+        {
+            return new Failure<IEnumerable<CategoryEntity>>(ResultCode.CATEGORY_NOT_FOUND, $"Categories not found");
+        }
+
+        return new Success<IEnumerable<CategoryEntity>>(ResultCode.CATEGORY_FOUND, "Category found", _categories);
     }
 
     public Result<CategoryEntity> GetByName(string name)

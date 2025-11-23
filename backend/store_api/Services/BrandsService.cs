@@ -13,7 +13,7 @@ public class BrandsService
     public Result<BrandEntity?> CreateBrand(BrandAddDto<BrandEntity> dto)
     {
         
-        Result<BrandEntity> result = _brandsRepository.Add(dto);
+        Result<BrandEntity> result = _brandsRepository.Add(dto.ToEntity());
 
         return result;
     }

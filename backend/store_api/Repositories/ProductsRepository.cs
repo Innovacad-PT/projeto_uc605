@@ -8,7 +8,7 @@ namespace store_api.Repositories;
 public class ProductsRepository : IBaseRepository<ProductEntity>
 {
     
-    static List<ProductEntity> products = new ([
+    private readonly static List<ProductEntity> _products = new ([
        /* new(Guid.NewGuid(), "Pipocas Doces", [], "",3.99, "Pipocas doces com manteiga", ""),
         new(Guid.NewGuid(), "Pipocas Salgadas", [],"",3.99, "Pipocas doces com sal", ""),
         new(Guid.NewGuid(), "Pão Caseiro", [], "",3.99, "", ""),
@@ -16,9 +16,12 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
     ]);
 
 
-    public Result<ProductEntity> Add(IBaseDto<ProductEntity> entity)
+    public Result<ProductEntity> Add(ProductEntity entity)
     {
-        throw new NotImplementedException();
+        
+        _products.Add(entity);
+        
+        return new Success<ProductEntity>(ResultCode.PRODUCT_CREATED, "Product created", entity);
     }
 
     
@@ -44,7 +47,12 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public Result<IEnumerable<ProductEntity>> GetAll()
     {
-        throw new NotImplementedException();
+        if (!_products.Any())
+        {
+            return new Failure<IEnumerable<ProductEntity>>(ResultCode.PRODUCT_NOT_FOUND, "Products not found");
+        }
+        
+        return new Success<IEnumerable<ProductEntity>>(ResultCode.PRODUCT_FOUND, "Products found", _products);
     }
 
     public Result<IEnumerable<ProductEntity>> GetAllWithFilters(string search, Guid categoryId, Guid brandId, decimal minPrice, decimal maxPrice)

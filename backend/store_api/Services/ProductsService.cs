@@ -6,11 +6,56 @@ namespace store_api.Services;
 
 public class ProductsService
 {
-    private readonly ProductsRepository _productsRepository = new ProductsRepository();
+    private readonly ProductsRepository _productsRepository = new();
+    private readonly BrandsService _brandsService = new();
+    private readonly CategoriesService _categoriesService = new();
 
-    public ProductEntity? CreateProduct(ProductCreateDto productDto)
+    public async Task<Result<ProductEntity?>> CreateProduct(ProductCreateDto dto)
     {
-        throw new NotImplementedException();
+        Result<BrandEntity?> brand = _brandsService.GetById(dto.BrandId);
+        Result<CategoryEntity> category = _categoriesService.GetById(dto.CategoryId);
+
+        if (brand is Failure<BrandEntity>)
+        {
+            return new Failure<ProductEntity?>(ResultCode.BRAND_NOT_FOUND, $"The brand with id ({dto.BrandId}) does not exist");
+        }
+
+        if (category is Failure<CategoryEntity>)
+        {
+            return new Failure<ProductEntity?>(ResultCode.CATEGORY_NOT_FOUND, $"The category with id ({dto.CategoryId}) does not exist");
+        }
+
+        string? imageUrl = null;
+
+        if (dto.Image != null)
+        {
+            string folder = Path.Combine("wwwroot", "images");
+
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            
+            string filename = $"{dto.Id}{Path.GetExtension(dto.Image.FileName)}";
+            string filePath = Path.Combine(folder, filename);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.Image.CopyToAsync(stream);
+            }
+            
+            imageUrl = $"/images/{filename}";
+        }
+        
+        var entity = new ProductEntity(dto.Id, dto.Name, (category as Success<CategoryEntity>).Value, (brand as Success<BrandEntity>).Value, dto.TechnicalSpecs, imageUrl ?? "", dto.Price, dto.Details ?? "");
+        Result<ProductEntity> prod = _productsRepository.Add(entity);
+
+        if (prod is Failure<ProductEntity>)
+        {
+            return prod;
+        }
+        
+        return new Success<ProductEntity>(ResultCode.PRODUCT_CREATED, "Product created successfully", (prod as Success<ProductEntity>).Value);
     }
 
     public ProductEntity? UpdateProduct(Guid id, ProductUpdateDto productDto){
@@ -25,8 +70,10 @@ public class ProductsService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ProductEntity>?> GetAllProducts(String search, String category, decimal minPice, decimal maxPrice){
-        throw new NotImplementedException();
+    public async Task<Result<IEnumerable<ProductEntity>?>> GetAllProducts(String search, String category, decimal minPice, decimal maxPrice){
+        Result<IEnumerable<ProductEntity>?> result = _productsRepository.GetAll();
+
+        return result;
     }
 
     public ProductEntity? ApplyDiscount(Guid productId){

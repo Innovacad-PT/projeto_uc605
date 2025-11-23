@@ -15,6 +15,6 @@ public class BrandAddDto<T> : IBaseDto<T>
 
     public BrandEntity ToEntity()
     {
-        return new BrandEntity(Id, Name);
+        return new (Id, Name);
     }
 }

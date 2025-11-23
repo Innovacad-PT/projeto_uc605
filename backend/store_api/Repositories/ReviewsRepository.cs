@@ -7,7 +7,7 @@ namespace store_api.Repositories;
 
 public class ReviewsRepository : IBaseRepository<ReviewEntity>
 {
-    public Result<ReviewEntity> Add(IBaseDto<ReviewEntity> entity)
+    public Result<ReviewEntity> Add(ReviewEntity entity)
     {
         throw new NotImplementedException();
     }

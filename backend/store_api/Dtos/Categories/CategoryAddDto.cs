@@ -6,14 +6,10 @@ public class CategoryAddDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
-    public string Description { get; set; }
-    List<ProductEntity> Products { get; set; }
 
-    public CategoryAddDto(String name, String description, List<ProductEntity>? products)
+    public CategoryAddDto(String name)
     {
         Id = Guid.NewGuid();
         Name = name;
-        Description = description;
-        Products = products ?? [];
     } 
 }

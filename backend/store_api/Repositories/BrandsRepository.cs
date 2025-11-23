@@ -13,30 +13,22 @@ public class BrandsRepository : IBaseRepository<BrandEntity>
         new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo")
     ];
     
-    public Result<BrandEntity> Add(IBaseDto<BrandEntity> dto)
+    public Result<BrandEntity> Add(BrandEntity dto)
     {
         
-        var addDto = dto as BrandAddDto<BrandEntity?>;
-
-        if (addDto == null)
+        if (_brands.Any((b) => b.Id == dto.Id))
         {
-            return new Failure<BrandEntity>(ResultCode.INVALID_DTO, "Invalid DTO Type.");
+            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_GUID, $"Brand with id ({dto.Id}) already exists");
+        }
+
+        if (_brands.Any((b) => b.Name.ToLower() == dto.Name.ToLower()))
+        {
+            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_NAME, $"Brand with name ({dto.Name}) already exists");
         }
         
-        if (_brands.Any((b) => b.Id == addDto.Id))
-        {
-            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_GUID, $"Brand with id ({addDto.Id}) already exists");
-        }
+        _brands.Add(dto);
 
-        if (_brands.Any((b) => b.Name.ToLower() == addDto.Name.ToLower()))
-        {
-            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_NAME, $"Brand with name ({addDto.Name}) already exists");
-        }
-        
-        BrandEntity? brand = addDto.ToEntity();
-        _brands.Add(brand);
-
-        return new Success<BrandEntity>(ResultCode.BRAND_CREATED, "Brand created", brand);
+        return new Success<BrandEntity>(ResultCode.BRAND_CREATED, "Brand created", dto);
     }
     
     public Result<BrandEntity> Update(Guid id, IBaseDto<BrandEntity> dto)

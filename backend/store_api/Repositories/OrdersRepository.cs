@@ -7,7 +7,7 @@ namespace store_api.Repositories;
 
 public class OrdersRepository : IBaseRepository<OrderEntity>
 {
-    public Result<OrderEntity> Add(IBaseDto<OrderEntity> entity)
+    public Result<OrderEntity> Add(OrderEntity entity)
     {
         throw new NotImplementedException();
     }

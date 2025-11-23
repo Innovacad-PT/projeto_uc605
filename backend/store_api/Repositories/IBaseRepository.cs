@@ -5,7 +5,7 @@ namespace store_api.Controllers;
 
 public interface IBaseRepository<T> where T: class
 {
-    public Result<T> Add(IBaseDto<T> dto);
+    public Result<T> Add(T dto);
 
     public virtual Result<T> Update(Guid id, IBaseDto<T> dto)
     {

@@ -10,25 +10,24 @@ namespace store_api.Controllers;
 [Route("/products")]
 public class ProductsController : Controller
 {
-    private readonly ProductsService _productsService = new ProductsService();
-    private readonly CategoriesService _categoriesService = new CategoriesService();
+    private readonly ProductsService _productsService = new();
 
     [HttpGet]
     public async Task<IActionResult> GetAllProducts()
     {
-        IEnumerable<ProductEntity>? products = await _productsService.GetAllProducts("", "", 0, 0);
+        Result<IEnumerable<ProductEntity>?> products = await _productsService.GetAllProducts("", "", 0, 0);
 
-        if (products == null)
+        if (products is Failure<IEnumerable<ProductEntity>?> productsFailure)
         {
             return NotFound(
                 new Failure<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND, "Products not found"));
         }
 
-        return Ok(new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_FOUND, "Products found", products));
+        return Ok(products);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById(Guid id)
+    public async Task<IActionResult> GetProductById([FromQuery] Guid id)
     {
         ProductEntity? product = _productsService.GetProductById(id);
 
@@ -41,20 +40,23 @@ public class ProductsController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateProduct(ProductCreateDto dto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDto dto)
     {
-        ProductEntity? created = _productsService.CreateProduct(dto);
+        
+        var res = await _productsService.CreateProduct(dto);
 
-        if (created == null)
+        if (res is Failure<ProductEntity>)
         {
-            return BadRequest(new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_CREATED, "Product not created"));
+            var failure = (Failure<ProductEntity?>)res;
+            return BadRequest(failure);
         }
         
-        return Ok(new Success<ProductEntity?>(ResultCode.PRODUCT_CREATED, "Product created", created));
+        return Ok(res);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(Guid id, ProductUpdateDto dto)
+    public async Task<IActionResult> UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto dto)
     {
         ProductEntity? product = _productsService.UpdateProduct(id, dto);
 
@@ -69,18 +71,18 @@ public class ProductsController : Controller
     [HttpGet("search")]
     public async Task<IActionResult> GetWithFilters([FromQuery] String search, [FromQuery] String category, [FromQuery] decimal minPice, [FromQuery] decimal maxPrice)
     {
-        IEnumerable<ProductEntity>? products = await _productsService.GetAllProducts(search, category, minPice, maxPrice);
+        Result<IEnumerable<ProductEntity>?> products = await _productsService.GetAllProducts(search, category, minPice, maxPrice);
 
         if (products == null)
         {
             return NotFound(new Failure<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND, "Products not found."));
         }
         
-        return Ok(new Success<IEnumerable<ProductEntity>>(ResultCode.PRODUCT_FOUND,"Products found.",products));
+        return Ok(products);
     }
 
     [HttpGet("{id}/discount")]
-    public async Task<IActionResult> GetDiscount([FromRoute] Guid id)
+    public async Task<IActionResult> GetDiscount([FromQuery] Guid id)
     {
         ProductEntity? discount = _productsService.ApplyDiscount(id);
 

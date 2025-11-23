@@ -7,7 +7,7 @@ namespace store_api.Repositories;
 
 public class DiscountsRepository : IBaseRepository<DiscountEntity>
 {
-    public Result<DiscountEntity> Add(IBaseDto<DiscountEntity> entity)
+    public Result<DiscountEntity> Add(DiscountEntity entity)
     {
         throw new NotImplementedException();
     }

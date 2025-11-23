@@ -38,6 +38,12 @@
         BRAND_NOT_DELETED,
         BRAND_FOUND,
         
+        // Categories
+        CATEGORY_FOUND,
+        CATEGORY_NOT_FOUND,
+        CATEGORY_CREATED,
+        CATEGORY_NOT_CREATED,
+        
         // General
         INVALID_GUID,
         INVALID_DTO

@@ -10,7 +10,7 @@ public class UsersRepository : IBaseRepository<UserEntity>
 {
     static List<UserEntity> users = new ();
 
-    public Result<UserEntity> Add(IBaseDto<UserEntity> entity)
+    public Result<UserEntity> Add(UserEntity entity)
     {
         throw new NotImplementedException();
     }
