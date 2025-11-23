@@ -1,4 +1,5 @@
 ﻿using store_api.Controllers;
+using store_api.Dtos;
 using store_api.Entities;
 using store_api.Utils;
 
@@ -15,17 +16,18 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
     ]);
 
 
-    public Result<ProductEntity> Add(ProductEntity entity)
+    public Result<ProductEntity> Add(IBaseDto<ProductEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<ProductEntity> Update(ProductEntity entity)
+    
+    public Result<ProductEntity> Update(Guid id, IBaseDto<ProductEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<ProductEntity> Delete(ProductEntity entity)
+    public Result<ProductEntity> Delete(Guid id)
     {
         throw new NotImplementedException();
     }

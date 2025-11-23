@@ -15,7 +15,7 @@ namespace store_api.Controllers;
 [Route("users")]
 public class UsersController : Controller
 {
-    private UsersService _service = new UsersService();
+    /*private UsersService _service = new UsersService();
     static List<UserEntity> users = new List<UserEntity>([new(Guid.NewGuid(), "Pedro", "Guerra", "pedroga", "pedroga.personal@gmail.com")]);
 
     private IConfiguration _configuration;
@@ -69,5 +69,5 @@ public class UsersController : Controller
             token= new JwtSecurityTokenHandler().WriteToken(token),
             message= "Login efetuado com sucesso!"
         }));
-    }
+    }*/
 }

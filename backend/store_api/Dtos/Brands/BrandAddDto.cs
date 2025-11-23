@@ -1,6 +1,8 @@
-﻿namespace store_api.Dtos.Brands;
+﻿using store_api.Entities;
 
-public class BrandAddDto
+namespace store_api.Dtos.Brands;
+
+public class BrandAddDto<T> : IBaseDto<T>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
@@ -9,5 +11,10 @@ public class BrandAddDto
     {
         Id = Guid.NewGuid();
         Name = name;
+    }
+
+    public BrandEntity ToEntity()
+    {
+        return new BrandEntity(Id, Name);
     }
 }

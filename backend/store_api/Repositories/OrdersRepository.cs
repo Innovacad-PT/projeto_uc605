@@ -1,4 +1,5 @@
 ﻿using store_api.Controllers;
+using store_api.Dtos;
 using store_api.Entities;
 using store_api.Utils;
 
@@ -6,17 +7,17 @@ namespace store_api.Repositories;
 
 public class OrdersRepository : IBaseRepository<OrderEntity>
 {
-    public Result<OrderEntity> Add(OrderEntity entity)
+    public Result<OrderEntity> Add(IBaseDto<OrderEntity> entity)
     {
         throw new NotImplementedException();
     }
-
-    public Result<OrderEntity> Update(OrderEntity entity)
+    
+    public Result<OrderEntity> Update(int id, IBaseDto<OrderEntity> entity)
     {
         throw new NotImplementedException();
     }
-
-    public Result<OrderEntity> Delete(OrderEntity entity)
+    
+    public Result<OrderEntity> Delete(int id)
     {
         throw new NotImplementedException();
     }

@@ -1,4 +1,5 @@
 ﻿using store_api.Controllers;
+using store_api.Dtos;
 using store_api.Entities;
 using store_api.Utils;
 
@@ -6,17 +7,17 @@ namespace store_api.Repositories;
 
 public class CategoriesRepository : IBaseRepository<CategoryEntity>
 {
-    public Result<CategoryEntity> Add(CategoryEntity entity)
+    public Result<CategoryEntity> Add(IBaseDto<CategoryEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<CategoryEntity> Update(CategoryEntity entity)
+    public Result<CategoryEntity> Update(Guid id, IBaseDto<CategoryEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<CategoryEntity> Delete(CategoryEntity entity)
+    public Result<CategoryEntity> Delete(Guid id)
     {
         throw new NotImplementedException();
     }

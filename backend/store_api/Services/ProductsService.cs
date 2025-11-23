@@ -13,7 +13,7 @@ public class ProductsService
         throw new NotImplementedException();
     }
 
-    public ProductEntity? UpdateProduct(ProductUpdateDto productDto){
+    public ProductEntity? UpdateProduct(Guid id, ProductUpdateDto productDto){
         throw new NotImplementedException();
     }
 
@@ -25,7 +25,7 @@ public class ProductsService
         throw new NotImplementedException();
     }
 
-    public IEnumerable<ProductEntity>? GetAllProducts(List<FilterEntity> filters){
+    public Task<IEnumerable<ProductEntity>?> GetAllProducts(String search, String category, decimal minPice, decimal maxPrice){
         throw new NotImplementedException();
     }
 

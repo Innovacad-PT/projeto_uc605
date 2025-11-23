@@ -1,4 +1,5 @@
 ﻿using store_api.Controllers;
+using store_api.Dtos;
 using store_api.Entities;
 using store_api.Utils;
 
@@ -6,17 +7,17 @@ namespace store_api.Repositories;
 
 public class ReviewsRepository : IBaseRepository<ReviewEntity>
 {
-    public Result<ReviewEntity> Add(ReviewEntity entity)
+    public Result<ReviewEntity> Add(IBaseDto<ReviewEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<ReviewEntity> Update(ReviewEntity entity)
+    public Result<ReviewEntity> Update(Guid id, IBaseDto<ReviewEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<ReviewEntity> Delete(ReviewEntity entity)
+    public Result<ReviewEntity> Delete(Guid id)
     {
         throw new NotImplementedException();
     }

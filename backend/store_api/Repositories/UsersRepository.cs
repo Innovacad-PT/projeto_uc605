@@ -1,4 +1,5 @@
 ﻿using store_api.Controllers;
+using store_api.Dtos;
 using store_api.Dtos.Users;
 using store_api.Entities;
 using store_api.Utils;
@@ -9,18 +10,17 @@ public class UsersRepository : IBaseRepository<UserEntity>
 {
     static List<UserEntity> users = new ();
 
-
-    public Result<UserEntity> Add(UserEntity entity)
+    public Result<UserEntity> Add(IBaseDto<UserEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Update(UserEntity entity)
+    public Result<UserEntity> Update(Guid id, IBaseDto<UserEntity> entity)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserEntity> Delete(UserEntity entity)
+    public Result<UserEntity> Delete(Guid id)
     {
         throw new NotImplementedException();
     }
