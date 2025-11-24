@@ -1,4 +1,4 @@
-import { Button, Grid, Stack, Title, Text } from "@mantine/core";
+import { Grid, Stack, Title, Text } from "@mantine/core";
 
 export default function Hero({
   onScrollToProducts,

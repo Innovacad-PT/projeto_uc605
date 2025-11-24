@@ -1,49 +1,88 @@
 ﻿using store_api.Controllers;
 using store_api.Dtos;
+using store_api.Dtos.Reviews;
 using store_api.Entities;
+using store_api.Exceptions;
 using store_api.Utils;
 
 namespace store_api.Repositories;
 
 public class ReviewsRepository : IBaseRepository<ReviewEntity>
 {
-    public Result<ReviewEntity> Add(ReviewEntity entity)
+    
+    private readonly static List<ReviewEntity> _reviews = new List<ReviewEntity>();
+    
+    public ReviewEntity? Add(ReviewEntity entity)
     {
-        throw new NotImplementedException();
+        if (_reviews.Any(r => r.Id == entity.Id))
+        {
+            throw new SameIdException("The review with the same id already exists");
+        }
+
+        if (_reviews.Any(r => r.ProductId == entity.ProductId && r.UserId == entity.UserId))
+        {
+            return null;
+        }
+        
+        _reviews.Add(entity);
+        return entity;
     }
 
-    public Result<ReviewEntity> Update(Guid id, IBaseDto<ReviewEntity> entity)
+    public ReviewEntity? Update(Guid id, IBaseDto<ReviewEntity> entity)
     {
-        throw new NotImplementedException();
+        ReviewUpdateDto updateDto = entity as ReviewUpdateDto;
+
+        if (updateDto == null)
+        {
+            throw new InvalidDtoType("Invalid data transfer object type");
+        }
+
+        if (!_reviews.Any(r => r.Id == id))
+        {
+            return null;
+        }
+        
+        ReviewEntity review = _reviews.First(r => r.Id == id);
+
+        review.Rating = updateDto.Rating ?? review.Rating;
+        review.Comment = updateDto.Comment ?? review.Comment;
+
+        return review;
     }
 
-    public Result<ReviewEntity> Delete(Guid id)
+    public ReviewEntity? Delete(Guid id)
     {
-        throw new NotImplementedException();
+        if (!_reviews.Any(r => r.Id == id))
+        {
+            return null;
+        }
+        
+        ReviewEntity review = _reviews.First(r => r.Id == id);
+        _reviews.Remove(review);
+        return review;
     }
 
-    public Result<ReviewEntity> GetById(int id)
+    public ReviewEntity? GetById(Guid id)
     {
-        throw new NotImplementedException();
+        ReviewEntity? review = _reviews.FirstOrDefault(r => r.Id == id);
+
+        return review;
     }
 
-    public Result<ReviewEntity> GetById(Guid id)
+    public IEnumerable<ReviewEntity> GetAll()
     {
-        throw new NotImplementedException();
+        return _reviews;
     }
 
-    public Result<IEnumerable<ReviewEntity>> GetAll()
+    public IEnumerable<ReviewEntity>? GetReviewsByProduct(Guid productId)
     {
-        throw new NotImplementedException();
+        IEnumerable<ReviewEntity>? reviews = _reviews.Where(r => r.ProductId == productId);
+        return reviews;
     }
 
-    public Result<IEnumerable<ReviewEntity>> GetReviewsByProduct(Guid productId)
+    public ReviewEntity? GetUserReview(Guid userId, Guid productId)
     {
-        throw new NotImplementedException();
-    }
-
-    public Result<ReviewEntity> GetUserReview(Guid userId, Guid productId)
-    {
-        throw new NotImplementedException();
+        ReviewEntity? review = _reviews.FirstOrDefault(r => r.UserId == userId && r.ProductId == productId);
+        return review;
     }
 }

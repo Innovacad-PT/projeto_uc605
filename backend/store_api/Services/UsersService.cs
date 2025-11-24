@@ -1,4 +1,9 @@
-﻿using store_api.Dtos.Users;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using store_api.Dtos.Users;
 using store_api.Entities;
 using store_api.Repositories;
 using store_api.Utils;
@@ -10,19 +15,40 @@ public class UsersService
     
     private readonly UsersRepository _repository = new UsersRepository();
 
-    public UserEntity? Register(UserRegisterDto registerDto)
+    public Result<UserEntity?> Register(UserRegisterDto registerDto)
     {
         throw new NotImplementedException();
     }
 
-    public UserEntity? Login(UserLoginDto loginDto)
+    public Result<UserLoggedInDao?> Login(UserLoginDto loginDto, IConfiguration configuration)
     {
-        throw new NotImplementedException();
-    }
+        if (loginDto.Type != LoginType.USERNAME && loginDto.Type != LoginType.EMAIL)
+        {
+            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN, "The login type is not of 'username' nor 'email'.");
+        }
 
-    public UserEntity? GetProfile(Guid id)
-    {
-        throw new NotImplementedException();
+        UserEntity? user = _repository.Login(loginDto);
+
+        if (user == null)
+        {
+            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN, "User not logged in");
+        }
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSecretKey"] ?? ""));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
+            expires: DateTime.Now.AddDays(1), signingCredentials: creds);
+
+        UserLoggedInDao dao = new(new JwtSecurityTokenHandler().WriteToken(token), user);
+
+        return new Success<UserLoggedInDao?>(ResultCode.USER_LOGGED_IN, "User successfully logged in", dao);
     }
 
     public UserEntity? UpdateProfile(Guid id, UserProfileUpdateDto dto)
@@ -35,42 +61,74 @@ public class UsersService
         throw new NotImplementedException();
     }
 
-    /*public async Task<List<UserEntity>> GetAll()
+    public Result<IEnumerable<UserEntity>?> GetAll()
     {
-        return await _repository.GetAll();
+        IEnumerable<UserEntity>? users = _repository.GetAll();
+
+        if (users.Count() <= 0)
+        {
+            return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_NOT_FOUND, "Users list is empty", users);
+        }
+        
+        return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_FOUND, "Users found", users);
     }
 
-    public async Task<Result<UserEntity>> GetById(Guid id)
+    public Result<UserEntity> GetById(Guid id)
     {
-
-        if (Guid.Empty == id)
-        {
-            return new Failure<UserEntity>(ResultCode.INVALID_GUID, $"O GUID passado estava vazio!");
-        }
-
-        var user = await _repository.GetById(id);
+        var user =  _repository.GetById(id);
 
         if (user == null)
         {
-            return new Failure<UserEntity>(ResultCode.USER_NOT_FOUND, $"Erro buscar utilizador com o id {id}");
+            return new Failure<UserEntity>(ResultCode.USER_NOT_FOUND, $"User not found with id {id}");
         }
 
-        return new Success<UserEntity>(ResultCode.USER_FOUND, "Retrieved user successfuly", user);
+        return new Success<UserEntity>(ResultCode.USER_FOUND, "User found", user);
     }
 
-    public async Task<List<UserEntity>> Create(UserCreateDto product)
+    public Result<UserEntity?> Create(UserRegisterDto dto)
     {
-        return await _repository.Create(product);
+        try
+        {
+
+            UserEntity? user = _repository.Add(dto.ToEntity());
+
+            if (user == null)
+            {
+                return new Failure<UserEntity?>(ResultCode.USER_NOT_CREATED, $"User not created with id");
+            }
+
+            return new Success<UserEntity?>(ResultCode.USER_CREATED, "User created", user);
+        }
+        catch (Exception e)
+        {
+            return new Failure<UserEntity?>(ResultCode.USER_NOT_CREATED, e.Message);
+        }
     }
 
-    public async Task<List<UserEntity>> Update(Guid id, UserUpdateDto product)
+    public Result<UserEntity?> Update(Guid id, UserUpdateDto dto)
     {
-        return await _repository.Update(id, product);
+        
+        UserEntity? user = _repository.Update(id, dto);
+
+        if (user == null)
+        {
+            return new Failure<UserEntity?>(ResultCode.USER_NOT_UPDATED, $"User not found with id {id}");
+        }
+        
+        return new Success<UserEntity?>(ResultCode.USER_UPDATED, "User updated", user);
     }
 
-    public async Task<List<UserEntity>> Delete(String id)
+    public Result<UserEntity?> Delete(Guid id)
     {
-        return await _repository.Delete(id);
-    }*/
+
+        UserEntity? user = _repository.Delete(id);
+
+        if (user == null)
+        {
+            return new Failure<UserEntity?>(ResultCode.USER_NOT_DELETED, $"User not found with id {id}");
+        }
+        
+        return new Success<UserEntity?>(ResultCode.USER_DELETED, "User deleted", user);
+    }
 
 }

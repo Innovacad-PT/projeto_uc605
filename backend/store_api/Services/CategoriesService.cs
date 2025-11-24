@@ -1,5 +1,6 @@
 ﻿using store_api.Dtos.Categories;
 using store_api.Entities;
+using store_api.Exceptions;
 using store_api.Repositories;
 using store_api.Utils;
 
@@ -10,36 +11,54 @@ public class CategoriesService
     
     private readonly CategoriesRepository _categoriesRepository = new();
 
-    public Result<CategoryEntity> Add(CategoryAddDto dto)
-    {
-        
-        Result<CategoryEntity> result = _categoriesRepository.GetById(dto.Id);
-
-        if (result is Success<CategoryEntity>)
-        {
-            return new Failure<CategoryEntity>(ResultCode.CATEGORY_NOT_CREATED, $"The category with id ({dto.Id})) could not be created");
-        }
-        
-        Result<CategoryEntity> addResult = _categoriesRepository.Add(new CategoryEntity(dto.Id, dto.Name));
-        
-        return addResult;
-    }
-
     public Result<CategoryEntity?> GetById(Guid id)
     {
-        return _categoriesRepository.GetById(id);
+        try
+        {
+            var result = _categoriesRepository.GetById(id);
+
+            if (result == null)
+                return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_FOUND, $"The category with the following id ({id}) couldn't be found!");
+
+            return new Success<CategoryEntity?>(ResultCode.CATEGORY_FOUND, $"The category with the following id ({id}) was found!", result);
+        }
+        catch (Exception e)
+        {
+            return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_FOUND, $"[MESSAGE]: The category with the following id ({id}) couldn't be found!\n[EXCEPTION]: {e.Message}");
+        }
     }
     
     public Result<CategoryEntity?> CreateCategory(CategoryAddDto dto)
     {
-        Result<CategoryEntity?> result = _categoriesRepository.Add(new(dto.Id, dto.Name));
-        
-        return result;
+        try
+        {
+            var result = _categoriesRepository.Add(dto.ToEntity());
+
+            if (result == null)
+                return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_CREATED, $"The category with the following id ({dto.Id}) couldn't be created!");
+
+            return new Success<CategoryEntity?>(ResultCode.CATEGORY_CREATED, $"The category with the following id ({dto.Id}) was created!", result);
+        }
+        catch (Exception e)
+        {
+            return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_CREATED, $"[MESSAGE]: The category with the following id ({dto.Id}) couldn't be created!\n[EXCEPTION]: {e.Message}");
+        }
     }
 
     public Result<IEnumerable<CategoryEntity>?> GetAllCategories()
     {
-        Result<IEnumerable<CategoryEntity>?> result = _categoriesRepository.GetAll();
-        return result;
+        try
+        {
+            var result = _categoriesRepository.GetAll();
+
+            if (result == null)
+                return new Failure<IEnumerable<CategoryEntity>?>(ResultCode.CATEGORY_NOT_FOUND, $"(0) categories were found!");
+
+            return new Success<IEnumerable<CategoryEntity>?>(ResultCode.CATEGORY_FOUND, $"({result.Count()}) categories were found!", result);
+        }
+        catch (Exception e)
+        {
+            return new Failure<IEnumerable<CategoryEntity>?>(ResultCode.CATEGORY_NOT_FOUND, $"[MESSAGE]: (0) categories were found!\n[EXCEPTION]: {e.Message}");
+        }
     }
 }

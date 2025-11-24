@@ -2,6 +2,7 @@
 using store_api.Dtos;
 using store_api.Dtos.Brands;
 using store_api.Entities;
+using store_api.Exceptions;
 using store_api.Utils;
 
 namespace store_api.Repositories;
@@ -13,91 +14,76 @@ public class BrandsRepository : IBaseRepository<BrandEntity>
         new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo")
     ];
     
-    public Result<BrandEntity> Add(BrandEntity dto)
+    public BrandEntity? Add(BrandEntity entity)
     {
         
-        if (_brands.Any((b) => b.Id == dto.Id))
+        if (_brands.Any((b) => b.Id == entity.Id))
         {
-            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_GUID, $"Brand with id ({dto.Id}) already exists");
+            throw new SameIdException("Brand with the same id already exists.");
         }
 
-        if (_brands.Any((b) => b.Name.ToLower() == dto.Name.ToLower()))
+        if (_brands.Any((b) => b.Name.ToLower() == entity.Name.ToLower()))
         {
-            return new Failure<BrandEntity>(ResultCode.BRAND_EXISTING_NAME, $"Brand with name ({dto.Name}) already exists");
+            throw new SameNameException("Brand with the same name already exists.");
         }
         
-        _brands.Add(dto);
+        _brands.Add(entity);
 
-        return new Success<BrandEntity>(ResultCode.BRAND_CREATED, "Brand created", dto);
+        return entity;
     }
     
-    public Result<BrandEntity> Update(Guid id, IBaseDto<BrandEntity> dto)
+    public BrandEntity? Update(Guid id, IBaseDto<BrandEntity> dto)
     {
         
         var updateDto = dto as BrandUpdateDto<BrandEntity>;  
 
         if (updateDto == null)
         {
-            return new Failure<BrandEntity>(ResultCode.INVALID_DTO, "Invalid dto type");
+            throw new InvalidDtoType("Invalid data transfer object type.");
         }
         
         BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
 
         if (entity == null)
         {
-            return new Failure<BrandEntity>(ResultCode.BRAND_NOT_FOUND, $"Brand with id ({id}) not found");
+            return null;
         }
 
         entity.Name = updateDto.Name ?? entity.Name;
         
-        return new Success<BrandEntity>(ResultCode.BRAND_UPDATED, $"Brand with id ({id}) updated", entity);
+        return entity;
     }
 
-    public Result<BrandEntity> Delete(Guid id)
+    public BrandEntity? Delete(Guid id)
     {
         BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
 
         if (entity == null)
         {
-            return new Failure<BrandEntity>(ResultCode.BRAND_NOT_FOUND, $"Brand with id ({id}) not found");
+            return null;
         }
 
         _brands.Remove(entity);
-        
-        return new Success<BrandEntity>(ResultCode.BRAND_DELETED, $"Brand with id ({id}) deleted", entity);
+
+        return entity;
     }
 
-    public Result<BrandEntity> GetById(Guid id)
+    public BrandEntity? GetById(Guid id)
     {
         BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
-
-        if (entity == null)
-        {
-            return new Failure<BrandEntity>(ResultCode.BRAND_NOT_FOUND, $"Brand with id ({id}) not found");
-        }
         
-        return new Success<BrandEntity>(ResultCode.BRAND_FOUND, $"Brand with id ({id}) found", entity);
+        return entity;
     }
 
-    public Result<IEnumerable<BrandEntity>> GetAll()
+    public IEnumerable<BrandEntity>? GetAll()
     {
-        if (!_brands.Any())
-        {
-            return new Success<IEnumerable<BrandEntity>>(ResultCode.BRAND_NOT_FOUND, "Brands not found", []);
-        }
-
-        return new Success<IEnumerable<BrandEntity>>(ResultCode.BRAND_FOUND, "Brands found", _brands);
+        return _brands;
     }
 
-    public Result<BrandEntity> GetByName(String name)
+    public BrandEntity? GetByName(String name)
     {
         BrandEntity? brand = _brands.FirstOrDefault((b) => b.Name.ToLower() == name.ToLower());
 
-        if (brand == null)
-        {
-            return new Failure<BrandEntity>(ResultCode.PRODUCT_NOT_FOUND, $"Brand with name ({name}) not found");
-        }
-        
-        return new Success<BrandEntity>(ResultCode.BRAND_FOUND, "Brand found", brand);
+        return brand;
     }
 }

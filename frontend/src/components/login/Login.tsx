@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
-import { LoginUser } from "@services/auth/index";
+import { login } from "@services/auth";
 import { Notify } from "@utils/notify";
 
 const Login = () => {
@@ -28,29 +28,18 @@ const Login = () => {
       return;
     }
 
-    const type: string = user
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      )
-      ? "email"
-      : "username";
-
-    const val = await LoginUser(user, password, type);
-
-    console.log(val);
-
-    if (val == null) {
+    try {
+      await login(user, password);
+      Notify("Sucesso!", "Inicio de sessão efetuado com sucesso.", "success");
+      // Redirect or update UI as needed
+      window.location.href = "/"; // or use router navigation
+    } catch (error) {
       Notify(
         "Erro ao iniciar sessão!",
         "Verifique as credenciais e tente novamente.",
         "error"
       );
-      return;
     }
-
-    Notify("Sucesso!", "Inicio de sessão efetuado com sucesso.", "success");
-    setCookie("token", val);
   };
 
   return (

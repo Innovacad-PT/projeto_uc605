@@ -7,10 +7,10 @@ import {
   Image,
   Divider,
   ActionIcon,
+  Badge,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
-import type { Product } from "@_types/product";
-import { BASE_API_URL } from "@utils/api";
+import type { CartItem } from "@services/cart";
 
 export default function CartDrawer({
   opened,
@@ -21,11 +21,14 @@ export default function CartDrawer({
 }: {
   opened: boolean;
   onClose: () => void;
-  items: Product[];
+  items: CartItem[];
   onRemove: (id: string) => void;
   onCheckout: () => void;
 }) {
-  const total = items.reduce((sum, p) => sum + p.price, 0);
+  const total = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
 
   return (
     <Drawer opened={opened} onClose={onClose} title="O seu carrinho" size="md">
@@ -36,10 +39,10 @@ export default function CartDrawer({
           </Text>
         )}
 
-        {items.map((prod) => (
-          <Group key={prod.id} align="flex-start">
+        {items.map((item) => (
+          <Group key={item.product.id} align="flex-start">
             <Image
-              src={BASE_API_URL + prod.imageUrl}
+              src={item.product.imageUrl || ""}
               height={80}
               width={80}
               fit="cover"
@@ -47,16 +50,19 @@ export default function CartDrawer({
             />
 
             <Stack gap={4} style={{ flex: 1 }}>
-              <Text fw={600}>{prod.name}</Text>
+              <Text fw={600}>{item.product.name}</Text>
               <Text fw={700} c="indigo">
-                €{prod.price.toFixed(2)}
+                €{item.product.price.toFixed(2)}
               </Text>
+              <Badge variant="light" color="gray">
+                Qtd: {item.quantity}
+              </Badge>
             </Stack>
 
             <ActionIcon
               color="red"
               variant="subtle"
-              onClick={() => onRemove(prod.id)}
+              onClick={() => onRemove(item.product.id)}
             >
               <IconTrash size={18} />
             </ActionIcon>

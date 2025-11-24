@@ -11,7 +11,6 @@ import {
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import type { Product } from "@_types/product";
-import { BASE_API_URL } from "@utils/api";
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -120,7 +119,7 @@ export default function FeaturedProducts({
             onDragStart={(e) => e.preventDefault()}
           >
             <Image
-              src={`${BASE_API_URL}${p.imageUrl}`}
+              src={p.imageUrl || ""}
               height={140}
               radius="md"
               alt={p.name}

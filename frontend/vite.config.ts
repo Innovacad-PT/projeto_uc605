@@ -10,6 +10,8 @@ export default defineConfig({
       "@components": resolve(process.cwd(), "src/components"),
       "@services": resolve(process.cwd(), "src/services"),
       "@utils": resolve(process.cwd(), "src/utils"),
+      "@contexts": resolve(process.cwd(), "src/contexts"),
+      "@pages": resolve(process.cwd(), "src/pages"),
     },
   },
   build: { outDir: "build" },

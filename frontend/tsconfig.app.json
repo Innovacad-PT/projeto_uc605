@@ -26,9 +26,12 @@
     "baseUrl": ".",
     "paths": {
       "@_types/*": ["src/types/*"],
+      "@types/*": ["src/types/*"],
       "@components/*": ["src/components/*"],
       "@services/*": ["src/services/*"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@pages/*": ["src/pages/*"]
     }
   },
   "include": ["src"]

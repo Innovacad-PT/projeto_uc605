@@ -7,6 +7,7 @@ import {
   Drawer,
   Stack,
   AppShell,
+  Indicator,
 } from "@mantine/core";
 import { useCart } from "@services/cart";
 import { IconShoppingCart, IconUser } from "@tabler/icons-react";
@@ -53,7 +54,7 @@ export default function AppHeader() {
             className="desktop-logo"
             onClick={() => nav("/")}
           >
-            TechStore
+            CAPITEK
           </Text>
           {/* MOBILE LOGO ESQUERDO */}
           <Text
@@ -63,7 +64,7 @@ export default function AppHeader() {
             className="mobile-logo"
             onClick={() => nav("/")}
           >
-            TechStore
+            CAPITEK
           </Text>
           {/* NAV CENTRAL - DESKTOP */}
           <Group
@@ -89,29 +90,21 @@ export default function AppHeader() {
             <ActionIcon variant="light" size="lg">
               <IconUser size={20} />
             </ActionIcon>
-            <ActionIcon
-              variant="light"
-              size="lg"
-              onClick={() => setCartOpened(true)}
+            <Indicator
+              label={items.reduce((acc, item) => acc + item.quantity, 0)}
+              size={16}
+              offset={4}
+              disabled={items.length === 0}
+              color="red"
             >
-              <IconShoppingCart size={20} />
-              {items.length > 0 && (
-                <span
-                  style={{
-                    background: "red",
-                    color: "white",
-                    borderRadius: "50%",
-                    padding: "2px 6px",
-                    fontSize: "12px",
-                    position: "relative",
-                    top: "-10px",
-                    right: "10px",
-                  }}
-                >
-                  {items.length}
-                </span>
-              )}
-            </ActionIcon>
+              <ActionIcon
+                variant="light"
+                size="lg"
+                onClick={() => setCartOpened(true)}
+              >
+                <IconShoppingCart size={20} />
+              </ActionIcon>
+            </Indicator>
           </Group>
         </Container>
 

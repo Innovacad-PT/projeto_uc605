@@ -1,5 +1,5 @@
 import { Card, Image, Text, Button } from "@mantine/core";
-import { BASE_API_URL } from "@utils/api";
+import { BASE_URL } from "@utils/api";
 import type { Product } from "@_types/product";
 
 export default function ProductCard({
@@ -20,7 +20,7 @@ export default function ProductCard({
       onClick={onClick}
     >
       <Image
-        src={BASE_API_URL + product.imageUrl}
+        src={BASE_URL + product.imageUrl}
         h={150}
         radius="md"
         alt={product.name}

@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using store_api.Entities;
 using store_api.Services;
@@ -19,8 +20,7 @@ public class ProductsController : Controller
 
         if (products is Failure<IEnumerable<ProductEntity>?> productsFailure)
         {
-            return NotFound(
-                new Failure<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND, "Products not found"));
+            return NotFound(products);
         }
 
         return Ok(products);
@@ -29,14 +29,14 @@ public class ProductsController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById([FromQuery] Guid id)
     {
-        ProductEntity? product = _productsService.GetProductById(id);
+        Result<ProductEntity?> product = _productsService.GetProductById(id);
 
-        if (product == null)
+        if (product is Failure<ProductEntity?>)
         {
-            return NotFound(new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product not found"));
+            return NotFound(product);
         }
         
-        return Ok(new Success<ProductEntity?>(ResultCode.PRODUCT_FOUND, "Product found", product));
+        return Ok(product);
     }
 
     [HttpPost]
@@ -48,8 +48,7 @@ public class ProductsController : Controller
 
         if (res is Failure<ProductEntity>)
         {
-            var failure = (Failure<ProductEntity?>)res;
-            return BadRequest(failure);
+            return BadRequest(res);
         }
         
         return Ok(res);
@@ -58,14 +57,27 @@ public class ProductsController : Controller
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto dto)
     {
-        ProductEntity? product = _productsService.UpdateProduct(id, dto);
+        Result<ProductEntity?> product = await _productsService.UpdateProduct(id, dto);
 
-        if (product == null)
+        if (product is Failure<ProductEntity?>)
         {
-            return BadRequest(new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product not found"));
+            return BadRequest(product);
         }
 
-        return Ok(new Success<ProductEntity>(ResultCode.PRODUCT_UPDATED, "Product updated", product));
+        return Ok(product);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProduct([FromQuery] Guid id)
+    {
+        Result<ProductEntity?> product = _productsService.DeleteProduct(id);
+
+        if (product is Failure<ProductEntity>)
+        {
+            return BadRequest(product);
+        }
+
+        return Ok(product);
     }
 
     [HttpGet("search")]
@@ -84,14 +96,53 @@ public class ProductsController : Controller
     [HttpGet("{id}/discount")]
     public async Task<IActionResult> GetDiscount([FromQuery] Guid id)
     {
-        ProductEntity? discount = _productsService.ApplyDiscount(id);
+        Result<DiscountEntity?> discount = _productsService.GetActiveDiscount(id);
 
-        if (discount == null)
+        if (discount is Failure<DiscountEntity?>)
         {
-            return NotFound();
+            return NotFound(discount);
         }
 
-        return Ok(new Success<ProductEntity>(ResultCode.PRODUCT_DISCOUNT_APPLIED, "Discount applied to product.", discount));
+        return Ok(discount);
+    }
+
+    [HttpPatch("{id}/increase")]
+    public IActionResult IncreaseProduct([FromQuery] Guid id, [FromBody] int increaseAmount)
+    {
+        Result<ProductEntity?> product = _productsService.IncreaseStock(id, increaseAmount);
+
+        if (product is Failure<ProductEntity>)
+        {
+            return BadRequest(product);
+        }
+        
+        return Ok(product);
+    }
+    
+    [HttpPatch("{id}/decrease")]
+    public IActionResult DecreaseProduct([FromQuery] Guid id, [FromBody] int increaseAmount)
+    {
+        Result<ProductEntity?> product = _productsService.DecreaseStock(id, increaseAmount);
+
+        if (product is Failure<ProductEntity>)
+        {
+            return BadRequest(product);
+        }
+        
+        return Ok(product);
+    }
+
+    [HttpPut("{id}/technicalSpecs")]
+    public IActionResult AddTechnicalSpecs(Guid id, List<TechnicalSpecsEntity> list)
+    {
+        Result<ProductEntity?> product = _productsService.AddTechnicalSpecs(id, list);
+
+        if (product is Failure<ProductEntity?>)
+        {
+            return BadRequest(product);
+        }
+
+        return Ok(product);
     }
 
 

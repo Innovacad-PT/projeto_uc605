@@ -11,5 +11,10 @@ public class CategoryAddDto
     {
         Id = Guid.NewGuid();
         Name = name;
-    } 
+    }
+
+    public CategoryEntity ToEntity()
+    {
+        return new CategoryEntity(Id, Name);
+    }
 }

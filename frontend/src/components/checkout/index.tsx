@@ -1,13 +1,28 @@
-import { Container, Text, Button, Group, Card, Divider } from "@mantine/core";
+import {
+  Container,
+  Text,
+  Button,
+  Group,
+  Card,
+  Divider,
+  NumberInput,
+  TextInput,
+  Stack,
+  ActionIcon,
+  Image,
+} from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
 import { useCart } from "@services/cart";
-import type { Product } from "@_types/product";
 
 export default function CheckoutPage() {
-  const { items, clearCart } = useCart();
-  const total = items.reduce((sum: number, p: Product) => sum + p.price, 0);
+  const { items, clearCart, updateQuantity, removeFromCart } = useCart();
+  const total = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
 
   return (
-    <Container size="sm" mt="xl">
+    <Container size="md" mt="xl" pb="xl">
       <Text size="xl" fw={700} mb="lg">
         Finalizar compra
       </Text>
@@ -15,25 +30,81 @@ export default function CheckoutPage() {
       {items.length === 0 ? (
         <Text c="dimmed">O carrinho está vazio.</Text>
       ) : (
-        <Card shadow="sm" p="lg" radius="md">
-          {items.map((p: Product) => (
-            <Group key={p.id} justify="space-between" mb="sm">
-              <Text>{p.name}</Text>
-              <Text fw={600}>€{p.price.toFixed(2)}</Text>
-            </Group>
-          ))}
+        <Group align="flex-start" gap="lg">
+          <Stack style={{ flex: 1 }}>
+            {items.map((item) => (
+              <Card key={item.product.id} shadow="sm" p="md" radius="md" withBorder>
+                <Group>
+                  <Image
+                    src={item.product.imageUrl || ""}
+                    width={80}
+                    height={80}
+                    radius="md"
+                  />
+                  
+                  <Stack gap={4} style={{ flex: 1 }}>
+                    <Text fw={600}>{item.product.name}</Text>
+                    <Text size="sm" c="dimmed">
+                      €{item.product.price.toFixed(2)} / un
+                    </Text>
+                  </Stack>
 
-          <Divider my="md" />
+                  <Group>
+                    <NumberInput
+                      value={item.quantity}
+                      onChange={(val) =>
+                        updateQuantity(item.product.id, Number(val))
+                      }
+                      min={1}
+                      max={99}
+                      w={80}
+                      allowNegative={false}
+                    />
+                    
+                    <Text fw={700} w={80} ta="right">
+                      €{(item.product.price * item.quantity).toFixed(2)}
+                    </Text>
 
-          <Group justify="space-between">
-            <Text fw={700}>Total:</Text>
-            <Text fw={700}>€{total.toFixed(2)}</Text>
-          </Group>
+                    <ActionIcon
+                      color="red"
+                      variant="subtle"
+                      onClick={() => removeFromCart(item.product.id)}
+                    >
+                      <IconTrash size={18} />
+                    </ActionIcon>
+                  </Group>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
 
-          <Button fullWidth mt="lg" size="md" onClick={clearCart}>
-            Confirmar compra
-          </Button>
-        </Card>
+          <Card shadow="sm" p="lg" radius="md" withBorder w={350}>
+            <Stack gap="md">
+              <Text fw={700} size="lg">Resumo</Text>
+              
+              <Group justify="space-between">
+                <Text c="dimmed">Subtotal</Text>
+                <Text>€{total.toFixed(2)}</Text>
+              </Group>
+
+              <TextInput
+                placeholder="Código do cupão"
+                label="Cupão de desconto"
+              />
+
+              <Divider />
+
+              <Group justify="space-between">
+                <Text fw={700} size="lg">Total</Text>
+                <Text fw={700} size="lg" c="indigo">€{total.toFixed(2)}</Text>
+              </Group>
+
+              <Button fullWidth size="md" onClick={clearCart} mt="sm">
+                Confirmar compra
+              </Button>
+            </Stack>
+          </Card>
+        </Group>
       )}
     </Container>
   );

@@ -1,4 +1,5 @@
 ﻿using store_api.Entities;
+using store_api.Exceptions;
 using store_api.Repositories;
 using store_api.Utils;
 
@@ -9,25 +10,67 @@ public class ProductsService
     private readonly ProductsRepository _productsRepository = new();
     private readonly BrandsService _brandsService = new();
     private readonly CategoriesService _categoriesService = new();
+    private readonly DiscountService _discountsService = new();
 
     public async Task<Result<ProductEntity?>> CreateProduct(ProductCreateDto dto)
     {
-        Result<BrandEntity?> brand = _brandsService.GetById(dto.BrandId);
-        Result<CategoryEntity> category = _categoriesService.GetById(dto.CategoryId);
-
-        if (brand is Failure<BrandEntity>)
+        try
         {
-            return new Failure<ProductEntity?>(ResultCode.BRAND_NOT_FOUND, $"The brand with id ({dto.BrandId}) does not exist");
-        }
+            Result<BrandEntity?> brand = _brandsService.GetById(dto.BrandId);
+            Result<CategoryEntity?> category = _categoriesService.GetById(dto.CategoryId);
 
-        if (category is Failure<CategoryEntity>)
+            if (brand is Failure<BrandEntity>)
+            {
+                return new Failure<ProductEntity?>(ResultCode.BRAND_NOT_FOUND,
+                    $"The brand with id ({dto.BrandId}) does not exist");
+            }
+
+            if (category is Failure<CategoryEntity>)
+            {
+                return new Failure<ProductEntity?>(ResultCode.CATEGORY_NOT_FOUND,
+                    $"The category with id ({dto.CategoryId}) does not exist");
+            }
+
+            string? imageUrl = null;
+
+            if (dto.Image != null)
+            {
+                string folder = Path.Combine("wwwroot", "images");
+
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                string filename = $"{dto.Id}{Path.GetExtension(dto.Image.FileName)}";
+                string filePath = Path.Combine(folder, filename);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.Image.CopyToAsync(stream);
+                }
+
+                imageUrl = $"/images/{filename}";
+            }
+
+            var entity = new ProductEntity(dto.Id, dto.Name, (category as Success<CategoryEntity>).Value,
+                (brand as Success<BrandEntity>).Value, dto.TechnicalSpecs, imageUrl ?? "", dto.Price,
+                dto.Details ?? "");
+            ProductEntity? prod = _productsRepository.Add(entity);
+
+            return new Success<ProductEntity?>(ResultCode.PRODUCT_CREATED, "Product created successfully", prod);
+        }
+        catch (SameIdException e)
         {
-            return new Failure<ProductEntity?>(ResultCode.CATEGORY_NOT_FOUND, $"The category with id ({dto.CategoryId}) does not exist");
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_CREATED, "Product with the same id already exists");
         }
+        
+    }
 
-        string? imageUrl = null;
+    public async Task<Result<ProductEntity?>> UpdateProduct(Guid id, ProductUpdateDto productDto) {
+        ProductEntity? productEntity = _productsRepository.GetById(id);
 
-        if (dto.Image != null)
+        if (productDto.ImageFile != null)
         {
             string folder = Path.Combine("wwwroot", "images");
 
@@ -35,61 +78,136 @@ public class ProductsService
             {
                 Directory.CreateDirectory(folder);
             }
-            
-            string filename = $"{dto.Id}{Path.GetExtension(dto.Image.FileName)}";
-            string filePath = Path.Combine(folder, filename);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (!string.IsNullOrEmpty(productEntity.ImageUrl))
             {
-                await dto.Image.CopyToAsync(stream);
+                string oldFilePath = Path.Combine(folder, productEntity.ImageUrl);
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+
+                string fileName = $"{productEntity.Id}{Path.GetExtension(productEntity.ImageUrl)}";
+
+                using (var stream = new FileStream(oldFilePath, FileMode.Create))
+                {
+                    await productDto.ImageFile.CopyToAsync(stream);
+                }
+
+                productEntity.ImageUrl = $"/images/{fileName}";
             }
-            
-            imageUrl = $"/images/{filename}";
         }
-        
-        var entity = new ProductEntity(dto.Id, dto.Name, (category as Success<CategoryEntity>).Value, (brand as Success<BrandEntity>).Value, dto.TechnicalSpecs, imageUrl ?? "", dto.Price, dto.Details ?? "");
-        Result<ProductEntity> prod = _productsRepository.Add(entity);
 
-        if (prod is Failure<ProductEntity>)
+        ProductEntity? product = _productsRepository.Update(id, productDto);
+
+        if (product == null)
         {
-            return prod;
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_UPDATED,
+                "Product with the specified id does not exist");
+        }
+
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_UPDATED, "Product updated successfully", product);
+    }
+
+    public Result<ProductEntity?> DeleteProduct(Guid id)
+    {
+        ProductEntity? product = _productsRepository.Delete(id);
+
+        if (product == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_DELETED, "Product with the specified id does not exist");
+        }
+
+        if (product.ImageUrl.Length > 0)
+        {
+            string folder = Path.Combine("wwwroot", "images");
+
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                string oldFilePath = Path.Combine(folder, product.ImageUrl);
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
         }
         
-        return new Success<ProductEntity>(ResultCode.PRODUCT_CREATED, "Product created successfully", (prod as Success<ProductEntity>).Value);
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_DELETED, "Product deleted successfully", product);
     }
 
-    public ProductEntity? UpdateProduct(Guid id, ProductUpdateDto productDto){
-        throw new NotImplementedException();
-    }
+    public Result<ProductEntity?> GetProductById(Guid id)
+    {
+        ProductEntity? product = _productsRepository.GetById(id);
 
-    public ProductEntity? DeleteProduct(Guid id){
-        throw new NotImplementedException();
-    }
-
-    public ProductEntity? GetProductById(Guid id){
-        throw new NotImplementedException();
+        if (product == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
+        }
+        
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_FOUND, "Product found successfully", product);
     }
 
     public async Task<Result<IEnumerable<ProductEntity>?>> GetAllProducts(String search, String category, decimal minPice, decimal maxPrice){
-        Result<IEnumerable<ProductEntity>?> result = _productsRepository.GetAll();
+        IEnumerable<ProductEntity>? result = _productsRepository.GetAll();
 
-        return result;
+        if (result.ToList().Count <= 0)
+        {
+            return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND, "Products list is empty", result);
+        }
+
+        return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_FOUND, "Products list retrieved successfuly", result);
     }
 
-    public ProductEntity? ApplyDiscount(Guid productId){
-        throw new NotImplementedException();
+    public Result<DiscountEntity?> GetActiveDiscount(Guid productId)
+    {
+        Result<DiscountEntity?> product = _discountsService.GetActiveDiscount(productId);
+
+        if (product is Failure<DiscountEntity?>)
+        {
+            return new Failure<DiscountEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
+        }
+
+        return new Success<DiscountEntity?>(ResultCode.PRODUCT_DISCOUNT_FOUND, "Discount found successfully", (product as Success<DiscountEntity>).Value);
     }
 
-    public ProductEntity? IncreaseStock(Guid productId, int amount){
-        throw new NotImplementedException();
+    public Result<ProductEntity?> IncreaseStock(Guid productId, int amount){
+        ProductEntity? product = _productsRepository.IncreaseStock(productId, amount);
+
+        if (product == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
+        }
+
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_STOCK_INCREASED,
+            $"Product stock was increased by {amount}", product);
     }
 
-    public ProductEntity? DecreaseStock(Guid productId, int amount){
-        throw new NotImplementedException();
+    public Result<ProductEntity?> DecreaseStock(Guid productId, int amount){
+        ProductEntity? product = _productsRepository.DecreaseStock(productId, amount);
+
+        if (product == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
+        }
+
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_STOCK_DECREASED,
+            $"Product stock was decreased by {amount}", product);
     }
 
-    public ProductEntity? AddTechnicalSpecs(Guid productId, List<TechnicalSpecsEntity> list){
-        throw new NotImplementedException();
+    public Result<ProductEntity?> AddTechnicalSpecs(Guid productId, List<TechnicalSpecsEntity> list){
+        ProductEntity? product = _productsRepository.AddSpecs(productId, list);
+
+        if (product == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  "Product with the specified id does not exist");
+        }
+
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_TECHNICAL_SPECS_ADDED, $"Technical specs added to product with id {product}", product);
     }
 
     /*public async Task<Result<List<ProductEntity>>> GetAll()

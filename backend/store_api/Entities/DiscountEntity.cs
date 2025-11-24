@@ -33,4 +33,13 @@ public class DiscountEntity
     public double Percentage { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+
+    public DiscountEntity(Guid Id, Guid ProductId, double Percentage, DateTime StartDate, DateTime EndDate)
+    {
+        this.Id = Id;
+        this.ProductId = ProductId;
+        this.Percentage = Percentage;
+        this.StartDate = StartDate;
+        this.EndDate = EndDate;
+    }
 }

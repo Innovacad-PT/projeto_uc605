@@ -5,9 +5,39 @@ export interface ProductPageProps {
 export interface Product {
   id: string;
   name: string;
-  price: number;
-  categories: string[];
+  description?: string;
+  price: string;
+  stock?: number;
   imageUrl?: string;
-  details?: string;
-  techInfo?: string;
+  category?: Category;
+  brand?: Brand;
+  technicalSpecs?: TechnicalSpec[];
+  reviews?: Review[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+}
+
+export interface TechnicalSpec {
+  id: string;
+  name: string;
+  value?: string;
+}
+
+export interface Review {
+  id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
 }

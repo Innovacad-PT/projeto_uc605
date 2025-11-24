@@ -12,7 +12,7 @@ import {
   Text,
 } from "@mantine/core";
 import { IconShoppingCart } from "@tabler/icons-react";
-import { BASE_API_URL } from "@utils/api";
+import { BASE_URL } from "@utils/api";
 import AppHeader from "@components/header";
 import { useCart } from "@services/cart";
 
@@ -45,7 +45,7 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* IMAGEM */}
               {product.imageUrl && (
                 <Image
-                  src={BASE_API_URL + product.imageUrl}
+                  src={BASE_URL + product.imageUrl}
                   alt={product.name}
                   height={350}
                   fit="contain"
@@ -64,29 +64,39 @@ export default function ProductPage({ product }: ProductPageProps) {
                 </Badge>
               </Group>
 
-              {/* CATEGORIAS */}
-              {product.categories.length > 0 && (
-                <Group>
-                  {product.categories.map((cat) => (
-                    <Badge key={cat} variant="outline">
-                      {cat}
-                    </Badge>
-                  ))}
-                </Group>
-              )}
+              <Group>
+                {product.category && (
+                  <Badge variant="outline">{product.category.name}</Badge>
+                )}
+                {product.brand && (
+                  <Badge variant="outline" color="gray">
+                    {product.brand.name}
+                  </Badge>
+                )}
+              </Group>
 
               {/* DESCRIÇÃO */}
-              {product.details && (
+              {product.description && (
                 <Text size="md" c="dimmed">
-                  {product.details}
+                  {product.description}
                 </Text>
               )}
 
               {/* INFO TÉCNICA */}
-              {product.techInfo && (
-                <Text size="sm" c="dimmed">
-                  <strong>Informação técnica:</strong> {product.techInfo}
-                </Text>
+              {product.technicalSpecs && product.technicalSpecs.length > 0 && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={700}>
+                    Especificações Técnicas:
+                  </Text>
+                  {product.technicalSpecs.map((spec) => (
+                    <Group key={spec.id} justify="space-between">
+                      <Text size="sm" c="dimmed">
+                        {spec.name}
+                      </Text>
+                      <Text size="sm">{spec.value}</Text>
+                    </Group>
+                  ))}
+                </Stack>
               )}
 
               {/* BOTÃO ADICIONAR */}

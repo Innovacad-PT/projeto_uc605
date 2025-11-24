@@ -1,6 +1,8 @@
-﻿namespace store_api.Dtos.Discounts;
+﻿using store_api.Entities;
 
-public class DiscountAddDto
+namespace store_api.Dtos.Discounts;
+
+public class DiscountAddDto : IBaseDto<DiscountEntity>
 {
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
@@ -15,5 +17,10 @@ public class DiscountAddDto
         Percentage = percentage;
         StartDate = startDate;
         EndDate = endDate;
+    }
+
+    public DiscountEntity ToEntity()
+    {
+        return new(Id, ProductId, Percentage, StartDate, EndDate);
     }
 }

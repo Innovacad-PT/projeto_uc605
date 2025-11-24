@@ -1,9 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ProductPage from "@components/products/product/index";
-import axios from "axios";
 import type { Product } from "@_types/product";
-import { PRODUCTS_GET_BY_ID_URL } from "@utils/api";
+import { productService } from "@services/products";
 
 export default function ProductPageWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -12,9 +11,9 @@ export default function ProductPageWrapper() {
   useEffect(() => {
     if (!id) return;
 
-    axios
-      .get(`${PRODUCTS_GET_BY_ID_URL}${id}`)
-      .then((res) => setProduct(res.data.value))
+    productService
+      .getById(id)
+      .then((product) => setProduct(product))
       .catch((err) => console.error(err));
   }, [id]);
 

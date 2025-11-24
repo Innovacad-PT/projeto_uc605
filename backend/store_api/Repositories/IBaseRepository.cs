@@ -5,32 +5,36 @@ namespace store_api.Controllers;
 
 public interface IBaseRepository<T> where T: class
 {
-    public Result<T> Add(T dto);
+    public T? Add(T dto);
 
-    public virtual Result<T> Update(Guid id, IBaseDto<T> dto)
+    public virtual T? Update(Guid id, IBaseDto<T> dto)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Result<T> Update(int id, IBaseDto<T> dto)
+    public virtual T? Update(int id, IBaseDto<T> dto)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Result<T> Delete(Guid id)
+    public virtual T? Delete(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Result<T> Delete(int id)
+    public virtual T? Delete(int id)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Result<T> GetById(int id)
+    public virtual T? GetById(int id)
     {
         throw new NotImplementedException();
     }
-    public Result<T> GetById(Guid id);
-    public Result<IEnumerable<T>> GetAll();
+
+    public virtual T? GetById(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+    public IEnumerable<T>? GetAll();
 }

@@ -22,7 +22,7 @@ export default function AppFooter() {
           {/* COLUNA 1 */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Text fw={700} size="lg">
-              TechStore
+              CAPITEK
             </Text>
             <Text c="dimmed" mt="xs">
               Tecnologia ao melhor preço. Hardware, gaming, gadgets e muito
@@ -58,7 +58,7 @@ export default function AppFooter() {
         </Grid>
 
         <Text ta="center" c="dimmed" mt={40} size="sm">
-          © {new Date().getFullYear()} TechStore. Todos os direitos reservados.
+          © {new Date().getFullYear()} CAPITEK. Todos os direitos reservados.
         </Text>
       </Container>
     </Box>

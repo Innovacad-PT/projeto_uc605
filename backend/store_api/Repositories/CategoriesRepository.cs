@@ -1,6 +1,8 @@
 ﻿using store_api.Controllers;
 using store_api.Dtos;
+using store_api.Dtos.Categories;
 using store_api.Entities;
+using store_api.Exceptions;
 using store_api.Utils;
 
 namespace store_api.Repositories;
@@ -10,45 +12,70 @@ public class CategoriesRepository : IBaseRepository<CategoryEntity>
     
     private readonly static List<CategoryEntity> _categories = new();
     
-    public Result<CategoryEntity> Add(CategoryEntity entity)
+    public CategoryEntity? Add(CategoryEntity entity)
     {
+        if (_categories.Any(c => c.Id == entity.Id))
+        {
+            throw new SameIdException("Category with the same id already exists.");
+        }
+
+        if (_categories.Any(c => c.Name == entity.Name))
+        {
+            throw new SameNameException("Category with the same name already exists.");
+        }
+        
         _categories.Add(entity);
         
-        return new Success<CategoryEntity>(ResultCode.CATEGORY_CREATED, "Category created", entity);
+        return entity;
     }
 
-    public Result<CategoryEntity> Update(Guid id, IBaseDto<CategoryEntity> entity)
+    public CategoryEntity Update(Guid id, IBaseDto<CategoryEntity> dto)
     {
-        throw new NotImplementedException();
-    }
-
-    public Result<CategoryEntity> Delete(Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Result<CategoryEntity> GetById(Guid id)
-    {
-        if (!_categories.Any(x => x.Id == id))
+        CategoryUpdateDto updateDto = dto as CategoryUpdateDto;
+        if(updateDto == null)
         {
-            return new Failure<CategoryEntity>(ResultCode.CATEGORY_NOT_FOUND, $"Category with id ({id}) not found");
+            throw new InvalidDtoType("Invalid data transfer object type.");
         }
-
-        return new Success<CategoryEntity>(ResultCode.CATEGORY_FOUND, "Category found", _categories.First(x => x.Id == id));
-    }
-
-    public Result<IEnumerable<CategoryEntity>> GetAll()
-    {
-        if (!_categories.Any())
+        
+        if (!_categories.Any(c => c.Id == id))
         {
-            return new Failure<IEnumerable<CategoryEntity>>(ResultCode.CATEGORY_NOT_FOUND, $"Categories not found");
+            return null;
         }
-
-        return new Success<IEnumerable<CategoryEntity>>(ResultCode.CATEGORY_FOUND, "Category found", _categories);
+        
+        CategoryEntity category = _categories.First(c => c.Id == id);
+        category.Name = updateDto.Name ?? category.Name;
+        
+        return category;
     }
 
-    public Result<CategoryEntity> GetByName(string name)
+    public CategoryEntity Delete(Guid id)
     {
-        throw new NotImplementedException();
+        if (!_categories.Any(c => c.Id == id))
+        {
+            return null;
+        }
+        
+        CategoryEntity category = _categories.First(c => c.Id == id);
+        _categories.Remove(category);
+        return category;
+    }
+
+    public CategoryEntity? GetById(Guid id)
+    {
+        CategoryEntity? category = _categories.FirstOrDefault(c => c.Id == id);
+
+        return category;
+    }
+
+    public IEnumerable<CategoryEntity>? GetAll()
+    {
+        return _categories;
+    }
+
+    public CategoryEntity? GetByName(string name)
+    {
+        CategoryEntity? category = _categories.FirstOrDefault(c => c.Name == name);
+        
+        return category;
     }
 }

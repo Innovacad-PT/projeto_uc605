@@ -2,31 +2,22 @@
 
 namespace store_api.Entities;
 
-public class UserEntity
+public class UserEntity(
+    Guid id,
+    string firstName,
+    string lastName,
+    string username,
+    string email,
+    string role,
+    DateTime createdAt, string passwordHash)
 {
-    public Guid Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public string Role { get; set; }
-    public DateTime CreatedAt { get; set; }
-
-    public UserEntity(Guid id, string firstName, string lastName, string username, string email)
-    {
-        Id = id;
-        FirstName = firstName;
-        LastName = lastName;
-        Username = username;
-        Email = email;
-    }   
-    
-    public void Update(UserUpdateDto user)
-    {
-        FirstName = user.FirstName ?? FirstName;
-        LastName = user.LastName ?? LastName;
-        Username = user.Username ?? Username;
-        Email = user.Email ?? Email;;
-    }
+    public Guid Id { get; set; } = id;
+    public string FirstName { get; set; } = firstName;
+    public string LastName { get; set; } = lastName;
+    public string Username { get; set; } = username;
+    public string Email { get; set; } = email;
+    public string Role { get; set; } = role;
+    public DateTime CreatedAt { get; set; } = createdAt;
+    public string PasswordHash { get; set; } = passwordHash;
 
 }
