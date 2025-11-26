@@ -20,7 +20,6 @@ export function useProducts() {
         }
       })
       .catch((err) => {
-        console.error(err);
         setError('Erro ao carregar produtos');
       })
       .finally(() => setLoading(false));

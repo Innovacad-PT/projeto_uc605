@@ -23,7 +23,11 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
         {
             throw new Exception("Discount already exists for this product");
         }
-        
+
+        if (entity.Percentage < 0 || entity.Percentage > 100) throw new Exception("Percentage out of range");
+
+        Console.WriteLine($"Adding new discount: {entity}");
+
         _discounts.Add(entity);
         return entity;
     }
@@ -38,27 +42,25 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
             throw new InvalidDtoType("Invalid data transfer object type");
         }
         
-        if (!_discounts.Any((d) => d.Id == id))
-        {
-            return null;
-        }
+        if (_discounts.All(d => d.Id != id)) return null;
         
         DiscountEntity discount = _discounts.First((d) => d.Id == id);
-        
+
+        var percentage = updateDto.Percentage ?? discount.Percentage;
+        percentage = (percentage < 0 || percentage > 100) ? discount.Percentage : percentage;
+
         discount.ProductId = updateDto.ProductId ?? discount.ProductId;
-        discount.Percentage = updateDto.Percentage ?? discount.Percentage;
+        discount.Percentage = percentage;
         discount.EndDate = updateDto.EndDate ?? discount.EndDate;
         discount.StartDate = updateDto.StartDate ?? discount.StartDate;
-
+        
         return discount;
     }
 
     public DiscountEntity? Delete(Guid id)
     {
-        if (!_discounts.Any((d) => d.Id == id))
-        {
-            return null;
-        }
+        if (_discounts.All(d => d.Id != id)) return null;
+
         
         DiscountEntity discount = _discounts.First((d) => d.Id == id);
         _discounts.Remove(discount);
@@ -79,7 +81,11 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
 
     public DiscountEntity? GetActiveDiscount(Guid productId)
     {
-        DiscountEntity? discount = _discounts.FirstOrDefault(d => d.ProductId == productId && DateTime.Now.CompareTo(d.EndDate) == 1);
+        DiscountEntity? discount = _discounts.FirstOrDefault(d => 
+                d.ProductId == productId &&
+                d.StartDate <= DateTime.Now &&
+                DateTime.Now < d.EndDate
+        );
         
         return discount;
     }

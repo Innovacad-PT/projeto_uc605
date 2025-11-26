@@ -3,7 +3,7 @@ using store_api.Utils;
 
 namespace store_api.Dtos.Orders;
 
-public class OrderUpdateDto
+public class OrderUpdateDto : IBaseDto<OrderEntity>
 {
     public Decimal? Total { get; set; }
     public OrderStatus? Status { get; set; }

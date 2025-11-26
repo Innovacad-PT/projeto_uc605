@@ -9,11 +9,22 @@ namespace store_api.Repositories;
 public class ProductsRepository : IBaseRepository<ProductEntity>
 {
     
+    private readonly CategoriesRepository _categoriesRepository = new();
+    private readonly BrandsRepository _brandsRepository = new();
+    
     private readonly static List<ProductEntity> _products = new ([
        /* new(Guid.NewGuid(), "Pipocas Doces", [], "",3.99, "Pipocas doces com manteiga", ""),
         new(Guid.NewGuid(), "Pipocas Salgadas", [],"",3.99, "Pipocas doces com sal", ""),
         new(Guid.NewGuid(), "Pão Caseiro", [], "",3.99, "", ""),
         new(Guid.NewGuid(), "Salsichas Frankfurt",[],"", 3.99, "", ""),*/
+       new(Guid.Parse("7bd2718c-5e2c-48b0-8b99-04907b43e614"),
+       "Portatil i9",
+       new (Guid.Parse("40c9354a-1002-425d-a561-45895910ad86"), "Computador"),
+       new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo"),
+       [],
+       "",
+       169.99,
+       "")
     ]);
 
 
@@ -41,10 +52,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
             throw new InvalidDtoType("Invalid data transfer object type");
         }
         
-        if (!_products.Any(p => p.Id == id))
-        {
-            return null;
-        }
+        if (_products.All(p => p.Id != id)) return null;
         
         ProductEntity product = _products.First(p => p.Id == id);
         
@@ -53,6 +61,9 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
         product.Description = updateDto.Description ?? product.Description;
         product.TechnicalSpecs = updateDto.TechnicalSpecs ?? product.TechnicalSpecs;
         product.Reviews = updateDto.Reviews ?? product.Reviews;
+        product.Stock = updateDto.Stock ?? product.Stock;
+        product.Category = _categoriesRepository.GetById(updateDto.CategoryId ?? product.Category.Id) ?? product.Category;
+        product.Brand = _brandsRepository.GetById(updateDto.BrandId ?? product.Brand.Id) ?? product.Brand;
         
         if (updateDto.ImageFile != null)
         {
@@ -70,10 +81,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public ProductEntity? Delete(Guid id)
     {
-        if (!_products.Any(p => p.Id == id))
-        {
-            return null;
-        }
+        if (_products.All(p => p.Id != id)) return null;
         
         ProductEntity product = _products.First(p => p.Id == id);
         _products.Remove(product);
@@ -109,10 +117,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public ProductEntity? AddSpecs(Guid productId, List<TechnicalSpecsEntity> specs)
     {
-        if (!_products.Any(p => p.Id == productId))
-        {
-            return null;
-        }
+        if (_products.All(p => p.Id != productId)) return null;
         
         ProductEntity product = _products.First(p => p.Id == productId);
         product.TechnicalSpecs.AddRange(specs);
@@ -121,10 +126,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public ProductEntity? IncreaseStock(Guid productId, int amount)
     {
-        if (!_products.Any(p => p.Id == productId))
-        {
-            return null;
-        }
+        if (_products.All(p => p.Id != productId)) return null;
 
         ProductEntity product = _products.First(p => p.Id == productId);
 
@@ -135,10 +137,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public ProductEntity? DecreaseStock(Guid productId, int amount)
     {
-        if (!_products.Any(p => p.Id == productId))
-        {
-            return null;
-        }
+        if (_products.All(p => p.Id != productId)) return null;
 
         ProductEntity product = _products.First(p => p.Id == productId);
 

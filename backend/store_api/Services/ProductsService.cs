@@ -67,13 +67,18 @@ public class ProductsService
         
     }
 
-    public async Task<Result<ProductEntity?>> UpdateProduct(Guid id, ProductUpdateDto productDto) {
+    public async Task<Result<ProductEntity?>> UpdateProduct(Guid id, ProductUpdateDto productDto){
         ProductEntity? productEntity = _productsRepository.GetById(id);
+
+        if (productEntity == null)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                "Product with the specified id does not exist");
+        }
 
         if (productDto.ImageFile != null)
         {
             string folder = Path.Combine("wwwroot", "images");
-
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -81,29 +86,34 @@ public class ProductsService
 
             if (!string.IsNullOrEmpty(productEntity.ImageUrl))
             {
-                string oldFilePath = Path.Combine(folder, productEntity.ImageUrl);
+                string oldFileName = productEntity.ImageUrl.Replace("/images/", "");
+                string oldFilePath = Path.Combine(folder, oldFileName);
+                
                 if (File.Exists(oldFilePath))
                 {
                     File.Delete(oldFilePath);
                 }
-
-                string fileName = $"{productEntity.Id}{Path.GetExtension(productEntity.ImageUrl)}";
-
-                using (var stream = new FileStream(oldFilePath, FileMode.Create))
-                {
-                    await productDto.ImageFile.CopyToAsync(stream);
-                }
-
-                productEntity.ImageUrl = $"/images/{fileName}";
             }
-        }
 
+            string fileExtension = Path.GetExtension(productDto.ImageFile.FileName);
+            string newFileName = $"{productEntity.Id}{fileExtension}";
+
+            string newFilePath = Path.Combine(folder, newFileName);
+
+            using (var stream = new FileStream(newFilePath, FileMode.Create))
+            {
+                await productDto.ImageFile.CopyToAsync(stream);
+            }
+
+            productEntity.ImageUrl = $"/images/{newFileName}";
+        }
+        
         ProductEntity? product = _productsRepository.Update(id, productDto);
 
         if (product == null)
         {
             return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_UPDATED,
-                "Product with the specified id does not exist");
+                "Product update failed after processing");
         }
 
         return new Success<ProductEntity?>(ResultCode.PRODUCT_UPDATED, "Product updated successfully", product);
@@ -169,7 +179,7 @@ public class ProductsService
 
         if (product is Failure<DiscountEntity?>)
         {
-            return new Failure<DiscountEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
+            return new Success<DiscountEntity?>(ResultCode.DISCOUNT_NOT_FOUND, "This product has no discount.", null);
         }
 
         return new Success<DiscountEntity?>(ResultCode.PRODUCT_DISCOUNT_FOUND, "Discount found successfully", (product as Success<DiscountEntity>).Value);

@@ -81,9 +81,6 @@ export const productService = {
 
   /** Update an existing product */
   update: async (id: string, payload: Partial<Product>): Promise<Product> => {
-    //payload.price = Number(payload.price?.replaceAll(".", ",").replaceAll("€", "")).toString();
-    
-    console.log(payload);
     return apiClient.put<Product>(`/products/${id}`, payload);
   },
 

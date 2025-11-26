@@ -58,5 +58,14 @@
         DISCOUNT_FOUND,
         DISCOUNT_UPDATED,
         DISCOUNT_NOT_UPDATED,
-        
+
+        // ORDERS
+        ORDER_CREATED,
+        ORDER_NOT_CREATED,
+        ORDER_DELETED,
+        ORDER_NOT_DELETED,
+        ORDER_UPDATED,
+        ORDER_NOT_UPDATED,
+        ORDER_FOUND,
+        ORDER_NOT_FOUND,
     }

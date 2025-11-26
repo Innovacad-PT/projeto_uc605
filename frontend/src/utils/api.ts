@@ -90,7 +90,6 @@ async function request<T>(
     const responseText = await response.text();
     apiResponse = JSON.parse(responseText) as ApiResponse<T>;
   } catch (parseError) {
-    console.error('Failed to parse API response:', parseError);
     throw new Error(`Invalid JSON response from API. Response was not in expected format.`);
   }
   

@@ -2,12 +2,12 @@
 
 namespace store_api.Entities;
 
-public class OrderEntity
+public class OrderEntity(Guid id, Guid userId, DateTime createdAt, Decimal total, OrderStatus status, List<OrderItemEntity> orderItems)
 {
-    public int Id { get; set; }
-    public Guid UserId { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Decimal Total { get; set; }
-    public OrderStatus Status { get; set; }
-    public List<OrderItemEntity> OrderItems { get; set; }
+    public Guid Id { get; set; } = id;
+    public Guid UserId { get; set; } = userId;
+    public DateTime CreatedAt { get; set; } = createdAt;
+    public Decimal Total { get; set; } = total;
+    public OrderStatus Status { get; set; } = status;
+    public List<OrderItemEntity> OrderItems { get; set; } = orderItems;
 }

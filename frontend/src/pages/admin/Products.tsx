@@ -63,7 +63,6 @@ export const AdminProducts = () => {
       setBrands(brandsData);
       setCategories(categoriesData);
     } catch (error) {
-      console.error(error);
       notifications.show({
         title: "Error",
         message: "Failed to load data",
@@ -141,7 +140,6 @@ export const AdminProducts = () => {
       setModalOpen(false);
       loadData();
     } catch (error) {
-      console.error(error);
       notifications.show({
         title: "Error",
         message: "Failed to save product",
@@ -162,7 +160,6 @@ export const AdminProducts = () => {
       });
       loadData();
     } catch (error) {
-      console.error(error);
       notifications.show({
         title: "Error",
         message: "Failed to delete product",

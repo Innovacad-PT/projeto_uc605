@@ -26,12 +26,12 @@ namespace redis_api.Controllers
             return Ok(value.ToString());
         }
 
-        [HttpPost("set/{key}/{value}")]
+        [HttpPost("set/{key}")]
         [SwaggerOperation(
             summary: "Sets a value by key",
             description: "Retrieves the value associated with the specified key from Redis."
         )]
-        public IActionResult Set(string key, string value) {
+        public IActionResult Set(string key, [FromQuery] string value) {
             if (_redis.StringSet(key, value, TimeSpan.FromMinutes(1))) return Ok();
 
             return StatusCode(500, new {message = $"Something went wrong while trying to set the key '{key}' with the value '{value}'"});

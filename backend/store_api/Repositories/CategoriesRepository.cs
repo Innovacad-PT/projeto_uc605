@@ -10,7 +10,9 @@ namespace store_api.Repositories;
 public class CategoriesRepository : IBaseRepository<CategoryEntity>
 {
     
-    private readonly static List<CategoryEntity> _categories = new();
+    private readonly static List<CategoryEntity> _categories = [
+        new (Guid.Parse("40c9354a-1002-425d-a561-45895910ad86"), "Computador")
+    ];
     
     public CategoryEntity? Add(CategoryEntity entity)
     {

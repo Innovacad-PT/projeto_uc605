@@ -27,7 +27,7 @@ public class ProductsController : Controller
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById([FromQuery] Guid id)
+    public async Task<IActionResult> GetProductById([FromRoute] Guid id)
     {
         Result<ProductEntity?> product = _productsService.GetProductById(id);
 
@@ -55,7 +55,8 @@ public class ProductsController : Controller
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto dto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromForm] ProductUpdateDto dto)
     {
         Result<ProductEntity?> product = await _productsService.UpdateProduct(id, dto);
 
@@ -68,7 +69,7 @@ public class ProductsController : Controller
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct([FromQuery] Guid id)
+    public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
     {
         Result<ProductEntity?> product = _productsService.DeleteProduct(id);
 
@@ -94,7 +95,7 @@ public class ProductsController : Controller
     }
 
     [HttpGet("{id}/discount")]
-    public async Task<IActionResult> GetDiscount([FromQuery] Guid id)
+    public async Task<IActionResult> GetDiscount([FromRoute] Guid id)
     {
         Result<DiscountEntity?> discount = _productsService.GetActiveDiscount(id);
 
@@ -107,7 +108,7 @@ public class ProductsController : Controller
     }
 
     [HttpPatch("{id}/increase")]
-    public IActionResult IncreaseProduct([FromQuery] Guid id, [FromBody] int increaseAmount)
+    public IActionResult IncreaseProduct([FromRoute] Guid id, [FromBody] int increaseAmount)
     {
         Result<ProductEntity?> product = _productsService.IncreaseStock(id, increaseAmount);
 
@@ -120,7 +121,7 @@ public class ProductsController : Controller
     }
     
     [HttpPatch("{id}/decrease")]
-    public IActionResult DecreaseProduct([FromQuery] Guid id, [FromBody] int increaseAmount)
+    public IActionResult DecreaseProduct([FromRoute] Guid id, [FromBody] int increaseAmount)
     {
         Result<ProductEntity?> product = _productsService.DecreaseStock(id, increaseAmount);
 
@@ -133,7 +134,7 @@ public class ProductsController : Controller
     }
 
     [HttpPut("{id}/technicalSpecs")]
-    public IActionResult AddTechnicalSpecs(Guid id, List<TechnicalSpecsEntity> list)
+    public IActionResult AddTechnicalSpecs([FromRoute] Guid id, List<TechnicalSpecsEntity> list)
     {
         Result<ProductEntity?> product = _productsService.AddTechnicalSpecs(id, list);
 
