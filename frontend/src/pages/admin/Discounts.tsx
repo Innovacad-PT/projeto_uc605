@@ -20,6 +20,8 @@ import { productService } from "@services/products";
 import type { Discount } from "@_types/discount";
 import type { Product } from "@_types/product";
 import { notifications } from "@mantine/notifications";
+import { LogType } from "@_types/debug";
+import { logger } from "@utils/debug";
 
 export const AdminDiscounts = () => {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -88,6 +90,8 @@ export const AdminDiscounts = () => {
         endDate: new Date(formData.endDate).toISOString(),
       };
 
+      logger(LogType.INFO, "Payload Discount", payload);
+
       if (editingDiscount) {
         await discountService.update(editingDiscount.id, payload);
         notifications.show({
@@ -109,6 +113,7 @@ export const AdminDiscounts = () => {
       setModalOpen(false);
       loadData();
     } catch (error) {
+      logger(LogType.ERROR, "Failed to save discount", error);
       notifications.show({
         title: "Error",
         message: "Failed to save discount",
@@ -220,9 +225,9 @@ export const AdminDiscounts = () => {
             label="Start Date"
             type="datetime-local"
             value={formData.startDate}
-            onChange={(e) =>
-              setFormData({ ...formData, startDate: e.target.value })
-            }
+            onChange={(e) => {
+              setFormData({ ...formData, startDate: e.target.value });
+            }}
             required
           />
           <TextInput

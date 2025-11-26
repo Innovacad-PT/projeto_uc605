@@ -12,6 +12,7 @@ import {
   Stack,
   ActionIcon,
   Select,
+  FileInput,
 } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { productService } from "@services/products";
@@ -24,6 +25,7 @@ import { notifications } from "@mantine/notifications";
 import { v4 as uuidv4 } from "uuid";
 
 const formatPriceForApi = (price: string | number): string => {
+  price.toString().replace("€", "");
   return price.toString().replace(/\./g, ',');
 };
 
@@ -34,6 +36,7 @@ export const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -42,6 +45,7 @@ export const AdminProducts = () => {
     stock: 0,
     brandId: "",
     categoryId: "",
+    imageUrl: "null | string"
   });
 
   useEffect(() => {
@@ -79,7 +83,9 @@ export const AdminProducts = () => {
       stock: 0,
       brandId: "",
       categoryId: "",
+      imageUrl: ""
     });
+    setImageFile(null);
     setModalOpen(true);
   };
 
@@ -92,14 +98,20 @@ export const AdminProducts = () => {
       stock: product.stock || 0,
       brandId: product.brand?.id || "",
       categoryId: product.category?.id || "",
+      imageUrl: product.imageUrl || ""
     });
+    setImageFile(null); // Reset file input when editing
     setModalOpen(true);
   };
 
   const handleSubmit = async () => {
     try {
       if (editingProduct) {
-        await productService.update(editingProduct.id, formData);
+        const payload: any = { ...formData };
+        if (imageFile) {
+          payload.imageUrl = imageFile;
+        }
+        await productService.update(editingProduct.id, payload);
         notifications.show({
           title: "Success",
           message: "Product updated successfully",
@@ -113,6 +125,11 @@ export const AdminProducts = () => {
         formDataObj.append("Details", formData.description);
         formDataObj.append("BrandId", formData.brandId);
         formDataObj.append("CategoryId", formData.categoryId);
+        
+        // Add image file if provided
+        if (imageFile) {
+          formDataObj.append("Image", imageFile);
+        }
         
         await productService.create(formDataObj);
         notifications.show({
@@ -222,10 +239,17 @@ export const AdminProducts = () => {
           />
           <TextInput
             label="Description"
-            value={formData.description}
+            value={formData.description}  
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
+          />
+          <FileInput
+            label="Product Image"
+            placeholder="Choose image file"
+            value={imageFile}
+            onChange={(file) => setImageFile(file)}
+            accept="image/*"
           />
           <NumberInput
             label="Price"

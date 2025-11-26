@@ -40,7 +40,7 @@ export const RegisterPage = () => {
         message: "Account created successfully",
         color: "green",
       });
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       notifications.show({
         title: "Error",

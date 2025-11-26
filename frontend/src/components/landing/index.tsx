@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   AppShell,
   Container,
@@ -17,12 +16,11 @@ import Newsletter from "@components/newsletter";
 import Contact from "@components/contact";
 
 import { useProducts } from "../../hooks/useProducts";
-import type { Product } from "@_types/product";
+import { useCart } from "@services/cart";
 
 export default function Landing() {
-  const [cart, setCart] = useState(0);
-  
-  const { products, loading, error } = useProducts();
+  const { products, loading } = useProducts();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   
   const handleProductClick = (id: string) => navigate("/product/" + id);
@@ -47,7 +45,7 @@ export default function Landing() {
               products={products}
               loading={loading}
               onProductClick={handleProductClick}
-              onAddToCart={(p: Product) => setCart(cart + 1)}
+              onAddToCart={addToCart}
             />
 
             <Benefits />

@@ -31,6 +31,8 @@ async function request<T>(
   // Build the URL
   let url: string;
 
+
+
   const urlObj = new URL(BASE_URL + endpoint);
   if (queryParams) {
     Object.entries(queryParams).forEach(([key, value]) => {
@@ -41,18 +43,35 @@ async function request<T>(
   }
   url = urlObj.toString();
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-  };
+  const headers: HeadersInit = {};
+  
   const token = getToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  let requestBody: BodyInit | undefined;
+
+  // Check if we need to send as multipart/form-data
+  // User requested: if method is PUT and imageUrl exists in body
+  if (method === "PUT" && body && typeof body === 'object' && "imageUrl" in body) {
+    const formData = new FormData();
+    Object.entries(body).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value as string | Blob);
+      }
+    });
+    requestBody = formData;
+    // Content-Type header is NOT set for FormData to allow browser to set boundary
+  } else {
+    headers["Content-Type"] = "application/json";
+    requestBody = body ? JSON.stringify(body) : undefined;
+  }
+
   const response = await fetch(url, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: requestBody,
   });
 
   if (!response.ok) {

@@ -15,6 +15,7 @@ export interface Product {
   reviews?: Review[];
   createdAt?: string;
   updatedAt?: string;
+  discount?: Discount;
 }
 
 export interface Category {
@@ -40,4 +41,11 @@ export interface Review {
   rating: number;
   comment?: string;
   createdAt: string;
+}
+
+export interface Discount {
+  id: string;
+  percentage: number;
+  startTime: Date;
+  endTime: Date;
 }

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
@@ -6,11 +6,11 @@ import {
   Text,
   Button,
   Skeleton,
-  ActionIcon,
-  Group,
+  ActionIcon
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import type { Product } from "@_types/product";
+import { PriceDisplay } from "../../common/PriceDisplay";
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -26,10 +26,7 @@ export default function FeaturedProducts({
   loading = false,
 }: FeaturedProductsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const cardWidth = 240; // width + gap
-  const visibleCards = 3; // default visible cards for calculation
+  const cardWidth = 240;
 
   // Auto-scroll
   const scroll = useCallback((direction: "left" | "right") => {
@@ -119,17 +116,15 @@ export default function FeaturedProducts({
             onDragStart={(e) => e.preventDefault()}
           >
             <Image
-              src={p.imageUrl || ""}
+              src={p.imageUrl || null}
               height={140}
               radius="md"
               alt={p.name}
             />
             <Text mt="sm" fw={500} lineClamp={1}>
-              {p.name}
+              {p.name} {p.discount != undefined? <span style={{ color: "red", fontSize: "0.7em" }}>(-{p.discount.percentage}%)</span> : ""}
             </Text>
-            <Text fw={700} c="indigo">
-              €{p.price}
-            </Text>
+            <PriceDisplay price={p.price} discount={p.discount} fw={700} c="indigo" />
             <Button
               fullWidth
               mt="md"

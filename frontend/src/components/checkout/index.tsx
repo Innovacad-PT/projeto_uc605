@@ -17,7 +17,7 @@ import { useCart } from "@services/cart";
 export default function CheckoutPage() {
   const { items, clearCart, updateQuantity, removeFromCart } = useCart();
   const total = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + Number(item.product.price) * item.quantity,
     0
   );
 
@@ -33,19 +33,26 @@ export default function CheckoutPage() {
         <Group align="flex-start" gap="lg">
           <Stack style={{ flex: 1 }}>
             {items.map((item) => (
-              <Card key={item.product.id} shadow="sm" p="md" radius="md" withBorder>
+              <Card
+                key={item.product.id}
+                shadow="sm"
+                p="md"
+                radius="md"
+                withBorder
+              >
                 <Group>
                   <Image
-                    src={item.product.imageUrl || ""}
+                    src={item.product.imageUrl || null}
                     width={80}
                     height={80}
+                    alt={item.product.name}
                     radius="md"
                   />
-                  
+
                   <Stack gap={4} style={{ flex: 1 }}>
                     <Text fw={600}>{item.product.name}</Text>
                     <Text size="sm" c="dimmed">
-                      €{item.product.price.toFixed(2)} / un
+                      €{Number(item.product.price).toFixed(2)} / un
                     </Text>
                   </Stack>
 
@@ -60,9 +67,9 @@ export default function CheckoutPage() {
                       w={80}
                       allowNegative={false}
                     />
-                    
+
                     <Text fw={700} w={80} ta="right">
-                      €{(item.product.price * item.quantity).toFixed(2)}
+                      €{(Number(item.product.price) * item.quantity).toFixed(2)}
                     </Text>
 
                     <ActionIcon
@@ -80,8 +87,10 @@ export default function CheckoutPage() {
 
           <Card shadow="sm" p="lg" radius="md" withBorder w={350}>
             <Stack gap="md">
-              <Text fw={700} size="lg">Resumo</Text>
-              
+              <Text fw={700} size="lg">
+                Resumo
+              </Text>
+
               <Group justify="space-between">
                 <Text c="dimmed">Subtotal</Text>
                 <Text>€{total.toFixed(2)}</Text>
@@ -95,8 +104,12 @@ export default function CheckoutPage() {
               <Divider />
 
               <Group justify="space-between">
-                <Text fw={700} size="lg">Total</Text>
-                <Text fw={700} size="lg" c="indigo">€{total.toFixed(2)}</Text>
+                <Text fw={700} size="lg">
+                  Total
+                </Text>
+                <Text fw={700} size="lg" c="indigo">
+                  €{total.toFixed(2)}
+                </Text>
               </Group>
 
               <Button fullWidth size="md" onClick={clearCart} mt="sm">

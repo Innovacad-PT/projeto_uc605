@@ -2,6 +2,8 @@
 
 import type UserType from "@_types/user";
 import { apiClient } from "@utils/api";
+import { logger } from "@utils/debug";
+import { LogType } from "@_types/debug";
 
 export interface AuthResponse {
   token: string;
@@ -13,8 +15,13 @@ export interface AuthResponse {
  * Stores the JWT token in localStorage.
  */
 export async function login(email: string, password: string): Promise<void> {
-  const data = await apiClient.post<AuthResponse>("/login", { identifier: email, passwordHash: password, type: "EMAIL" });
-  console.log(data);
+  const data = await apiClient.post<AuthResponse>("/login", {
+    identifier: email,
+    passwordHash: password,
+    type: "EMAIL",
+  });
+  logger(LogType.INFO, "Login Request Data", data);
+
   localStorage.setItem("accessToken", data.token);
   if (data.user?.role) {
     localStorage.setItem("userRole", data.user?.role);
@@ -38,7 +45,7 @@ export async function register(user: {
     createdAt: new Date().toISOString(),
   };
   const data = await apiClient.post<AuthResponse>("/register", payload);
-  localStorage.setItem("accessToken", data.token);
+
   if (data.user?.role) {
     localStorage.setItem("userRole", data.user?.role);
   }

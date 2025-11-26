@@ -6,11 +6,11 @@ import {
   ActionIcon,
   Drawer,
   Stack,
-  AppShell,
+  Box,
   Indicator,
 } from "@mantine/core";
 import { useCart } from "@services/cart";
-import { IconShoppingCart, IconUser } from "@tabler/icons-react";
+import { IconShoppingCart, IconUser, IconMenu } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,13 +22,14 @@ export default function AppHeader() {
 
   const navItems = [
     { label: "Início", path: "/" },
-    { label: "Produtos", path: "/produtos" },
-    { label: "Contactos", path: "/contactos" },
+    { label: "Produtos", path: "/products" },
+    { label: "Contactos", path: "/contacts" },
   ];
 
   return (
     <>
-      <AppShell.Header
+      <Box
+        component="header"
         px="md"
         style={{
           borderBottom: "1px solid #eee",
@@ -72,7 +73,7 @@ export default function AppHeader() {
             style={{
               gap: 24,
               justifyContent: "center",
-              flex: 2,
+              flex: 20,
             }}
           >
             {navItems.map((item) => (
@@ -86,7 +87,7 @@ export default function AppHeader() {
             ))}
           </Group>
           {/* BOTÕES DIREITA NO DESKTOP */}
-          <Group className="desktop-actions" style={{ gap: 8 }}>
+          <Group className="actions" style={{ gap: 8 }}>
             <ActionIcon variant="light" size="lg">
               <IconUser size={20} />
             </ActionIcon>
@@ -96,6 +97,7 @@ export default function AppHeader() {
               offset={4}
               disabled={items.length === 0}
               color="red"
+              style={{ marginRight: "8px" }}
             >
               <ActionIcon
                 variant="light"
@@ -106,6 +108,16 @@ export default function AppHeader() {
               </ActionIcon>
             </Indicator>
           </Group>
+          {/* MOBILE BURGER MENU */}
+          <ActionIcon
+            className="mobile-menu"
+            variant="light"
+            size="lg"
+            onClick={() => setDrawerOpened(true)}
+            style={{ marginRight: 8 }}
+          >
+            <IconMenu size={20} />
+          </ActionIcon>
         </Container>
 
         {/* CSS RESPONSIVO */}
@@ -130,7 +142,7 @@ export default function AppHeader() {
       }
     `}
         </style>
-      </AppShell.Header>
+      </Box>
 
       {/* DRAWER MOBILE */}
       <Drawer

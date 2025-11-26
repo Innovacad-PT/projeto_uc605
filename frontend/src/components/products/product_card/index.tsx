@@ -1,6 +1,8 @@
 import { Card, Image, Text, Button } from "@mantine/core";
-import { BASE_URL } from "@utils/api";
 import type { Product } from "@_types/product";
+import { PriceDisplay } from "../../common/PriceDisplay";
+import { LogType } from "@_types/debug";
+import { logger } from "@utils/debug";
 
 export default function ProductCard({
   product,
@@ -11,6 +13,8 @@ export default function ProductCard({
   onClick: () => void;
   onAddToCart: () => void;
 }) {
+  logger(LogType.INFO, "Product Image Url", product.imageUrl);
+
   return (
     <Card
       shadow="sm"
@@ -20,19 +24,29 @@ export default function ProductCard({
       onClick={onClick}
     >
       <Image
-        src={BASE_URL + product.imageUrl}
+        src={product.imageUrl || null}
         h={150}
         radius="md"
         alt={product.name}
       />
 
       <Text mt="sm" fw={600} size="lg">
-        {product.name}
+        {product.name}{" "}
+        {product.discount ? (
+          <span style={{ color: "red", fontSize: "0.6em" }}>
+            ({product.discount.percentage}%)
+          </span>
+        ) : (
+          ""
+        )}
       </Text>
 
-      <Text fw={700} c="indigo" size="xl">
-        €{product.price}
-      </Text>
+      <PriceDisplay
+        price={product.price}
+        discount={product.discount}
+        fw={700}
+        size="xl"
+      />
 
       <Button
         fullWidth

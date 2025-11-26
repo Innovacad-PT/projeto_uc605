@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Product } from "@_types/product";
+import { LogType } from "@_types/debug";
+import { logger } from "@utils/debug";
 
 export interface CartItem {
   product: Product;
@@ -31,6 +33,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   function addToCart(product: Product) {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
+      logger(LogType.INFO, "addToCart", product);
       if (existing) {
         return prev.map((item) =>
           item.product.id === product.id

@@ -16,6 +16,7 @@
     "@mantine/notifications": "^8.3.7",
     "@tabler/icons": "^3.35.0",
     "@tabler/icons-react": "^3.35.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
     "axios": "^1.13.2",
     "guid": "^0.0.12",
     "react": "^19.2.0",

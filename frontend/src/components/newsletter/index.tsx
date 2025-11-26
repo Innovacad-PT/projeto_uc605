@@ -1,19 +1,29 @@
-import { TextInput, Button, Group, Box, Title, Text, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { IconAt } from '@tabler/icons-react';
+import {
+  TextInput,
+  Button,
+  Group,
+  Box,
+  Title,
+  Text,
+  Stack,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { IconAt } from "@tabler/icons-react";
+import { logger } from "@utils/debug";
+import { LogType } from "@_types/debug";
 
 export default function Newsletter() {
   const form = useForm({
     initialValues: {
-      email: '',
+      email: "",
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Email inválido'),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Email inválido"),
     },
   });
 
   const handleSubmit = (values: typeof form.values) => {
-    console.log('Newsletter subscription:', values);
+    logger(LogType.INFO, "Newsletter subscription:", values);
     form.reset();
   };
 
@@ -22,15 +32,19 @@ export default function Newsletter() {
       <Stack align="center" gap="md">
         <Title order={2}>Subscreve a nossa Newsletter</Title>
         <Text c="dimmed" ta="center" maw={500}>
-          Recebe as últimas novidades, promoções exclusivas e atualizações diretamente na tua caixa de entrada.
+          Recebe as últimas novidades, promoções exclusivas e atualizações
+          diretamente na tua caixa de entrada.
         </Text>
 
-        <form onSubmit={form.onSubmit(handleSubmit)} style={{ width: '100%', maxWidth: 400 }}>
+        <form
+          onSubmit={form.onSubmit(handleSubmit)}
+          style={{ width: "100%", maxWidth: 400 }}
+        >
           <Group align="flex-start">
             <TextInput
               placeholder="O teu email"
               leftSection={<IconAt size={16} />}
-              {...form.getInputProps('email')}
+              {...form.getInputProps("email")}
               style={{ flex: 1 }}
             />
             <Button type="submit">Subscrever</Button>

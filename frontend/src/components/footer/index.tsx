@@ -4,8 +4,10 @@ import {
   IconBrandInstagram,
   IconBrandTwitter,
 } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AppFooter() {
+  const nav = useNavigate();
   return (
     <Box
       component="footer"
@@ -35,12 +37,12 @@ export default function AppFooter() {
             <Text fw={700} size="lg">
               Links úteis
             </Text>
-            <Text mt="xs" style={{ cursor: "pointer" }}>
+            <Text mt="xs" style={{ cursor: "pointer" }} onClick={() => nav("/")}>
               Início
             </Text>
-            <Text style={{ cursor: "pointer" }}>Produtos</Text>
+            <Text style={{ cursor: "pointer" }} onClick={() => nav("/products")}>Produtos</Text>
             <Text style={{ cursor: "pointer" }}>Sobre Nós</Text>
-            <Text style={{ cursor: "pointer" }}>Contactos</Text>
+            <Text style={{ cursor: "pointer" }} onClick={() => nav("/contacts")}>Contactos</Text>
           </Grid.Col>
 
           {/* COLUNA 3 */}
