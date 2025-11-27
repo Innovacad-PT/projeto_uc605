@@ -10,6 +10,7 @@ export default function Index() {
         <Link href="/products">Products</Link>
         <Link href="/products/1">Product ID: 1</Link>
         <Link href="/products/50">Product ID: 50</Link>
+        <Link href="/login">Login</Link>
       </View>
     </SafeAreaView>
   );
