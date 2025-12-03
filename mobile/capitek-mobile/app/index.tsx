@@ -1,17 +1,5 @@
-import { View } from "tamagui";
-import { Link } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return (
-    <SafeAreaView>
-      <View>
-        <Link href="/splash">Splash</Link>
-        <Link href="/products">Products</Link>
-        <Link href="/products/1">Product ID: 1</Link>
-        <Link href="/products/50">Product ID: 50</Link>
-        <Link href="/login">Login</Link>
-      </View>
-    </SafeAreaView>
-  );
+  return <Redirect href="/splash" />;
 }

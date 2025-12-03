@@ -12,6 +12,7 @@ import {
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { AuthProvider } from "../context/use_auth_context";
+import Toast from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,6 +37,7 @@ export default function RootLayout() {
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
+      <Toast />
     </TamaguiProvider>
   );
 }

@@ -69,12 +69,12 @@ export default function Splash() {
   const router = useRouter();
 
   const handleSkipClick = () => {
-    router.replace("/");
+    router.replace("/login");
   };
 
   const handleNextClick = () => {
     if (page == 3) {
-      router.replace("/");
+      router.replace("/login");
       return;
     }
     setPage(page + 1);

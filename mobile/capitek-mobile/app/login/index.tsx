@@ -1,8 +1,13 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, View, Button } from "tamagui";
-import { StyleSheet, TextInput } from "react-native";
+import { Text, Button, YStack, XStack, Label } from "tamagui";
+import { TouchableOpacity } from "react-native";
+import Toast from "react-native-toast-message";
 import { Controller, useForm } from "react-hook-form";
 import { useAuth } from "../../context/use_auth_context";
+import { Link, useRouter } from "expo-router";
+import { useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import { Input } from "../../components/ui/Input";
 
 type FormData = {
   email: string;
@@ -10,11 +15,13 @@ type FormData = {
 };
 
 export default function Login() {
-  const { signIn } = useAuth();
+  const { signIn, token } = useAuth();
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
       email: "",
@@ -23,126 +30,185 @@ export default function Login() {
   });
 
   const onSubmit = async (data: FormData) => {
-    await signIn(data.email, data.password);
+    try {
+      const success = await signIn(data.email, data.password);
+      if (!success) {
+        //Alert.alert("Erro", "Erro ao fazer login");
+        return;
+      }
+
+      // Mostrar mensagem de sucesso nativo do android
+      Toast.show({
+        type: "success",
+        text1: "Sucesso",
+        text2: "Login realizado com sucesso",
+      });
+      router.replace("/home");
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { padding: 16 }]}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Bem-vindo de volta!</Text>
-      </View>
-
-      <View style={styles.container}>
-        <Controller
-          control={control}
-          name="email"
-          rules={{
-            required: "Email é obrigatório",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Email inválido",
-            },
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                autoCapitalize="none"
-              />
-              {errors.email && (
-                <Text style={styles.errorText}>{errors.email.message}</Text>
-              )}
-            </View>
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="password"
-          rules={{ required: "Palavra-passe é obrigatória" }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Palavra-passe</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Palavra-passe"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                secureTextEntry
-              />
-              {errors.password && (
-                <Text style={styles.errorText}>{errors.password.message}</Text>
-              )}
-            </View>
-          )}
-        />
-
-        <Button
-          onPress={handleSubmit(onSubmit)}
-          width="100%"
-          backgroundColor="#007AFF"
-          opacity={1}
-          pressStyle={{ opacity: 0.8, backgroundColor: "#0056b3" }}
-        >
-          <Text color="white" fontWeight="bold">
-            Entrar
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <YStack flex={1} padding="$4" justifyContent="center" space="$4">
+        <YStack marginBottom="$6">
+          <Text
+            fontFamily="MontserratBold"
+            fontSize={32}
+            color="$blue10"
+            textAlign="left"
+          >
+            Bem-vindo
           </Text>
-        </Button>
-      </View>
+          <Text
+            fontFamily="MontserratBold"
+            fontSize={32}
+            color="$blue10"
+            textAlign="left"
+          >
+            de volta!
+          </Text>
+          <Text
+            fontFamily="Montserrat"
+            fontSize={16}
+            color="$gray10"
+            marginTop="$2"
+          >
+            Preencha os dados para continuar.
+          </Text>
+        </YStack>
+
+        <YStack space="$4">
+          <Controller
+            control={control}
+            name="email"
+            rules={{
+              required: "Email é obrigatório",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Email inválido",
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <YStack>
+                <Label
+                  fontFamily="MontserratBold"
+                  fontSize={14}
+                  color="$gray11"
+                  marginBottom="$2"
+                >
+                  Email
+                </Label>
+                <Input
+                  placeholder="exemplo@email.com"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  borderColor={errors.email ? "$red10" : "$gray5"}
+                />
+                {errors.email && (
+                  <Text
+                    color="$red10"
+                    fontSize={12}
+                    marginTop="$1"
+                    fontFamily="Montserrat"
+                  >
+                    {errors.email.message}
+                  </Text>
+                )}
+              </YStack>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="password"
+            rules={{ required: "Palavra-passe é obrigatória" }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <YStack>
+                <Label
+                  fontFamily="MontserratBold"
+                  fontSize={14}
+                  color="$gray11"
+                  marginBottom="$2"
+                >
+                  Palavra-passe
+                </Label>
+                <Input
+                  placeholder="********"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  secureTextEntry={!showPassword}
+                  borderColor={errors.password ? "$red10" : "$gray5"}
+                  suffix={
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Feather
+                        name={showPassword ? "eye" : "eye-off"}
+                        size={20}
+                        color="#666"
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+                {errors.password && (
+                  <Text
+                    color="$red10"
+                    fontSize={12}
+                    marginTop="$1"
+                    fontFamily="Montserrat"
+                  >
+                    {errors.password.message}
+                  </Text>
+                )}
+              </YStack>
+            )}
+          />
+
+          <XStack justifyContent="flex-end">
+            <Link href="/forgot-password" asChild>
+              <Text
+                fontFamily="Montserrat"
+                fontSize={14}
+                color="$blue10"
+                fontWeight="600"
+              >
+                Esqueceu a palavra-passe?
+              </Text>
+            </Link>
+          </XStack>
+
+          <Button
+            onPress={handleSubmit(onSubmit)}
+            backgroundColor="#007AFF"
+            pressStyle={{ opacity: 0.8, backgroundColor: "#0056b3" }}
+            borderRadius="$4"
+            height={50}
+            marginTop="$2"
+            disabled={isSubmitting}
+          >
+            <Text color="white" fontFamily="MontserratBold" fontSize={16}>
+              {isSubmitting ? "A entrar..." : "Entrar"}
+            </Text>
+          </Button>
+        </YStack>
+
+        <XStack justifyContent="center" marginTop="$6" space="$2">
+          <Text fontFamily="Montserrat" fontSize={14} color="$gray10">
+            Não tem conta?
+          </Text>
+          <Link href="/signup" asChild>
+            <Text fontFamily="MontserratBold" fontSize={14} color="$blue10">
+              Registe-se
+            </Text>
+          </Link>
+        </XStack>
+      </YStack>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-  },
-  inputWrapper: {
-    width: "100%",
-    marginBottom: 24,
-  },
-  titleContainer: {
-    display: "flex",
-    flexDirection: "row",
-    width: "100%",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    marginBottom: 24,
-  },
-  title: {
-    fontFamily: "Montserrat",
-    fontSize: 48,
-    fontWeight: "bold",
-    textAlign: "left",
-    maxWidth: 250,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#A8A8A9",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 5,
-    width: "100%",
-  },
-  inputLabel: {
-    fontFamily: "Montserrat",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    fontFamily: "Montserrat",
-  },
-});
