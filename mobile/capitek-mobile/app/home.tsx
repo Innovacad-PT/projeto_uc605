@@ -1,17 +1,23 @@
-import { View } from "tamagui";
-import { Link } from "expo-router";
+import { ScrollView, View } from "tamagui";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Header } from "../components/home/Header";
+import { Categories } from "../components/home/Categories";
+import { FeaturedCarousel } from "../components/home/FeaturedCarousel";
+import { ProductGrid } from "../components/home/ProductGrid";
+import { ProductProvider } from "@/context/use_product_context";
 
-export default function Index() {
+export default function Home() {
   return (
-    <SafeAreaView>
-      <View>
-        <Link href="/splash">Splash</Link>
-        <Link href="/products">Products</Link>
-        <Link href="/products/1">Product ID: 1</Link>
-        <Link href="/products/50">Product ID: 50</Link>
-        <Link href="/login">Login</Link>
-      </View>
-    </SafeAreaView>
+    <ProductProvider>
+      <SafeAreaView>
+        <Header />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Categories />
+          <FeaturedCarousel />
+          <ProductGrid />
+          <View height={120} />
+        </ScrollView>
+      </SafeAreaView>
+    </ProductProvider>
   );
 }

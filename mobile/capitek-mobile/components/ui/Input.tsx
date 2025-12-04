@@ -29,7 +29,7 @@ export const Input = forwardRef<TextInput, InputProps>(
         paddingHorizontal="$2"
         height={50}
       >
-        <StyledInput ref={ref} {...props} />
+        <StyledInput ref={ref} {...props} color={"$gray10"} />
         {suffix}
       </XStack>
     );

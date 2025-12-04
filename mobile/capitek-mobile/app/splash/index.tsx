@@ -63,18 +63,16 @@ export default function Splash() {
       body: "A sua satisfação é a nossa prioridade. Receba o seu pedido com a rapidez e conveniência que merece!",
     },
   ]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   const router = useRouter();
 
   const handleSkipClick = () => {
-    router.replace("/login");
+    router.replace("/home");
   };
 
   const handleNextClick = () => {
     if (page == 3) {
-      router.replace("/login");
+      router.replace("/home");
       return;
     }
     setPage(page + 1);
