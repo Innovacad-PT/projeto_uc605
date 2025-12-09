@@ -11,6 +11,11 @@ public class MongoRepository
 {
     private readonly IMongoCollection<UserEntity> _usersCollection;
     private readonly IMongoCollection<ProductEntity> _productsCollection;
+    private readonly IMongoCollection<BrandEntity> _brandsCollection;
+    private readonly IMongoCollection<CategoryEntity> _categoriesCollection;
+    private readonly IMongoCollection<DiscountEntity> _discountsCollection;
+    private readonly IMongoCollection<OrderEntity> _reviewsCollection;
+    private readonly IMongoCollection<OrderEntity> _techspecsCollection;
 
     public MongoRepository(IOptions<MongoEntity> mongoDbSettings)
     {
@@ -23,7 +28,14 @@ public class MongoRepository
 
         _usersCollection = database.GetCollection<UserEntity>("users");
         _productsCollection = database.GetCollection<ProductEntity>("products");
+        _brandsCollection = database.GetCollection<BrandEntity>("brands");
+        _categoriesCollection = database.GetCollection<CategoryEntity>("categories");
+        _discountsCollection = database.GetCollection<DiscountEntity>("discounts");
+        _reviewsCollection = database.GetCollection<OrderEntity>("reviews");
+        _techspecsCollection = database.GetCollection<OrderEntity>("techspecs");
     }
+
+    // Users
 
     public async Task<List<UserEntity>> GetUsers()
     {
@@ -75,6 +87,7 @@ public class MongoRepository
         return result.DeletedCount == 0 ? null : user;
     }
 
+    // Products
 
     public async Task<List<ProductEntity>> GetProducts() {
         var cursor = await _productsCollection.FindAsync(_ => true);
@@ -122,4 +135,13 @@ public class MongoRepository
 
         return result.DeletedCount == 0 ? null : product;
     }
+
+    // Brands
+
+    public async Task<List<BrandEntity>> GetBrands() {
+        var cursor = await _brandsCollection.FindAsync(_ => true);
+
+        return await cursor.ToListAsync();
+    }
+
 }
