@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import NotFound from "@components/notfound/NotFound";
 import Landing from "@components/landing";
 import ProductPageWrapper from "@components/products/product/wrapper";
-import { CartProvider } from "@services/cart";
+import { CartProvider } from "@contexts/CartContext";
 import { AuthProvider } from "@contexts/AuthContext";
 import { ProtectedRoute } from "@components/ProtectedRoute";
 import CheckoutPage from "@components/checkout";
@@ -15,6 +15,9 @@ import AdminCategories from "@pages/admin/Categories";
 import AdminDiscounts from "@pages/admin/Discounts";
 import ProductsListPage from "@pages/ProductsList";
 import Contact from "@components/contact";
+import OrderConfirmation from "@components/order_confirmation";
+import ProfilePage from "@pages/profile";
+import OrdersPage from "@pages/orders";
 
 const App = () => {
   return (
@@ -29,9 +32,39 @@ const App = () => {
               <Route path="/product/:id" element={<ProductPageWrapper />} />
               <Route path="/products" element={<ProductsListPage />} />
 
-              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute requiredRole="guest">
+                    <CheckoutPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/order-confirmation"
+                element={
+                  <ProtectedRoute requiredRole="guest">
+                    <OrderConfirmation />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute requiredRole="guest">
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute requiredRole="guest">
+                    <OrdersPage />
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* Admin routes - protected */}
               <Route
                 path="/admin"
                 element={

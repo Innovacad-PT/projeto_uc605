@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { IconShoppingCart } from "@tabler/icons-react";
 import AppHeader from "@components/header";
-import { useCart } from "@services/cart";
+import { useCart } from "@contexts/CartContext";
 import { LogType } from "@_types/debug";
 import { logger } from "@utils/debug";
 
@@ -50,7 +50,6 @@ export default function ProductPage({ product }: ProductPageProps) {
               }}
             >
               <Stack gap="lg">
-                {/* IMAGEM */}
                 {product.imageUrl && (
                   <Image
                     src={product.imageUrl || null}
@@ -61,7 +60,6 @@ export default function ProductPage({ product }: ProductPageProps) {
                   />
                 )}
 
-                {/* TÍTULO + PREÇO */}
                 <Group justify="space-between" align="flex-start">
                   <Text fw={700} size="xl" style={{ flex: 1 }}>
                     {product.name}
@@ -73,12 +71,12 @@ export default function ProductPage({ product }: ProductPageProps) {
                         -{product.discount.percentage}%
                       </Badge>
                     )}
-                    <PriceDisplay 
-                      price={product.price} 
-                      discount={product.discount} 
-                      size="xl" 
-                      fw={700} 
-                      c="green" 
+                    <PriceDisplay
+                      price={product.price}
+                      discount={product.discount}
+                      size="xl"
+                      fw={700}
+                      c="green"
                     />
                   </Stack>
                 </Group>
@@ -94,14 +92,12 @@ export default function ProductPage({ product }: ProductPageProps) {
                   )}
                 </Group>
 
-                {/* DESCRIÇÃO */}
                 {product.description && (
                   <Text size="md" c="dimmed">
                     {product.description}
                   </Text>
                 )}
 
-                {/* INFO TÉCNICA */}
                 {product.technicalSpecs &&
                   product.technicalSpecs.length > 0 && (
                     <Stack gap="xs">
@@ -119,7 +115,6 @@ export default function ProductPage({ product }: ProductPageProps) {
                     </Stack>
                   )}
 
-                {/* BOTÃO ADICIONAR */}
                 <Button
                   fullWidth
                   mt="md"

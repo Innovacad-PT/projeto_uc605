@@ -21,7 +21,7 @@ public class OrdersRepository : IBaseRepository<OrderEntity>
         return entity;
     }
     
-    public OrderEntity? Update(Guid id, IBaseDto<OrderEntity> entity)
+    public OrderEntity? Update(int id, IBaseDto<OrderEntity> entity)
     {
         OrderUpdateDto updateDto = entity as OrderUpdateDto;
 
@@ -40,7 +40,7 @@ public class OrdersRepository : IBaseRepository<OrderEntity>
         return orderEntity;
     }
     
-    public OrderEntity? Delete(Guid id)
+    public OrderEntity? Delete(int id)
     {
         if (_orders.All(o => o.Id != id))
             return null;
@@ -55,7 +55,7 @@ public class OrdersRepository : IBaseRepository<OrderEntity>
         return _orders;
     }
 
-    public OrderEntity? GetById(Guid id)
+    public OrderEntity? GetById(int id)
     {
         return _orders.FirstOrDefault(o => o.Id == id);
     }
@@ -65,7 +65,7 @@ public class OrdersRepository : IBaseRepository<OrderEntity>
         return _orders.Where(o => o.UserId == userId);
     }
 
-    public decimal CalculateOrderTotal(Guid orderId)
+    public decimal CalculateOrderTotal(int orderId)
     {
         var order = _orders.FirstOrDefault(o => o.Id == orderId);
 

@@ -1,54 +1,65 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using store_api.Dtos.Orders;
+using store_api.Entities;
 using store_api.Repositories;
+using store_api.Services;
+using store_api.Utils;
 
 namespace store_api.Controllers;
+
 
 [ApiController]
 [Route("/orders")]
 public class OrdersController : Controller
 {
-    private static readonly OrdersRepository _repository = new();
+    private static readonly OrdersService _service = new();
 
     [HttpPost]
-    public IActionResult Create([FromBody] OrderAddDto dto)
+    public async Task<IActionResult> Create([FromBody] OrderAddDto dto)
     {
-        return Ok(_repository.Add(dto.ToEntity()));
+        Result<OrderEntity?> result = await _service.CreateOrder(dto);
+
+        if (result is Failure<OrderEntity> failure)
+        {
+            return BadRequest(failure);
+        }
+        
+        return Ok(result as Success<OrderEntity>);
     }
 
     [HttpPut]
-    public IActionResult Update([FromQuery] Guid id, [FromBody] OrderUpdateDto dto)
+    public IActionResult Update([FromRoute] int id, [FromBody] OrderUpdateDto dto)
     {
-        return Ok(_repository.Update(id, dto));
+        return Ok(_service.Update(id, dto));
     }
 
     [HttpDelete]
-    public IActionResult Delete([FromQuery] Guid id)
+    public IActionResult Delete([FromRoute] int id)
     {
-        return Ok(_repository.Delete(id));
+        return Ok(_service.Delete(id));
     }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_repository.GetAll());
+        return Ok(_service.GetAllOrder());
     }
 
-    [HttpGet]
-    public IActionResult GetByOrderId([FromQuery] Guid id)
+    [HttpGet("{id}")]
+    public IActionResult GetByOrderId([FromRoute] int id)
     {
-        return Ok(_repository.GetById(id));
+        return Ok(_service.GetOrderById(id));
     }
 
-    [HttpGet]
-    public IActionResult GetByUserId([FromQuery] Guid id)
+    [HttpGet("user/{id}")]
+    public IActionResult GetByUserId([FromRoute] Guid id)
     {
-        return Ok(_repository.GetOrdersByUser(id));
+        return Ok(_service.GetOrdersByUser(id));
     }
 
-    [HttpGet]
-    public IActionResult CalculateTotal([FromQuery] Guid id)
+    [HttpGet("{id}/total")]
+    public IActionResult CalculateTotal([FromRoute] int id)
     {
-        return Ok(_repository.CalculateOrderTotal(id));
+        return Ok(_service.CalculateOrderTotal(id));
     }
 }

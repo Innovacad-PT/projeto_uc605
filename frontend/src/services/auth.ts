@@ -1,5 +1,3 @@
-// src/services/auth.ts
-
 import type UserType from "@_types/user";
 import { apiClient } from "@utils/api";
 import { logger } from "@utils/debug";
@@ -10,10 +8,6 @@ export interface AuthResponse {
   user?: UserType;
 }
 
-/**
- * Perform login with email and password.
- * Stores the JWT token in localStorage.
- */
 export async function login(email: string, password: string): Promise<void> {
   const data = await apiClient.post<AuthResponse>("/login", {
     identifier: email,
@@ -22,15 +16,19 @@ export async function login(email: string, password: string): Promise<void> {
   });
   logger(LogType.INFO, "Login Request Data", data);
 
-  localStorage.setItem("accessToken", data.token);
+  if (data && data.token) {
+    console.log("Saving token:", data.token);
+    localStorage.setItem("accessToken", data.token);
+  } else {
+    console.error("No token in login response:", data);
+  }
+
   if (data.user?.role) {
     localStorage.setItem("userRole", data.user?.role);
+    localStorage.setItem("userId", data.user?.id);
   }
 }
 
-/**
- * Register a new user.
- */
 export async function register(user: {
   firstName: string;
   lastName: string;
@@ -48,29 +46,32 @@ export async function register(user: {
 
   if (data.user?.role) {
     localStorage.setItem("userRole", data.user?.role);
+    localStorage.setItem("userId", data.user?.id);
   }
 }
 
-/**
- * Logout the current user.
- */
-export function logout(): void {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("userRole");
+export function isLoggedIn(): boolean {
+  return !!localStorage.getItem("userId");
 }
 
-/**
- * Retrieve stored JWT token.
- */
+export function logout(): void {
+  console.log("Logout called");
+  logger(LogType.INFO, "Logout called", new Error().stack);
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("accessToken");
+}
+
 export function getToken(): string | null {
   return localStorage.getItem("accessToken");
 }
 
-/**
- * Retrieve current user role (admin or guest).
- */
 export function getUserRole(): "admin" | "guest" | null {
   const role = localStorage.getItem("userRole");
   if (role === "admin" || role === "guest") return role as "admin" | "guest";
   return null;
+}
+
+export function getUserId(): string | null {
+  return localStorage.getItem("userId");
 }

@@ -34,7 +34,7 @@ public class UsersController : Controller
             return BadRequest(failure);
         }
 
-        return Ok(result);
+        return Ok(result as  Success<IEnumerable<UserEntity>>);
     }
 
     [HttpGet("{id}")]
@@ -45,11 +45,11 @@ public class UsersController : Controller
         if (res.HasError)
         {
             var failure = (Failure<UserEntity>)res;
-            return BadRequest(failure.GetMessage());
+            return BadRequest(failure);
         }
 
         var success = (Success<UserEntity>)res;
-        return Ok(success.GetValue());
+        return Ok(success);
     }
 
     [HttpPost("/register")]
@@ -62,7 +62,7 @@ public class UsersController : Controller
             return BadRequest(failure);
         }
 
-        return Ok(result);
+        return Ok(result as  Success<UserEntity>);
     }
 
     [HttpPost("/login")]
@@ -75,7 +75,7 @@ public class UsersController : Controller
             return BadRequest(failure);
         }
         
-        return Ok(result);
+        return Ok(result  as Success<UserLoggedInDao>);
     }
 
     [HttpDelete("{id}")]
@@ -88,7 +88,7 @@ public class UsersController : Controller
             return BadRequest(failure);
         }
 
-        return Ok(result);
+        return Ok(result as Success<UserEntity>);
     }
 
     [HttpPut("{id}")]
@@ -101,6 +101,6 @@ public class UsersController : Controller
             return BadRequest(failure);
         }
         
-        return Ok(result);
+        return Ok(result as Success<UserEntity>);
     }
 }

@@ -6,7 +6,7 @@ import {
   Text,
   Button,
   Skeleton,
-  ActionIcon
+  ActionIcon,
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import type { Product } from "@_types/product";
@@ -28,7 +28,6 @@ export default function FeaturedProducts({
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardWidth = 240;
 
-  // Auto-scroll
   const scroll = useCallback((direction: "left" | "right") => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
@@ -64,7 +63,6 @@ export default function FeaturedProducts({
 
   return (
     <Box style={{ position: "relative" }}>
-      {/* BOTÕES LATERAIS */}
       <ActionIcon
         style={{ position: "absolute", left: 0, top: "40%", zIndex: 10 }}
         size="lg"
@@ -83,7 +81,6 @@ export default function FeaturedProducts({
         <IconChevronRight size={24} />
       </ActionIcon>
 
-      {/* CARROSSEL */}
       <Box
         ref={scrollRef}
         style={{
@@ -122,9 +119,21 @@ export default function FeaturedProducts({
               alt={p.name}
             />
             <Text mt="sm" fw={500} lineClamp={1}>
-              {p.name} {p.discount != undefined? <span style={{ color: "red", fontSize: "0.7em" }}>(-{p.discount.percentage}%)</span> : ""}
+              {p.name}{" "}
+              {p.discount != undefined ? (
+                <span style={{ color: "red", fontSize: "0.7em" }}>
+                  (-{p.discount.percentage}%)
+                </span>
+              ) : (
+                ""
+              )}
             </Text>
-            <PriceDisplay price={p.price} discount={p.discount} fw={700} c="indigo" />
+            <PriceDisplay
+              price={p.price}
+              discount={p.discount}
+              fw={700}
+              c="indigo"
+            />
             <Button
               fullWidth
               mt="md"

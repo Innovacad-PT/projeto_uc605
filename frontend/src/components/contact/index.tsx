@@ -34,7 +34,6 @@ export default function Contact() {
 
   const handleSubmit = (values: typeof form.values) => {
     logger(LogType.INFO, "Contact form submitted:", values);
-    // Here you would typically send this to your backend
     form.reset();
   };
 

@@ -1,5 +1,3 @@
-// src/pages/admin/Categories.tsx
-
 import { useEffect, useState } from "react";
 import {
   Table,

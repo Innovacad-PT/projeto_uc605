@@ -8,17 +8,31 @@ import {
   Stack,
   Box,
   Indicator,
+  Menu,
 } from "@mantine/core";
-import { useCart } from "@services/cart";
-import { IconShoppingCart, IconUser, IconMenu } from "@tabler/icons-react";
+import { useCart } from "@contexts/CartContext";
+import {
+  IconShoppingCart,
+  IconUser,
+  IconMenu,
+  IconPackage,
+  IconLogout,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isLoggedIn, logout } from "@services/auth";
 
 export default function AppHeader() {
   const nav = useNavigate();
   const [drawerOpened, setDrawerOpened] = useState(false);
   const { items, removeFromCart } = useCart();
   const [cartOpened, setCartOpened] = useState(false);
+  const loggedIn = isLoggedIn();
+
+  const handleLogout = () => {
+    logout();
+    nav("/");
+  };
 
   const navItems = [
     { label: "Início", path: "/" },
@@ -47,7 +61,6 @@ export default function AppHeader() {
             justifyContent: "space-between",
           }}
         >
-          {/* LOGO CENTRAL NO DESKTOP / ESQUERDA NO MOBILE */}
           <Text
             fw={800}
             size="xl"
@@ -57,7 +70,6 @@ export default function AppHeader() {
           >
             CAPITEK
           </Text>
-          {/* MOBILE LOGO ESQUERDO */}
           <Text
             fw={800}
             size="xl"
@@ -67,7 +79,6 @@ export default function AppHeader() {
           >
             CAPITEK
           </Text>
-          {/* NAV CENTRAL - DESKTOP */}
           <Group
             className="desktop-nav"
             style={{
@@ -86,11 +97,45 @@ export default function AppHeader() {
               </Text>
             ))}
           </Group>
-          {/* BOTÕES DIREITA NO DESKTOP */}
           <Group className="actions" style={{ gap: 8 }}>
-            <ActionIcon variant="light" size="lg">
-              <IconUser size={20} />
-            </ActionIcon>
+            <Menu shadow="md" width={200} position="bottom-end">
+              <Menu.Target>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  onClick={() => !loggedIn && nav("/login")}
+                >
+                  <IconUser size={20} />
+                </ActionIcon>
+              </Menu.Target>
+
+              {loggedIn && (
+                <Menu.Dropdown>
+                  <Menu.Label>A minha conta</Menu.Label>
+                  <Menu.Item
+                    leftSection={<IconUser size={14} />}
+                    onClick={() => nav("/profile")}
+                  >
+                    Perfil
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconPackage size={14} />}
+                    onClick={() => nav("/orders")}
+                  >
+                    Encomendas
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    color="red"
+                    leftSection={<IconLogout size={14} />}
+                    onClick={handleLogout}
+                  >
+                    Sair
+                  </Menu.Item>
+                </Menu.Dropdown>
+              )}
+            </Menu>
+
             <Indicator
               label={items.reduce((acc, item) => acc + item.quantity, 0)}
               size={16}
@@ -108,7 +153,6 @@ export default function AppHeader() {
               </ActionIcon>
             </Indicator>
           </Group>
-          {/* MOBILE BURGER MENU */}
           <ActionIcon
             className="mobile-menu"
             variant="light"
@@ -120,16 +164,13 @@ export default function AppHeader() {
           </ActionIcon>
         </Container>
 
-        {/* CSS RESPONSIVO */}
         <style>
           {`
-      /* Desktop */
       @media (min-width: 768px) {
         .mobile-logo { display: none; }
         .mobile-menu { display: none; }
       }
 
-      /* Mobile */
       @media (max-width: 767px) {
         .desktop-logo { display: none; }
         .desktop-nav { display: none; }
@@ -144,7 +185,6 @@ export default function AppHeader() {
         </style>
       </Box>
 
-      {/* DRAWER MOBILE */}
       <Drawer
         opened={drawerOpened}
         onClose={() => setDrawerOpened(false)}

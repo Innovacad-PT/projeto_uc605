@@ -39,17 +39,18 @@ public class MongoRepository
         return await cursor.FirstOrDefaultAsync();
     }
 
-    public async Task<UserEntity?> CreateUser(UserDTO dto)
+    public async Task<UserEntity?> CreateUser(CreateUserDTO dto)
     {
         var passBytes = Encoding.UTF8.GetBytes(dto.Password);
         var passHash = SHA3_256.Create().ComputeHash(passBytes);
         dto.Password = Convert.ToHexString(passHash);
 
-        await _usersCollection.InsertOneAsync(dto.ToUserEntity());
+        await _usersCollection.InsertOneAsync(dto.ToEntity());
 
         return await GetUser(dto.Id);
     }
 
+    /*
     public async Task<UserEntity?> UpdateUser(UserDTO dto)
     {
         var updateResult = await _usersCollection.UpdateOneAsync(
@@ -62,7 +63,7 @@ public class MongoRepository
         if (updateResult.MatchedCount == 0 || updateResult.ModifiedCount == 0) return null;
 
         return await GetUser(dto.Id);
-    }
+    }*/
 
     public async Task<UserEntity?> DeleteUser(Guid id)
     {
@@ -88,13 +89,14 @@ public class MongoRepository
         return await cursor.FirstOrDefaultAsync();
     }
 
-    public async Task<ProductEntity?> CreateProduct(ProductDTO dto)
+    public async Task<ProductEntity?> CreateProduct(CreateProductDTO dto)
     {
-        await _productsCollection.InsertOneAsync(dto.ToProductEntity());
+        await _productsCollection.InsertOneAsync(dto.ToEntity());
 
         return await GetProduct(dto.Id);
     }
 
+    /*
     public async Task<ProductEntity?> UpdateProduct(ProductDTO dto)
     {
         var updateResult = await _productsCollection.UpdateOneAsync(
@@ -109,7 +111,7 @@ public class MongoRepository
         if (updateResult.MatchedCount == 0 || updateResult.ModifiedCount == 0) return null;
 
         return await GetProduct(dto.Id);
-    }
+    }*/
 
     public async Task<ProductEntity?> DeleteProduct(Guid id)
     {

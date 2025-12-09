@@ -1,5 +1,3 @@
-// src/pages/admin/Products.tsx
-
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -26,7 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const formatPriceForApi = (price: string | number): string => {
   price.toString().replace("€", "");
-  return price.toString().replace(/\./g, ',');
+  return price.toString().replace(/\./g, ",");
 };
 
 export const AdminProducts = () => {
@@ -37,7 +35,7 @@ export const AdminProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,7 +43,7 @@ export const AdminProducts = () => {
     stock: 0,
     brandId: "",
     categoryId: "",
-    imageUrl: "null | string"
+    imageUrl: "null | string",
   });
 
   useEffect(() => {
@@ -82,7 +80,7 @@ export const AdminProducts = () => {
       stock: 0,
       brandId: "",
       categoryId: "",
-      imageUrl: ""
+      imageUrl: "",
     });
     setImageFile(null);
     setModalOpen(true);
@@ -97,9 +95,9 @@ export const AdminProducts = () => {
       stock: product.stock || 0,
       brandId: product.brand?.id || "",
       categoryId: product.category?.id || "",
-      imageUrl: product.imageUrl || ""
+      imageUrl: product.imageUrl || "",
     });
-    setImageFile(null); // Reset file input when editing
+    setImageFile(null);
     setModalOpen(true);
   };
 
@@ -124,12 +122,11 @@ export const AdminProducts = () => {
         formDataObj.append("Details", formData.description);
         formDataObj.append("BrandId", formData.brandId);
         formDataObj.append("CategoryId", formData.categoryId);
-        
-        // Add image file if provided
+
         if (imageFile) {
           formDataObj.append("Image", imageFile);
         }
-        
+
         await productService.create(formDataObj);
         notifications.show({
           title: "Success",
@@ -150,7 +147,7 @@ export const AdminProducts = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-    
+
     try {
       await productService.delete(id);
       notifications.show({
@@ -229,14 +226,12 @@ export const AdminProducts = () => {
           <TextInput
             label="Name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <TextInput
             label="Description"
-            value={formData.description}  
+            value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
@@ -250,8 +245,13 @@ export const AdminProducts = () => {
           />
           <NumberInput
             label="Price"
-            value={Number(formData.price.replace(',','.'))}
-            onChange={(val) => setFormData({ ...formData, price: formatPriceForApi(val.toString()) || "0,00" })} 
+            value={Number(formData.price.replace(",", "."))}
+            onChange={(val) =>
+              setFormData({
+                ...formData,
+                price: formatPriceForApi(val.toString()) || "0,00",
+              })
+            }
             min={0}
             decimalScale={2}
             required
@@ -259,7 +259,9 @@ export const AdminProducts = () => {
           <NumberInput
             label="Stock"
             value={formData.stock}
-            onChange={(val) => setFormData({ ...formData, stock: Number(val) || 0 })}
+            onChange={(val) =>
+              setFormData({ ...formData, stock: Number(val) || 0 })
+            }
             min={0}
           />
           <Select

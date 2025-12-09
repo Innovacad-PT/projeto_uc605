@@ -24,7 +24,7 @@ import type { Product } from "@_types/product";
 import type { Brand } from "@_types/brand";
 import type { Category } from "@_types/category";
 import ProductCard from "@components/products/product_card";
-import { useCart } from "@services/cart";
+import { useCart } from "@contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@components/header";
 import { getFinalPrice } from "@utils/price";
@@ -33,24 +33,20 @@ export default function ProductsListPage() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  // Data states
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState<number | string>("");
   const [maxPrice, setMaxPrice] = useState<number | string>("");
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -71,11 +67,9 @@ export default function ProductsListPage() {
     loadData();
   }, []);
 
-  // Filter and paginate products
   const { filteredProducts, totalPages } = useMemo(() => {
     let filtered = [...products];
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -85,19 +79,18 @@ export default function ProductsListPage() {
       );
     }
 
-    // Category filter
     if (selectedCategory) {
       filtered = filtered.filter((p) => p.category?.id === selectedCategory);
     }
 
-    // Brand filter
     if (selectedBrand) {
       filtered = filtered.filter((p) => p.brand?.id === selectedBrand);
     }
 
-    // Price filter
-    const min = typeof minPrice === "number" ? minPrice : parseFloat(minPrice as string);
-    const max = typeof maxPrice === "number" ? maxPrice : parseFloat(maxPrice as string);
+    const min =
+      typeof minPrice === "number" ? minPrice : parseFloat(minPrice as string);
+    const max =
+      typeof maxPrice === "number" ? maxPrice : parseFloat(maxPrice as string);
 
     if (!isNaN(min)) {
       filtered = filtered.filter((p) => {
@@ -113,20 +106,29 @@ export default function ProductsListPage() {
       });
     }
 
-    // Calculate pagination
     const total = Math.ceil(filtered.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-    return { filteredProducts: paginated, totalPages: total, totalCount: filtered.length };
-  }, [products, searchQuery, selectedCategory, selectedBrand, minPrice, maxPrice, currentPage]);
+    return {
+      filteredProducts: paginated,
+      totalPages: total,
+      totalCount: filtered.length,
+    };
+  }, [
+    products,
+    searchQuery,
+    selectedCategory,
+    selectedBrand,
+    minPrice,
+    maxPrice,
+    currentPage,
+  ]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedBrand, minPrice, maxPrice]);
 
-  // Clear all filters
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedCategory(null);
@@ -136,7 +138,6 @@ export default function ProductsListPage() {
     setCurrentPage(1);
   };
 
-  // Check if any filters are active
   const hasActiveFilters =
     searchQuery.trim() ||
     selectedCategory ||
@@ -160,14 +161,11 @@ export default function ProductsListPage() {
       <AppHeader />
       <Container size="xl" py="xl">
         <Stack gap="xl">
-          {/* Page Title */}
           <Title order={1}>All Products</Title>
 
-          {/* Filters Section */}
           <Paper shadow="sm" p="md" radius="md" withBorder>
             <Stack gap="md">
               <Grid gutter="md">
-                {/* Search */}
                 <Grid.Col span={{ base: 12, md: 6 }}>
                   <TextInput
                     label="Procurar"
@@ -178,19 +176,20 @@ export default function ProductsListPage() {
                   />
                 </Grid.Col>
 
-                {/* Category Filter */}
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Select
                     placeholder="Todas as Categorias"
                     label="Categoria"
-                    data={categories.map((c) => ({ value: c.id, label: c.name }))}
+                    data={categories.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
                     value={selectedCategory}
                     onChange={setSelectedCategory}
                     clearable
                   />
                 </Grid.Col>
 
-                {/* Brand Filter */}
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Select
                     placeholder="Todas as Marcas"
@@ -202,7 +201,6 @@ export default function ProductsListPage() {
                   />
                 </Grid.Col>
 
-                {/* Min Price */}
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <NumberInput
                     label="Preço Minimo (€)"
@@ -214,7 +212,6 @@ export default function ProductsListPage() {
                   />
                 </Grid.Col>
 
-                {/* Max Price */}
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <NumberInput
                     label="Preço Maximo (€)"
@@ -226,8 +223,10 @@ export default function ProductsListPage() {
                   />
                 </Grid.Col>
 
-                {/* Clear Filters Button */}
-                <Grid.Col span={{ base: 12, md: 6}} style={{alignContent: "end" }}>
+                <Grid.Col
+                  span={{ base: 12, md: 6 }}
+                  style={{ alignContent: "end" }}
+                >
                   <Button
                     variant="light"
                     color="gray"
@@ -243,29 +242,47 @@ export default function ProductsListPage() {
             </Stack>
           </Paper>
 
-          {/* Results Info */}
           <Group justify="space-between">
             <Text size="sm" c="dimmed">
               Showing {filteredProducts.length} of{" "}
-              {products.filter((p) => {
-                let filtered = true;
-                if (searchQuery.trim()) {
-                  const query = searchQuery.toLowerCase();
-                  filtered = filtered && (p.name.toLowerCase().includes(query) || (p.description?.toLowerCase().includes(query) ?? false));
-                }
-                if (selectedCategory) filtered = filtered && p.category?.id === selectedCategory;
-                if (selectedBrand) filtered = filtered && p.brand?.id === selectedBrand;
-                const min = typeof minPrice === "number" ? minPrice : parseFloat(minPrice as string);
-                const max = typeof maxPrice === "number" ? maxPrice : parseFloat(maxPrice as string);
-                if (!isNaN(min)) filtered = filtered && getFinalPrice(p.price, p.discount?.percentage) >= min;
-                if (!isNaN(max)) filtered = filtered && getFinalPrice(p.price, p.discount?.percentage) <= max;
-                return filtered;
-              }).length}{" "}
+              {
+                products.filter((p) => {
+                  let filtered = true;
+                  if (searchQuery.trim()) {
+                    const query = searchQuery.toLowerCase();
+                    filtered =
+                      filtered &&
+                      (p.name.toLowerCase().includes(query) ||
+                        (p.description?.toLowerCase().includes(query) ??
+                          false));
+                  }
+                  if (selectedCategory)
+                    filtered = filtered && p.category?.id === selectedCategory;
+                  if (selectedBrand)
+                    filtered = filtered && p.brand?.id === selectedBrand;
+                  const min =
+                    typeof minPrice === "number"
+                      ? minPrice
+                      : parseFloat(minPrice as string);
+                  const max =
+                    typeof maxPrice === "number"
+                      ? maxPrice
+                      : parseFloat(maxPrice as string);
+                  if (!isNaN(min))
+                    filtered =
+                      filtered &&
+                      getFinalPrice(p.price, p.discount?.percentage) >= min;
+                  if (!isNaN(max))
+                    filtered =
+                      filtered &&
+                      getFinalPrice(p.price, p.discount?.percentage) <= max;
+                  return filtered;
+                }).length
+              }{" "}
               products
             </Text>
           </Group>
 
-          {/* Products Grid */}
           {filteredProducts.length === 0 ? (
             <Center py="xl">
               <Text size="lg" c="dimmed">
@@ -273,10 +290,7 @@ export default function ProductsListPage() {
               </Text>
             </Center>
           ) : (
-            <SimpleGrid
-              cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
-              spacing="lg"
-            >
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="lg">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -288,7 +302,6 @@ export default function ProductsListPage() {
             </SimpleGrid>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <Center mt="xl">
               <Pagination

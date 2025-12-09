@@ -1,11 +1,4 @@
-import {
-  Box,
-  Title,
-  Text,
-  Center,
-  Stack,
-  ThemeIcon,
-} from "@mantine/core";
+import { Box, Title, Text, Center, Stack, ThemeIcon } from "@mantine/core";
 import { IconSearchOff } from "@tabler/icons-react";
 import FeaturedProducts from "@components/products/product_featured";
 import type { Product } from "@_types/product";
@@ -23,39 +16,11 @@ export default function ProductsSection({
   onProductClick,
   onAddToCart,
 }: ProductsSectionProps) {
-  // const [categories, setCategories] = useState<string[]>([]);
-
-  // // Extract unique categories from products
-  // const availableCategories = useMemo(() => {
-  //   const cats = new Set<string>();
-  //   products.forEach((p) => p.categories.forEach((c) => cats.add(c)));
-  //   return Array.from(cats).sort();
-  // }, [products]);
-
-  // const filtered = useMemo(() => {
-  //   if (categories.length === 0) return products;
-  //   return products.filter((p) =>
-  //     p.categories.some((c) => categories.includes(c))
-  //   );
-  // }, [products, categories]);
-
   return (
     <Box id="products-section">
       <Title order={2} mb="md">
         Produtos em Destaque
       </Title>
-
-      {/* <MultiSelect
-        mb="xl"
-        label="Filtrar por Categoria"
-        placeholder="Selecione categorias..."
-        data={availableCategories.length > 0 ? availableCategories : []}
-        clearable
-        searchable
-        value={categories}
-        onChange={setCategories}
-        nothingFoundMessage="Nenhuma categoria encontrada"
-      /> */}
 
       {loading ? (
         <FeaturedProducts
@@ -81,7 +46,8 @@ export default function ProductsSection({
               Nenhum produto encontrado
             </Text>
             <Text size="sm" c="dimmed" ta="center" maw={300}>
-              Não encontramos produtos com as categorias selecionadas. Tenta limpar os filtros.
+              Não encontramos produtos com as categorias selecionadas. Tenta
+              limpar os filtros.
             </Text>
           </Stack>
         </Center>

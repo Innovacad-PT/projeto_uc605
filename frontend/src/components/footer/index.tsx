@@ -21,7 +21,6 @@ export default function AppFooter() {
     >
       <Container size="lg">
         <Grid>
-          {/* COLUNA 1 */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Text fw={700} size="lg">
               CAPITEK
@@ -32,20 +31,32 @@ export default function AppFooter() {
             </Text>
           </Grid.Col>
 
-          {/* COLUNA 2 */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Text fw={700} size="lg">
               Links úteis
             </Text>
-            <Text mt="xs" style={{ cursor: "pointer" }} onClick={() => nav("/")}>
+            <Text
+              mt="xs"
+              style={{ cursor: "pointer" }}
+              onClick={() => nav("/")}
+            >
               Início
             </Text>
-            <Text style={{ cursor: "pointer" }} onClick={() => nav("/products")}>Produtos</Text>
+            <Text
+              style={{ cursor: "pointer" }}
+              onClick={() => nav("/products")}
+            >
+              Produtos
+            </Text>
             <Text style={{ cursor: "pointer" }}>Sobre Nós</Text>
-            <Text style={{ cursor: "pointer" }} onClick={() => nav("/contacts")}>Contactos</Text>
+            <Text
+              style={{ cursor: "pointer" }}
+              onClick={() => nav("/contacts")}
+            >
+              Contactos
+            </Text>
           </Grid.Col>
 
-          {/* COLUNA 3 */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Text fw={700} size="lg">
               Segue-nos

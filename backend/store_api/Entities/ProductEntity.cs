@@ -5,7 +5,7 @@ public class ProductEntity
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public double Price { get; set; }
+    public decimal Price { get; set; }
     public int Stock { get; set; }
 
     public CategoryEntity Category { get; set; }
@@ -24,7 +24,7 @@ public class ProductEntity
         BrandEntity brand,
         List<TechnicalSpecsEntity>? technicalSpecs,
         string? imageUrl,
-        double price,
+        decimal price,
         string description)
     {
         Id = id;

@@ -11,17 +11,17 @@ public class OrdersService
     
     private OrdersRepository _repository = new OrdersRepository();
 
-    public Result<OrderEntity?> CreateOrder(OrderAddDto orderDto)
+    public async Task<Result<OrderEntity?>> CreateOrder(OrderAddDto orderDto)
     {
-        var updatedOrder = _repository.Add(orderDto.ToEntity());
+        var createdOrder = _repository.Add(orderDto.ToEntity());
 
-        if (updatedOrder == null)
+        if (createdOrder == null)
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, "NOT CREATED");
 
-        return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", updatedOrder);
+        return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", createdOrder);
     }
 
-    public Result<OrderEntity?> Update(Guid id, OrderUpdateDto orderDto)
+    public Result<OrderEntity?> Update(int id, OrderUpdateDto orderDto)
     {
         OrderEntity? orderEntity = _repository.Update(id, orderDto);
 
@@ -31,7 +31,7 @@ public class OrdersService
         return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", orderEntity);
     }
 
-    public Result<OrderEntity?> Delete(Guid id)
+    public Result<OrderEntity?> Delete(int id)
     {
         OrderEntity? orderEntity = _repository.Delete(id);
 
@@ -51,7 +51,7 @@ public class OrdersService
         return new Success<IEnumerable<OrderEntity>>(ResultCode.ORDER_FOUND, "FOUND", orders);
     }
 
-    public Result<OrderEntity?> GetOrderById(Guid id)
+    public Result<OrderEntity?> GetOrderById(int id)
     {
         var order = _repository.GetById(id);
 
@@ -71,7 +71,7 @@ public class OrdersService
         return new Success<IEnumerable<OrderEntity>>(ResultCode.ORDER_FOUND, "FOUND", orders);
     }
 
-    public Result<decimal> CalculateOrderTotal(Guid orderId)
+    public Result<decimal> CalculateOrderTotal(int orderId)
     {
         decimal total = _repository.CalculateOrderTotal(orderId);
 

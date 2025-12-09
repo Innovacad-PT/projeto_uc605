@@ -4,13 +4,17 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Entities;
 
-public class UserEntity(Guid id, string name, string userName, string password)
+public class UserEntity(Guid id, string firstName, string lastName, string userName,
+    string email, DateTime createdAt, string password)
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     [SwaggerIgnore]
     public Guid Id { get; set; } = id;
-    public string Name { get; set; } = name;
+    public string FirstName { get; set; } = firstName;
+    public string LastName { get; set; } = lastName;
     public string UserName { get; set; } = userName;
+    public string Email { get; set; } = email;
+    public DateTime CreatedAt { get; set; } = createdAt;
     public string Password { get; set; } = password;
 }

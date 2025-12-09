@@ -1,10 +1,10 @@
-import { ScrollView, View } from "tamagui";
+import { ProductProvider } from "@/context/use_product_context";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Header } from "../components/home/Header";
+import { ScrollView, View } from "tamagui";
 import { Categories } from "../components/home/Categories";
 import { FeaturedCarousel } from "../components/home/FeaturedCarousel";
+import { Header } from "../components/home/Header";
 import { ProductGrid } from "../components/home/ProductGrid";
-import { ProductProvider } from "@/context/use_product_context";
 
 export default function Home() {
   return (

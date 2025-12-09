@@ -1,5 +1,3 @@
-// src/pages/admin/Brands.tsx
-
 import { useEffect, useState } from "react";
 import {
   Table,

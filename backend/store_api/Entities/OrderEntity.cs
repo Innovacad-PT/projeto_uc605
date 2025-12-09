@@ -2,9 +2,9 @@
 
 namespace store_api.Entities;
 
-public class OrderEntity(Guid id, Guid userId, DateTime createdAt, Decimal total, OrderStatus status, List<OrderItemEntity> orderItems)
+public class OrderEntity(int id, Guid userId, DateTime createdAt, Decimal total, OrderStatus status, List<OrderItemEntity> orderItems)
 {
-    public Guid Id { get; set; } = id;
+    public int Id { get; set; } = id;
     public Guid UserId { get; set; } = userId;
     public DateTime CreatedAt { get; set; } = createdAt;
     public Decimal Total { get; set; } = total;

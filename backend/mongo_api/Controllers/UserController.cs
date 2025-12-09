@@ -32,7 +32,7 @@ public class UserController(MongoRepository repository) : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] UserDTO dto)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
     {
         dto.Id = Guid.NewGuid();
 
@@ -41,7 +41,7 @@ public class UserController(MongoRepository repository) : Controller
 
         return Ok(Json(newUser));
     }
-
+/*
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserDTO dto)
     {
@@ -50,7 +50,7 @@ public class UserController(MongoRepository repository) : Controller
 
         return Ok(Json(updatedUser));
     }
-
+*/
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {

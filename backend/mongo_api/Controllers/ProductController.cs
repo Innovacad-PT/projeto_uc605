@@ -31,16 +31,14 @@ public class ProductController(MongoRepository repository) : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] ProductDTO dto)
+    public async Task<IActionResult> CreateUser([FromBody] CreateProductDTO dto)
     {
-        dto.Id = Guid.NewGuid();
-
         var newProduct = await _mongoRepository.CreateProduct(dto);
         if (newProduct == null) return NotFound();
 
         return Ok(Json(newProduct));
     }
-
+/*
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] ProductDTO dto)
     {
@@ -48,7 +46,7 @@ public class ProductController(MongoRepository repository) : Controller
         if (updatedProduct == null) return NotFound();
 
         return Ok(Json(updatedProduct));
-    }
+    }*/
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)

@@ -1,9 +1,10 @@
-import { Image, Text, View } from "tamagui";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useRef, useEffect } from "react";
-import { StyleSheet, Animated } from "react-native";
+import { useAuth } from "@/context/use_auth_context";
 import { SplashItem } from "@/types/splash_item";
 import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Animated, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image, Text, View } from "tamagui";
 
 const Dot = ({ isActive }: { isActive: boolean }) => {
   const anim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
@@ -67,11 +68,16 @@ export default function Splash() {
   const router = useRouter();
 
   const handleSkipClick = () => {
+    const { setHasSeenSplashScreen } = useAuth();
+    setHasSeenSplashScreen(true);
     router.replace("/home");
   };
 
   const handleNextClick = () => {
+    const { setHasSeenSplashScreen } = useAuth();
+
     if (page == 3) {
+      setHasSeenSplashScreen(true);
       router.replace("/home");
       return;
     }

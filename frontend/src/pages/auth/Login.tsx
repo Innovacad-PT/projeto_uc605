@@ -1,5 +1,3 @@
-// src/pages/auth/Login.tsx
-
 import React, { useState } from "react";
 import {
   AppShell,
@@ -44,7 +42,7 @@ export const LoginPage = () => {
         message: "Logged in successfully",
         color: "green",
       });
-      //navigate("/");
+      navigate(location.state?.from || "/");
     } catch (error) {
       notifications.show({
         title: "Error",

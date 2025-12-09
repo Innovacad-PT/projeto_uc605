@@ -1,5 +1,3 @@
-// src/pages/admin/Discounts.tsx
-
 import { useEffect, useState } from "react";
 import {
   Table,

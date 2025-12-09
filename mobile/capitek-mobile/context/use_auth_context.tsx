@@ -1,50 +1,65 @@
+import * as SecureStore from "expo-secure-store";
 import {
   createContext,
+  PropsWithChildren,
   useContext,
   useEffect,
   useState,
-  PropsWithChildren,
 } from "react";
-import * as SecureStore from "expo-secure-store";
 import Toast from "react-native-toast-message";
 
 type AuthContextType = {
   isAuthenticated: boolean;
   token: string | null;
+  isLoading: boolean;
+  hasSeenSplashScreen: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
-  isLoading: boolean;
+  setHasSeenSplashScreen: (value: boolean) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   token: null,
+  isLoading: true,
+  hasSeenSplashScreen: false,
   signIn: async (email: string, password: string): Promise<boolean> => {
     return false;
   },
   signOut: async () => {},
-  isLoading: true,
+  setHasSeenSplashScreen: async (value: boolean) => {},
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasSeenSplashScreen, setSeenSplashScreen] = useState(false);
 
   useEffect(() => {
-    async function loadToken() {
+    async function loadAuthData() {
       try {
-        const storedToken = await SecureStore.getItemAsync("auth_token");
+        const [storedToken, hasSeenSplash] = await Promise.all([
+          SecureStore.getItemAsync("auth_token"),
+          SecureStore.getItemAsync("hasSeenSplashScreen"),
+        ]);
+
         if (storedToken) {
           setToken(storedToken);
         }
+
+        console.log("Raw hasSeenSplash from store:", hasSeenSplash);
+
+        if (hasSeenSplash === "true") {
+          setSeenSplashScreen(true);
+        }
       } catch (error) {
-        console.error("Failed to load token", error);
+        console.error("Failed to load auth data", error);
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadToken();
+    loadAuthData();
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -115,14 +130,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const setHasSeenSplashScreen = async (value: boolean) => {
+    try {
+      await SecureStore.setItemAsync("hasSeenSplashScreen", value.toString());
+      setSeenSplashScreen(value);
+      console.log("hasSeenSplashScreen", value);
+    } catch (error) {
+      console.error("Failed to save hasSeenSplashScreen", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated: !!token,
         token,
+        isLoading,
+        hasSeenSplashScreen,
         signIn,
         signOut,
-        isLoading,
+        setHasSeenSplashScreen,
       }}
     >
       {children}

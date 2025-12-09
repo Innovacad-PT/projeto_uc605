@@ -25,7 +25,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Persistência localStorage
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(items));
   }, [items]);

@@ -1,10 +1,5 @@
-// src/utils/api.ts
-
 export const BASE_URL = import.meta.env.VITE_API_URL || "";
 
-/**
- * API response wrapper from backend
- */
 export interface ApiResponse<T> {
   hasError: boolean;
   message: string;
@@ -12,26 +7,17 @@ export interface ApiResponse<T> {
   code: string;
 }
 
-/**
- * Get stored JWT token from localStorage.
- */
 function getToken(): string | null {
   return localStorage.getItem("accessToken");
 }
 
-/**
- * Generic request helper.
- */
 async function request<T>(
   method: string,
   endpoint: string,
   body?: any,
   queryParams?: Record<string, string | number | undefined>
 ): Promise<T> {
-  // Build the URL
   let url: string;
-
-
 
   const urlObj = new URL(BASE_URL + endpoint);
   if (queryParams) {
@@ -44,7 +30,7 @@ async function request<T>(
   url = urlObj.toString();
 
   const headers: HeadersInit = {};
-  
+
   const token = getToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -52,9 +38,12 @@ async function request<T>(
 
   let requestBody: BodyInit | undefined;
 
-  // Check if we need to send as multipart/form-data
-  // User requested: if method is PUT and imageUrl exists in body
-  if (method === "PUT" && body && typeof body === 'object' && "imageUrl" in body) {
+  if (
+    method === "PUT" &&
+    body &&
+    typeof body === "object" &&
+    "imageUrl" in body
+  ) {
     const formData = new FormData();
     Object.entries(body).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -62,7 +51,6 @@ async function request<T>(
       }
     });
     requestBody = formData;
-    // Content-Type header is NOT set for FormData to allow browser to set boundary
   } else {
     headers["Content-Type"] = "application/json";
     requestBody = body ? JSON.stringify(body) : undefined;
@@ -79,32 +67,34 @@ async function request<T>(
     throw new Error(`API error ${response.status}: ${errorText}`);
   }
 
-  // If no content (204), return undefined as any
   if (response.status === 204) {
     return undefined as any;
   }
 
-  // Parse the response wrapper
   let apiResponse: ApiResponse<T>;
   try {
     const responseText = await response.text();
     apiResponse = JSON.parse(responseText) as ApiResponse<T>;
   } catch (parseError) {
-    throw new Error(`Invalid JSON response from API. Response was not in expected format.`);
+    throw new Error(
+      `Invalid JSON response from API. Response was not in expected format.`
+    );
   }
-  
-  // Check if the API returned an error
+
+  console.log(apiResponse);
+
   if (apiResponse.hasError) {
     throw new Error(`API Error [${apiResponse.code}]: ${apiResponse.message}`);
   }
-  
-  // Return the unwrapped value
+
   return apiResponse.value;
 }
 
 export const apiClient = {
-  get: <T>(endpoint: string, queryParams?: Record<string, string | number | undefined>) =>
-    request<T>("GET", endpoint, undefined, queryParams),
+  get: <T>(
+    endpoint: string,
+    queryParams?: Record<string, string | number | undefined>
+  ) => request<T>("GET", endpoint, undefined, queryParams),
   post: <T>(endpoint: string, body: any) => request<T>("POST", endpoint, body),
   put: <T>(endpoint: string, body: any) => request<T>("PUT", endpoint, body),
   delete: <T>(endpoint: string) => request<T>("DELETE", endpoint),

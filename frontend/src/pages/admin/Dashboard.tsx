@@ -1,13 +1,7 @@
-// src/pages/admin/Dashboard.tsx
-
 import { AppShell, Stack, NavLink, Text } from "@mantine/core";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@contexts/AuthContext";
 
-/**
- * Admin dashboard layout. Uses Mantine v8 AppShell with sidebar navigation.
- * The <Outlet /> will render nested admin routes (e.g., Products, Brands, etc.).
- */
 export const AdminDashboard = () => {
   const { role } = useAuth();
   const location = useLocation();

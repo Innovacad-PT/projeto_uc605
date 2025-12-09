@@ -23,7 +23,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
        new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo"),
        [],
        "",
-       169.99,
+       decimal.Parse((169.99).ToString()),
        "")
     ]);
 
@@ -100,7 +100,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
         return _products;
     }
 
-    public IEnumerable<ProductEntity>? GetAllWithFilters(string search, Guid categoryId, Guid brandId, double minPrice, double maxPrice)
+    public IEnumerable<ProductEntity>? GetAllWithFilters(string search, Guid categoryId, Guid brandId, decimal minPrice, decimal maxPrice)
     {
         IEnumerable<ProductEntity>? products = _products.Where(p =>
             p.Name.ToLower().ContainsAny(search.ToLower().AsSpan()) && p.Category.Id == categoryId && p.Brand.Id == brandId && (p.Price >= minPrice && p.Price <= maxPrice));
