@@ -9,30 +9,40 @@ import {
   Stack,
   ActionIcon,
 } from "@mantine/core";
-import { IconPlus, IconEdit, IconTrash } from "@tabler/icons-react";
-import { categoryService } from "@services/categories";
-import type { Category } from "@_types/category";
+import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
+import {
+  getAllTechSpecs,
+  createTechSpec,
+  updateTechSpec,
+  deleteTechSpec,
+  type TechnicalSpecsEntity,
+} from "@services/techSpecs";
 import { notifications } from "@mantine/notifications";
 
-export const AdminCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+export const AdminTechSpecs = () => {
+  const [specs, setSpecs] = useState<TechnicalSpecsEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: "" });
+  const [editingSpec, setEditingSpec] = useState<TechnicalSpecsEntity | null>(
+    null
+  );
+
+  const [formData, setFormData] = useState({
+    key: "",
+  });
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
 
-  const loadCategories = async () => {
+  const loadData = async () => {
     try {
-      const data = await categoryService.getAll();
-      setCategories(data);
+      const data = await getAllTechSpecs();
+      setSpecs(data);
     } catch (error) {
       notifications.show({
         title: "Error",
-        message: "Failed to load categories",
+        message: "Failed to load technical specs",
         color: "red",
       });
     } finally {
@@ -41,65 +51,69 @@ export const AdminCategories = () => {
   };
 
   const handleCreate = () => {
-    setEditingCategory(null);
-    setFormData({ name: "" });
+    setEditingSpec(null);
+    setFormData({
+      key: "",
+    });
     setModalOpen(true);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setFormData({ name: category.name });
+  const handleEdit = (spec: TechnicalSpecsEntity) => {
+    setEditingSpec(spec);
+    setFormData({
+      key: spec.key,
+    });
     setModalOpen(true);
   };
 
   const handleSubmit = async () => {
     try {
-      if (editingCategory) {
-        await categoryService.update(editingCategory.id, {
-          name: formData.name,
+      if (editingSpec) {
+        await updateTechSpec(editingSpec.technicalSpecsId, {
+          key: formData.key,
         });
         notifications.show({
           title: "Success",
-          message: "Category updated successfully",
+          message: "Technical spec updated successfully",
           color: "green",
         });
       } else {
-        await categoryService.create({
-          id: crypto.randomUUID(),
-          name: formData.name,
+        await createTechSpec({
+          technicalSpecsId: crypto.randomUUID(),
+          key: formData.key,
         });
         notifications.show({
           title: "Success",
-          message: "Category created successfully",
+          message: "Technical spec created successfully",
           color: "green",
         });
       }
       setModalOpen(false);
-      loadCategories();
+      loadData();
     } catch (error) {
       notifications.show({
         title: "Error",
-        message: "Failed to save category",
+        message: "Failed to save technical spec",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm("Are you sure you want to delete this spec?")) return;
 
     try {
-      await categoryService.delete(id);
+      await deleteTechSpec(id);
       notifications.show({
         title: "Success",
-        message: "Category deleted successfully",
+        message: "Technical spec deleted successfully",
         color: "green",
       });
-      loadCategories();
+      loadData();
     } catch (error) {
       notifications.show({
         title: "Error",
-        message: "Failed to delete category",
+        message: "Failed to delete technical spec",
         color: "red",
       });
     }
@@ -111,32 +125,32 @@ export const AdminCategories = () => {
     <Stack>
       <Group justify="space-between">
         <Text size="xl" fw={700}>
-          Categories
+          Technical Specifications
         </Text>
         <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Category
+          Add Tech Spec
         </Button>
       </Group>
 
       <Table striped highlightOnHover>
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Key</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {categories.map((category) => (
-            <tr key={category.id}>
-              <td>{category.name}</td>
+          {specs.map((spec) => (
+            <tr key={spec.technicalSpecsId}>
+              <td>{spec.key}</td>
               <td>
                 <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(category)}>
+                  <ActionIcon color="blue" onClick={() => handleEdit(spec)}>
                     <IconEdit size={16} />
                   </ActionIcon>
                   <ActionIcon
                     color="red"
-                    onClick={() => handleDelete(category.id)}
+                    onClick={() => handleDelete(spec.technicalSpecsId)}
                   >
                     <IconTrash size={16} />
                   </ActionIcon>
@@ -150,17 +164,19 @@ export const AdminCategories = () => {
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingCategory ? "Edit Category" : "Create Category"}
+        title={editingSpec ? "Edit Tech Spec" : "Create Tech Spec"}
       >
         <Stack>
           <TextInput
-            label="Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ name: e.target.value })}
+            label="Key"
+            placeholder="e.g., Processor, RAM"
+            value={formData.key}
+            onChange={(e) => setFormData({ ...formData, key: e.target.value })}
             required
           />
+
           <Button onClick={handleSubmit}>
-            {editingCategory ? "Update" : "Create"}
+            {editingSpec ? "Update" : "Create"}
           </Button>
         </Stack>
       </Modal>
@@ -168,4 +184,4 @@ export const AdminCategories = () => {
   );
 };
 
-export default AdminCategories;
+export default AdminTechSpecs;

@@ -49,6 +49,7 @@ export default function ProductCard({
       />
 
       <Button
+        data-disabled={product.stock === 0}
         fullWidth
         mt="md"
         onClick={(e) => {
@@ -56,7 +57,7 @@ export default function ProductCard({
           onAddToCart();
         }}
       >
-        Adicionar
+        {product.stock === 0 ? "Produto Indisponível" : "Adicionar ao Carrinho"}
       </Button>
     </Card>
   );

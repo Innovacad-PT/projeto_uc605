@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { Product } from "@_types/product";
 import { LogType } from "@_types/debug";
 import { logger } from "@utils/debug";
+import { notifications } from "@mantine/notifications";
 
 export interface CartItem {
   product: Product;
@@ -30,10 +31,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
 
   function addToCart(product: Product) {
+    if (product.stock === 0) {
+      notifications.show({
+        title: "Erro",
+        message: "Este produto não está disponível",
+        color: "red",
+      });
+      return;
+    }
+
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
-      logger(LogType.INFO, "addToCart", product);
       if (existing) {
+        if (
+          prev.find((item) => item.product.id === product.id)!.quantity >=
+          product.stock!
+        ) {
+          notifications.show({
+            title: "Erro",
+            message: "Não é possível adicionar mais deste produto ao carrinho",
+            color: "red",
+          });
+          return prev;
+        }
+
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }

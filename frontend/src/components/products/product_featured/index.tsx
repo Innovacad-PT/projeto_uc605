@@ -135,6 +135,7 @@ export default function FeaturedProducts({
               c="indigo"
             />
             <Button
+              data-disabled={p.stock === 0}
               fullWidth
               mt="md"
               onClick={(e) => {
@@ -142,7 +143,7 @@ export default function FeaturedProducts({
                 onAddToCart(p);
               }}
             >
-              Adicionar
+              {p.stock === 0 ? "Produto Indisponível" : "Adicionar ao Carrinho"}
             </Button>
           </Card>
         ))}

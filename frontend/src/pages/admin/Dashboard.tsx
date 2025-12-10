@@ -11,6 +11,8 @@ export const AdminDashboard = () => {
     { to: "/admin/brands", label: "Brands" },
     { to: "/admin/categories", label: "Categories" },
     { to: "/admin/discounts", label: "Discounts" },
+    { to: "/admin/users", label: "Users" },
+    { to: "/admin/tech-specs", label: "Tech Specs" },
   ];
 
   return (

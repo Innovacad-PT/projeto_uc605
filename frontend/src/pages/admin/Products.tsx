@@ -21,6 +21,10 @@ import type { Brand } from "@_types/brand";
 import type { Category } from "@_types/category";
 import { notifications } from "@mantine/notifications";
 import { v4 as uuidv4 } from "uuid";
+import {
+  getAllTechSpecs,
+  type TechnicalSpecsEntity,
+} from "@services/techSpecs";
 
 const formatPriceForApi = (price: string | number): string => {
   price.toString().replace("€", "");
@@ -35,6 +39,14 @@ export const AdminProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [availableSpecs, setAvailableSpecs] = useState<TechnicalSpecsEntity[]>(
+    []
+  );
+  const [productSpecs, setProductSpecs] = useState<
+    { technicalSpecsId: string; key: string; value: string }[]
+  >([]);
+  const [newSpec, setNewSpec] = useState({ technicalSpecsId: "", value: "" });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -52,14 +64,17 @@ export const AdminProducts = () => {
 
   const loadData = async () => {
     try {
-      const [productsData, brandsData, categoriesData] = await Promise.all([
-        productService.getAll(),
-        brandService.getAll(),
-        categoryService.getAll(),
-      ]);
+      const [productsData, brandsData, categoriesData, specsData] =
+        await Promise.all([
+          productService.getAll(),
+          brandService.getAll(),
+          categoryService.getAll(),
+          getAllTechSpecs(),
+        ]);
       setProducts(productsData);
       setBrands(brandsData);
       setCategories(categoriesData);
+      setAvailableSpecs(specsData);
     } catch (error) {
       notifications.show({
         title: "Error",
@@ -83,6 +98,8 @@ export const AdminProducts = () => {
       imageUrl: "",
     });
     setImageFile(null);
+    setProductSpecs([]);
+    setNewSpec({ technicalSpecsId: "", value: "" });
     setModalOpen(true);
   };
 
@@ -98,6 +115,14 @@ export const AdminProducts = () => {
       imageUrl: product.imageUrl || "",
     });
     setImageFile(null);
+    setProductSpecs(
+      product.technicalSpecs?.map((spec) => ({
+        technicalSpecsId: spec.id,
+        key: spec.name,
+        value: spec.value || "",
+      })) || []
+    );
+    setNewSpec({ technicalSpecsId: "", value: "" });
     setModalOpen(true);
   };
 
@@ -108,6 +133,23 @@ export const AdminProducts = () => {
         if (imageFile) {
           payload.imageUrl = imageFile;
         }
+
+        // Handle Tech Specs separate or if backend accepts them in update
+        // Assuming FormData update is preferred or we need to send JSON with images separately
+        // Since original update was JSON, let's keep it uniform or switch to FormData if needed.
+        // If API expects FormData for update now... let's check `productService.update`
+        // It seems `productService.update` takes `any` payload.
+        // If we need to update specs, we likely need to send them.
+        // Let's assume the backend handles list of specs in JSON or FormData.
+        // Given mixed usage, let's check if we can just append them.
+
+        // Actually, for Tech Specs to update correctly, we likely need to send them.
+        // Let's stick to the previous implementation style but add specs.
+        payload.technicalSpecs = productSpecs.map((spec) => ({
+          technicalSpecsId: spec.technicalSpecsId,
+          value: spec.value,
+        }));
+
         await productService.update(editingProduct.id, payload);
         notifications.show({
           title: "Success",
@@ -127,6 +169,14 @@ export const AdminProducts = () => {
           formDataObj.append("Image", imageFile);
         }
 
+        productSpecs.forEach((spec, index) => {
+          formDataObj.append(
+            `TechnicalSpecs[${index}].TechnicalSpecsId`,
+            spec.technicalSpecsId
+          );
+          formDataObj.append(`TechnicalSpecs[${index}].Value`, spec.value);
+        });
+
         await productService.create(formDataObj);
         notifications.show({
           title: "Success",
@@ -143,6 +193,20 @@ export const AdminProducts = () => {
         color: "red",
       });
     }
+  };
+
+  const handleAddSpec = () => {
+    if (!newSpec.technicalSpecsId || !newSpec.value) return;
+    const specKey =
+      availableSpecs.find(
+        (s) => s.technicalSpecsId === newSpec.technicalSpecsId
+      )?.key || "";
+    setProductSpecs([...productSpecs, { ...newSpec, key: specKey }]);
+    setNewSpec({ technicalSpecsId: "", value: "" });
+  };
+
+  const handleRemoveSpec = (index: number) => {
+    setProductSpecs(productSpecs.filter((_, i) => i !== index));
   };
 
   const handleDelete = async (id: string) => {
@@ -281,6 +345,59 @@ export const AdminProducts = () => {
           <Button onClick={handleSubmit}>
             {editingProduct ? "Update" : "Create"}
           </Button>
+
+          <Text size="sm" fw={700} mt="md">
+            Technical Specifications
+          </Text>
+          <Group align="flex-end">
+            <Select
+              label="Spec Key"
+              placeholder="Select spec"
+              data={availableSpecs.map((s) => ({
+                value: s.technicalSpecsId,
+                label: s.key,
+              }))}
+              value={newSpec.technicalSpecsId}
+              onChange={(val) =>
+                setNewSpec({ ...newSpec, technicalSpecsId: val || "" })
+              }
+              style={{ flex: 1 }}
+            />
+            <TextInput
+              label="Value"
+              placeholder="Value"
+              value={newSpec.value}
+              onChange={(e) =>
+                setNewSpec({ ...newSpec, value: e.target.value })
+              }
+              style={{ flex: 1 }}
+            />
+            <Button onClick={handleAddSpec} variant="outline">
+              <IconPlus size={16} />
+            </Button>
+          </Group>
+          <Stack gap="xs" mt="sm">
+            {productSpecs.map((spec, index) => (
+              <Group
+                key={index}
+                justify="space-between"
+                bg="gray.1"
+                p="xs"
+                style={{ borderRadius: 4 }}
+              >
+                <Text size="sm">
+                  {spec.key}: {spec.value}
+                </Text>
+                <ActionIcon
+                  color="red"
+                  size="sm"
+                  onClick={() => handleRemoveSpec(index)}
+                >
+                  <IconTrash size={14} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Stack>
         </Stack>
       </Modal>
     </Stack>

@@ -13,6 +13,8 @@ import AdminProducts from "@pages/admin/Products";
 import AdminBrands from "@pages/admin/Brands";
 import AdminCategories from "@pages/admin/Categories";
 import AdminDiscounts from "@pages/admin/Discounts";
+import AdminUsers from "@pages/admin/Users";
+import AdminTechSpecs from "@pages/admin/TechSpecs";
 import ProductsListPage from "@pages/ProductsList";
 import Contact from "@components/contact";
 import OrderConfirmation from "@components/order_confirmation";
@@ -35,7 +37,7 @@ const App = () => {
               <Route
                 path="/checkout"
                 element={
-                  <ProtectedRoute requiredRole="guest">
+                  <ProtectedRoute>
                     <CheckoutPage />
                   </ProtectedRoute>
                 }
@@ -43,7 +45,7 @@ const App = () => {
               <Route
                 path="/order-confirmation"
                 element={
-                  <ProtectedRoute requiredRole="guest">
+                  <ProtectedRoute>
                     <OrderConfirmation />
                   </ProtectedRoute>
                 }
@@ -51,7 +53,7 @@ const App = () => {
               <Route
                 path="/profile"
                 element={
-                  <ProtectedRoute requiredRole="guest">
+                  <ProtectedRoute>
                     <ProfilePage />
                   </ProtectedRoute>
                 }
@@ -59,7 +61,7 @@ const App = () => {
               <Route
                 path="/orders"
                 element={
-                  <ProtectedRoute requiredRole="guest">
+                  <ProtectedRoute>
                     <OrdersPage />
                   </ProtectedRoute>
                 }
@@ -77,6 +79,8 @@ const App = () => {
                 <Route path="brands" element={<AdminBrands />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="discounts" element={<AdminDiscounts />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="tech-specs" element={<AdminTechSpecs />} />
                 <Route path="contacts" element={<Contact />} />
               </Route>
 

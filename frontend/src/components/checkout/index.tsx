@@ -6,7 +6,6 @@ import {
   Card,
   Divider,
   NumberInput,
-  TextInput,
   Stack,
   ActionIcon,
   Image,
@@ -17,8 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { createOrder, type OrderAdd } from "@services/order";
 import { getUserId, isLoggedIn } from "@services/auth";
 import { notifications } from "@mantine/notifications";
-import { logger } from "@utils/debug";
-import { LogType } from "@_types/debug";
 import AppHeader from "@components/header";
 
 export default function CheckoutPage() {
@@ -119,7 +116,7 @@ export default function CheckoutPage() {
                           updateQuantity(item.product.id, Number(val))
                         }
                         min={1}
-                        max={99}
+                        max={item.product.stock!}
                         w={80}
                         allowNegative={false}
                       />
@@ -154,11 +151,6 @@ export default function CheckoutPage() {
                   <Text c="dimmed">Subtotal</Text>
                   <Text>€{total.toFixed(2)}</Text>
                 </Group>
-
-                <TextInput
-                  placeholder="Código do cupão"
-                  label="Cupão de desconto"
-                />
 
                 <Divider />
 

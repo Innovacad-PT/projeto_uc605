@@ -116,13 +116,16 @@ export default function ProductPage({ product }: ProductPageProps) {
                   )}
 
                 <Button
+                  data-disabled={product.stock === 0}
                   fullWidth
                   mt="md"
                   size="md"
                   leftSection={<IconShoppingCart />}
                   onClick={() => handleAddProductToCart()}
                 >
-                  Adicionar ao Carrinho
+                  {product.stock === 0
+                    ? "Produto Indisponível"
+                    : "Adicionar ao Carrinho"}
                 </Button>
               </Stack>
             </Card>
