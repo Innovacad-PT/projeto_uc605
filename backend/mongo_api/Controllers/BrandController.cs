@@ -1,19 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.Brands;
+using mongo_api.Entities;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/brands")]
-public class BrandController(MongoRepository repository) : Controller
+public class BrandController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly BrandRepository _repository = repository.BrandRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var brands = await _repository.GetAll();
+        var brands = await redis.GetOrSetCache("brands", async () => await _repository.GetAll());
         if (brands.Count == 0) return NotFound();
 
         return Ok(Json(brands));
@@ -24,9 +26,9 @@ public class BrandController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var brand = await _repository.GetById(id);
+        var brand = await redis.GetOrSetCache($"brand:{id}", async () => (await _repository.GetById(id))!);
         if (brand == null) return NotFound();
-
+        
         return Ok(Json(brand));
     }
 

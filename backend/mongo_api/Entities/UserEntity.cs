@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
 public class UserEntity(Guid id, string firstName, string lastName, string userName,
-    string email, DateTime createdAt, string password)
+    string email, DateTime createdAt, string password) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

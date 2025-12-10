@@ -1,5 +1,6 @@
 using mongo_api.Entities;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen(options => {
 
 builder.Services.Configure<MongoEntity>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<MongoRepository>();
+builder.Services.AddSingleton<Redis>();
 
 // JWT
 

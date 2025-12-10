@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.Discounts;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/discounts")]
-public class DiscountController(MongoRepository repository) : Controller
+public class DiscountController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly DiscountRepository _repository = repository.DiscountRepo;
     
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var discounts = await _repository.GetAll();
+        var discounts = await redis.GetOrSetCache("discounts", async () => await _repository.GetAll());
         if (discounts.Count == 0) return NotFound();
 
         return Ok(Json(discounts));
@@ -24,7 +25,7 @@ public class DiscountController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var discount = await _repository.GetById(id);
+        var discount = await redis.GetOrSetCache($"discount:{id}", async () => (await _repository.GetById(id))!);
         if (discount == null) return NotFound();
 
         return Ok(Json(discount));

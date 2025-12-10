@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Entities;
 
-public class BrandEntity(Guid id, string name)
+public class BrandEntity(Guid id, string name) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

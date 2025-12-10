@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
 public class ReviewEntity(Guid id, Guid userId, Guid productId, double rating,
-    string? comment, DateTime createdAt)
+    string? comment, DateTime createdAt) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

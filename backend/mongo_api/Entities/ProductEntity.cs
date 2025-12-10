@@ -6,7 +6,7 @@ namespace mongo_api.Entities;
 
 public class ProductEntity(Guid id, string name, string? description, double price, int? stock, string? imageUrl,
     BrandEntity? brand, List<TechnicalSpecEntity>? technicalSpecs, List<ReviewEntity>? reviews, DateTime? createdAt,
-    DateTime? updatedAt, DiscountEntity? discount)
+    DateTime? updatedAt, DiscountEntity? discount) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/users")]
-public class UserController(MongoRepository repository) : Controller
+public class UserController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly UserRepository _repository = repository.UserRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var users = await _repository.GetAll();
+        var users = await redis.GetOrSetCache("users", async () => await _repository.GetAll());
 
         if (users.Count == 0) return NotFound();
 
@@ -25,7 +26,7 @@ public class UserController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var user = await _repository.GetById(id);
+        var user = await redis.GetOrSetCache($"user:{id}", async () => (await _repository.GetById(id))!);
         if (user == null) return NotFound();
 
         return Ok(Json(user));

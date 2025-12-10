@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/products")]
-public class ProductController(MongoRepository repository) : Controller
+public class ProductController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly ProductRepository _repository = repository.ProductRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var products = await _repository.GetAll();
+        var products = await redis.GetOrSetCache("products", async () => await _repository.GetAll());
         if (products.Count == 0) return NotFound();
 
         return Ok(Json(products));
@@ -24,7 +25,7 @@ public class ProductController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var product = await _repository.GetById(id);
+        var product = await redis.GetOrSetCache($"product:{id}", async () => (await _repository.GetById(id))!);
         if (product == null) return NotFound();
 
         return Ok(Json(product));

@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.Category;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/categories")]
-public class CategoryController(MongoRepository repository) : Controller
+public class CategoryController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly CategoryRepository _repository = repository.CategoryRepo;
     
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var categories = await _repository.GetAll();
+        var categories = await redis.GetOrSetCache("categories", async () => await _repository.GetAll());
         if (categories.Count == 0) return NotFound();
 
         return Ok(Json(categories));
@@ -24,7 +25,7 @@ public class CategoryController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var category = await _repository.GetById(id);
+        var category = await redis.GetOrSetCache($"category:{id}", async () => (await _repository.GetById(id))!);
         if (category == null) return NotFound();
 
         return Ok(Json(category));

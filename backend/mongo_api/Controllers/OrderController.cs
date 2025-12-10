@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.Orders;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/orders")]
-public class OrderController(MongoRepository repository) : Controller
+public class OrderController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly OrderRepository _repository = repository.OrderRepo;
     
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var orders = await _repository.GetAll();
+        var orders = await redis.GetOrSetCache("orders", async () => await _repository.GetAll());
         if (orders.Count == 0) return NotFound();
 
         return Ok(Json(orders));
@@ -24,7 +25,7 @@ public class OrderController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var order = await _repository.GetById(id);
+        var order = await redis.GetOrSetCache($"order:{id}", async () => (await _repository.GetById(id))!);
         if (order == null) return NotFound();
 
         return Ok(Json(order));

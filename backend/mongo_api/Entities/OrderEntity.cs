@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Entities;
 
-public class OrderEntity(Guid id, Guid userId, DateTime createdAt, double total, string status, List<ProductEntity> products)
+public class OrderEntity(Guid id, Guid userId, DateTime createdAt, double total, string status, List<ProductEntity> products) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

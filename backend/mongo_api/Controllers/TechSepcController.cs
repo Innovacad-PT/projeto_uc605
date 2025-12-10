@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.TechnicalSpecs;
 using mongo_api.Repositories;
+using mongo_api.Utils;
 
 namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/techspecs")]
-public class TechSepcController(MongoRepository repository) : Controller
+public class TechSepcController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly TechSpecRepository _repository = repository.TechSpecRepo;
     
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var techSpecs = await _repository.GetAll();
+        var techSpecs = await redis.GetOrSetCache("techspecs", async () => await _repository.GetAll());
         if (techSpecs.Count == 0) return NotFound();
 
         return Ok(Json(techSpecs));
@@ -24,7 +25,7 @@ public class TechSepcController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var techSpec = await _repository.GetById(id);
+        var techSpec = await redis.GetOrSetCache($"techspec:{id}", async () => (await _repository.GetById(id))!);
         if (techSpec == null) return NotFound();
 
         return Ok(Json(techSpec));

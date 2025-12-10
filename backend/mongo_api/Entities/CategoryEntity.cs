@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
-public class CategoryEntity(Guid id, string name)
+public class CategoryEntity(Guid id, string name) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
