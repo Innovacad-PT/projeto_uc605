@@ -15,7 +15,7 @@ public class CreateDiscountDTO(double percentage, DateTime startTime, DateTime e
     public DateTime StartTime { get; set; } = startTime;
     public DateTime EndTime { get; set; } = endTime;
 
-    public DiscountEntity? ToEntity()
+    public DiscountEntity ToEntity()
     {
         return new(Id, Percentage, StartTime, EndTime);
     }

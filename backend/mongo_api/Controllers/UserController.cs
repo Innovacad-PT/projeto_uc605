@@ -11,9 +11,9 @@ public class UserController(MongoRepository repository) : Controller
     private readonly UserRepository _repository = repository.UserRepo;
 
     [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetAll()
     {
-        var users = await _repository.GetUsers();
+        var users = await _repository.GetAll();
 
         if (users.Count == 0) return NotFound();
 
@@ -21,40 +21,40 @@ public class UserController(MongoRepository repository) : Controller
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser([FromRoute] Guid id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         if (id == Guid.Empty) return NotFound();
 
-        var user = await _repository.GetUser(id);
+        var user = await _repository.GetById(id);
         if (user == null) return NotFound();
 
         return Ok(Json(user));
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
+    public async Task<IActionResult> Create([FromBody] CreateUserDTO dto)
     {
         dto.Id = Guid.NewGuid();
 
-        var newUser = await _repository.CreateUser(dto);
+        var newUser = await _repository.Create(dto);
         if (newUser == null) return NotFound();
 
         return Ok(Json(newUser));
     }
-/*
-    [HttpPut]
-    public async Task<IActionResult> UpdateUser([FromBody] UserDTO dto)
+    
+    /*[HttpPut]
+    public async Task<IActionResult> Update([FromBody] UserDTO dto)
     {
         var updatedUser = await _repository.UpdateUser(dto);
         if (updatedUser == null) return NotFound();
 
         return Ok(Json(updatedUser));
-    }
-*/
+    }*/
+    
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var oldUser = await _repository.DeleteUser(id);
+        var oldUser = await _repository.Delete(id);
         if (oldUser == null) return NotFound();
 
         return Ok(Json(oldUser));

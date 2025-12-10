@@ -8,28 +8,28 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
 {
     private readonly IMongoCollection<ProductEntity> _collection = collection;
     
-    public async Task<List<ProductEntity>> GetProducts() {
+    public async Task<List<ProductEntity>> GetAll() {
         var cursor = await _collection.FindAsync(_ => true);
 
         return await cursor.ToListAsync();
     }
 
-    public async Task<ProductEntity?> GetProduct(Guid id)
+    public async Task<ProductEntity?> GetById(Guid id)
     {
         var cursor = await _collection.FindAsync(u => u.Id.Equals(id));
 
         return await cursor.FirstOrDefaultAsync();
     }
 
-    public async Task<ProductEntity?> CreateProduct(CreateProductDTO dto)
+    public async Task<ProductEntity?> Create(CreateProductDTO dto)
     {
         await _collection.InsertOneAsync(dto.ToEntity());
 
-        return await GetProduct(dto.Id);
+        return await GetById(dto.Id);
     }
 
     /*
-    public async Task<ProductEntity?> UpdateProduct(ProductDTO dto)
+    public async Task<ProductEntity?> Update(ProductDTO dto)
     {
         var updateResult = await _productsCollection.UpdateOneAsync(
             p => p.Id.Equals(dto.Id),
@@ -42,12 +42,12 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
 
         if (updateResult.MatchedCount == 0 || updateResult.ModifiedCount == 0) return null;
 
-        return await GetProduct(dto.Id);
+        return await GetById(dto.Id);
     }*/
 
-    public async Task<ProductEntity?> DeleteProduct(Guid id)
+    public async Task<ProductEntity?> Delete(Guid id)
     {
-        var product = await GetProduct(id);
+        var product = await GetById(id);
         if (product == null) return null;
 
         var result = await _collection.DeleteOneAsync(p => p.Id.Equals(product.Id));

@@ -2,6 +2,7 @@
 using System.Text;
 using mongo_api.Dtos;
 using mongo_api.Entities;
+using mongo_api.Utils;
 using MongoDB.Driver;
 
 namespace mongo_api.Repositories;
@@ -10,33 +11,31 @@ public class UserRepository(IMongoCollection<UserEntity> collection)
 {
     private readonly IMongoCollection<UserEntity> _collection = collection;
     
-    public async Task<List<UserEntity>> GetUsers()
+    public async Task<List<UserEntity>> GetAll()
     {
         var cursor = await _collection.FindAsync(_ => true);
 
         return await cursor.ToListAsync();
     }
 
-    public async Task<UserEntity?> GetUser(Guid id)
+    public async Task<UserEntity?> GetById(Guid id)
     {
         var cursor = await _collection.FindAsync(u => u.Id.Equals(id));
 
         return await cursor.FirstOrDefaultAsync();
     }
 
-    public async Task<UserEntity?> CreateUser(CreateUserDTO dto)
+    public async Task<UserEntity?> Create(CreateUserDTO dto)
     {
-        var passBytes = Encoding.UTF8.GetBytes(dto.Password);
-        var passHash = SHA3_256.Create().ComputeHash(passBytes);
-        dto.Password = Convert.ToHexString(passHash);
+        dto.Password = Crypto.ToHexString(dto.Password);
 
         await _collection.InsertOneAsync(dto.ToEntity());
 
-        return await GetUser(dto.Id);
+        return await GetById(dto.Id);
     }
 
     /*
-    public async Task<UserEntity?> UpdateUser(UserDTO dto)
+    public async Task<UserEntity?> Update(UserDTO dto)
     {
         var updateResult = await _usersCollection.UpdateOneAsync(
             u => u.Id.Equals(dto.Id),
@@ -47,12 +46,12 @@ public class UserRepository(IMongoCollection<UserEntity> collection)
 
         if (updateResult.MatchedCount == 0 || updateResult.ModifiedCount == 0) return null;
 
-        return await GetUser(dto.Id);
+        return await GetById(dto.Id);
     }*/
 
-    public async Task<UserEntity?> DeleteUser(Guid id)
+    public async Task<UserEntity?> Delete(Guid id)
     {
-        var user = await GetUser(id);
+        var user = await GetById(id);
         if (user == null) return null;
 
         var result = await _collection.DeleteOneAsync(u => u.Id.Equals(user.Id));

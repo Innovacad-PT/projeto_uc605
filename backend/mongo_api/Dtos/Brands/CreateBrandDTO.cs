@@ -13,7 +13,7 @@ public class CreateBrandDTO(string name)
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = name;
 
-    public BrandEntity? ToEntity()
+    public BrandEntity ToEntity()
     {
         return new(Id, Name);
     }

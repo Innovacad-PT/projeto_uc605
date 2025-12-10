@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using mongo_api.Dtos.TechnicalSpecs;
 using mongo_api.Repositories;
 
 namespace mongo_api.Controllers;
@@ -8,4 +9,44 @@ namespace mongo_api.Controllers;
 public class TechSepcController(MongoRepository repository) : Controller
 {
     private readonly TechSpecRepository _repository = repository.TechSpecRepo;
+    
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var techSpecs = await _repository.GetAll();
+        if (techSpecs.Count == 0) return NotFound();
+
+        return Ok(Json(techSpecs));
+    }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty) return NotFound();
+
+        var techSpec = await _repository.GetById(id);
+        if (techSpec == null) return NotFound();
+
+        return Ok(Json(techSpec));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTechSpecDTO dto)
+    {
+        dto.Id = Guid.NewGuid();
+
+        var newTechSpec = await _repository.Create(dto);
+        if (newTechSpec == null) return NotFound();
+
+        return Ok(Json(newTechSpec));
+    }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        var oldTechSpec = await _repository.Delete(id);
+        if (oldTechSpec == null) return NotFound();
+
+        return Ok(Json(oldTechSpec));
+    }
 }
