@@ -10,13 +10,28 @@ public class OrdersService
 {
     
     private OrdersRepository _repository = new OrdersRepository();
+    private ProductsService _productsService = new();
 
     public async Task<Result<OrderEntity?>> CreateOrder(OrderAddDto orderDto)
     {
         var createdOrder = _repository.Add(orderDto.ToEntity());
 
-        if (createdOrder == null)
+        bool canCreateOrder = false;
+
+       foreach (var kvp in orderDto.Products)
+       {
+           canCreateOrder = await _productsService.CanCreateOrder(kvp.Key, kvp.Value);
+
+           if (canCreateOrder == false) break;
+       }
+
+        if (createdOrder == null || !canCreateOrder)
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, "NOT CREATED");
+
+        foreach (var kvp in orderDto.Products)
+        {
+            _productsService.DecreaseStock(kvp.Key,  kvp.Value);
+        }
 
         return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", createdOrder);
     }

@@ -11,7 +11,7 @@ public class ProductEntity
     public CategoryEntity Category { get; set; }
     public BrandEntity Brand { get; set; }
     public string ImageUrl { get; set; }
-    public List<TechnicalSpecsEntity> TechnicalSpecs { get; set; }
+    public List<ProductTechnicalSpecsEntity> TechnicalSpecs { get; set; }
     public List<ReviewEntity> Reviews { get; set; }
 
     public DateTime CreatedAt { get; set; }
@@ -22,7 +22,7 @@ public class ProductEntity
         string name,
         CategoryEntity category,
         BrandEntity brand,
-        List<TechnicalSpecsEntity>? technicalSpecs,
+        List<ProductTechnicalSpecsEntity>? technicalSpecs,
         string? imageUrl,
         decimal price,
         string description)
@@ -34,7 +34,7 @@ public class ProductEntity
         ImageUrl = imageUrl ?? "";
         Price = price;
         Description = description;
-        TechnicalSpecs = technicalSpecs ?? new List<TechnicalSpecsEntity>();
+        TechnicalSpecs = technicalSpecs ?? new List<ProductTechnicalSpecsEntity>();
 
         Stock = 0;
         CreatedAt = DateTime.UtcNow;
