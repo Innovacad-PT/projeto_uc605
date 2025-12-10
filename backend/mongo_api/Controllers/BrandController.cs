@@ -7,12 +7,12 @@ namespace mongo_api.Controllers;
 [Route("/brands")]
 public class BrandController(MongoRepository repository) : Controller
 {
-    private readonly MongoRepository _mongoRepository = repository;
+    private readonly BrandRepository _repository = repository.BrandRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetBrands()
     {
-        var products = await _mongoRepository.GetBrands();
+        var products = await _repository.GetBrands();
         if (products.Count == 0) return NotFound();
 
         return Ok(Json(products));

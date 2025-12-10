@@ -7,5 +7,5 @@ namespace mongo_api.Controllers;
 [Route("/discounts")]
 public class DiscountController(MongoRepository repository) : Controller
 {
-
+    private readonly DiscountRepository _repository = repository.DiscountRepo;
 }

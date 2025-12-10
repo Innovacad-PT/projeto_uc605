@@ -7,5 +7,5 @@ namespace mongo_api.Controllers;
 [Route("/orders")]
 public class OrderCategory(MongoRepository repository) : Controller
 {
-
+    private readonly OrderRepository _repository = repository.OrderRepo;
 }

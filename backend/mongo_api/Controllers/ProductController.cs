@@ -8,12 +8,12 @@ namespace mongo_api.Controllers;
 [Route("/products")]
 public class ProductController(MongoRepository repository) : Controller
 {
-    private readonly MongoRepository _mongoRepository = repository;
+    private readonly ProductRepository _repository = repository.ProductRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
-        var products = await _mongoRepository.GetProducts();
+        var products = await _repository.GetProducts();
         if (products.Count == 0) return NotFound();
 
         return Ok(Json(products));
@@ -24,7 +24,7 @@ public class ProductController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var product = await _mongoRepository.GetProduct(id);
+        var product = await _repository.GetProduct(id);
         if (product == null) return NotFound();
 
         return Ok(Json(product));
@@ -33,7 +33,7 @@ public class ProductController(MongoRepository repository) : Controller
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateProductDTO dto)
     {
-        var newProduct = await _mongoRepository.CreateProduct(dto);
+        var newProduct = await _repository.CreateProduct(dto);
         if (newProduct == null) return NotFound();
 
         return Ok(Json(newProduct));
@@ -42,7 +42,7 @@ public class ProductController(MongoRepository repository) : Controller
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] ProductDTO dto)
     {
-        var updatedProduct = await _mongoRepository.UpdateProduct(dto);
+        var updatedProduct = await _repository.UpdateProduct(dto);
         if (updatedProduct == null) return NotFound();
 
         return Ok(Json(updatedProduct));
@@ -51,7 +51,7 @@ public class ProductController(MongoRepository repository) : Controller
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {
-        var oldProduct = await _mongoRepository.DeleteProduct(id);
+        var oldProduct = await _repository.DeleteProduct(id);
         if (oldProduct == null) return NotFound();
 
         return Ok(Json(oldProduct));

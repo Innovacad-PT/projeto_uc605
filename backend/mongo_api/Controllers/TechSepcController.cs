@@ -7,5 +7,5 @@ namespace mongo_api.Controllers;
 [Route("/techspecs")]
 public class TechSepcController(MongoRepository repository) : Controller
 {
-
+    private readonly TechSpecRepository _repository = repository.TechSpecRepo;
 }

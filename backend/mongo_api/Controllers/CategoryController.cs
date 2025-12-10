@@ -7,5 +7,5 @@ namespace mongo_api.Controllers;
 [Route("/categories")]
 public class CategoryController(MongoRepository repository) : Controller
 {
-
+    private readonly CategoryRepository _repository = repository.CategoryRepo;
 }

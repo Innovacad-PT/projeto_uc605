@@ -8,12 +8,12 @@ namespace mongo_api.Controllers;
 [Route("/users")]
 public class UserController(MongoRepository repository) : Controller
 {
-    private readonly MongoRepository _mongoRepository = repository;
+    private readonly UserRepository _repository = repository.UserRepo;
 
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
-        var users = await _mongoRepository.GetUsers();
+        var users = await _repository.GetUsers();
 
         if (users.Count == 0) return NotFound();
 
@@ -25,7 +25,7 @@ public class UserController(MongoRepository repository) : Controller
     {
         if (id == Guid.Empty) return NotFound();
 
-        var user = await _mongoRepository.GetUser(id);
+        var user = await _repository.GetUser(id);
         if (user == null) return NotFound();
 
         return Ok(Json(user));
@@ -36,7 +36,7 @@ public class UserController(MongoRepository repository) : Controller
     {
         dto.Id = Guid.NewGuid();
 
-        var newUser = await _mongoRepository.CreateUser(dto);
+        var newUser = await _repository.CreateUser(dto);
         if (newUser == null) return NotFound();
 
         return Ok(Json(newUser));
@@ -45,7 +45,7 @@ public class UserController(MongoRepository repository) : Controller
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserDTO dto)
     {
-        var updatedUser = await _mongoRepository.UpdateUser(dto);
+        var updatedUser = await _repository.UpdateUser(dto);
         if (updatedUser == null) return NotFound();
 
         return Ok(Json(updatedUser));
@@ -54,7 +54,7 @@ public class UserController(MongoRepository repository) : Controller
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {
-        var oldUser = await _mongoRepository.DeleteUser(id);
+        var oldUser = await _repository.DeleteUser(id);
         if (oldUser == null) return NotFound();
 
         return Ok(Json(oldUser));

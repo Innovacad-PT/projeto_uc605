@@ -7,5 +7,5 @@ namespace mongo_api.Controllers;
 [Route("/reviews")]
 public class ProductCategory(MongoRepository repository) : Controller
 {
-
+    private readonly ReviewRepository _repository = repository.ReviewRepo;
 }
