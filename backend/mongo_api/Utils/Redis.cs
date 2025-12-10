@@ -1,56 +1,90 @@
 ﻿
+using System.Net;
 using System.Text.Json;
+using System.Web;
 using mongo_api.Entities;
 
 namespace mongo_api.Utils;
 
 public class Redis
 {
-    private static Task<T?> Get<T>(string key)
-    {
-        // TODO: Ir buscar os dados à API do REDIS.
-        string? cachedValue = null;
-        if (string.IsNullOrEmpty(cachedValue)) return Task.FromResult<T?>(default); 
+    private static string? _getUri;
+    private static string? _setUri;
 
+    public Redis(IConfiguration configuration)
+    {
+        _getUri = configuration.GetValue<string>("Redis:Get");
+        _setUri = configuration.GetValue<string>("Redis:Set");
+    }
+    
+    private static async Task<T?> Get<T>(string key) where T : class
+    {
         try
         {
-            var result = JsonSerializer.Deserialize<T>(cachedValue);
-            return Task.FromResult(result);
+            var uri = new Uri($"{_getUri}{key}");
+            
+            using var client = new HttpClient();
+            var result = await client.GetAsync(uri);
+
+            if (result.StatusCode == HttpStatusCode.NotFound) return null;
+        
+            result.EnsureSuccessStatusCode(); 
+            
+            return await result.Content.ReadFromJsonAsync<T>();
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            return Task.FromResult<T?>(default);
+            return null;
+        }
+  
+    }
+    
+    private static async Task Set<T>(string key, T value)
+    {
+        try
+        {
+            string serializedValue = JsonSerializer.Serialize(value);
+
+            string encodedValue = HttpUtility.UrlEncode(serializedValue);
+
+            var uri = new Uri($"{_setUri}{key}?value={encodedValue}");
+
+            using var client = new HttpClient();
+            var result = await client.PostAsync(uri, null);
+
+            result.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            // Ignore :D
         }
     }
     
-    private static void Set<T>(string key, T value)
+    public async Task<TEntity?> GetOrSetCache<TEntity>(string key, Func<Task<TEntity>> callback) where TEntity : class, IBaseEntity
     {
-        // TODO: Ir buscar os dados à API do REDIS.
-        string serializedValue = JsonSerializer.Serialize(value);
-    }
+        var cachedEntity = await Get<TEntity>(key);
     
-    public async Task<TEntity?> GetOrSetCache<TEntity>(string key, Func<Task<TEntity>> callback) where TEntity : IBaseEntity 
-    {
-        var result = await Get<TEntity>(key);
-        
-        if (result == null)
+        if (cachedEntity == null)
         {
-            result = await callback();
-            Set(key, result);
+            TEntity newEntity = await callback();
+            await Set(key, newEntity);
+            return newEntity;
         }
-        
-        return result;
+    
+        return cachedEntity;
     }
-    public async Task<List<TItem>> GetOrSetCache<TItem>(string key, Func<Task<List<TItem>>> callback)
+
+    public async Task<List<TItem>?> GetOrSetCache<TItem>(string key, Func<Task<List<TItem>>> callback) where TItem : class
     {
-        var result = await Get<List<TItem>>(key); 
-
-        if (result == null)
+        var cachedList = await Get<List<TItem>>(key);
+        
+        if (cachedList == null)
         {
-            result = await callback();
-            Set(key, result); 
+            List<TItem> newList = await callback();
+            await Set(key, newList);
+            return newList;
         }
-
-        return result;
+        
+        return cachedList;
     }
 }

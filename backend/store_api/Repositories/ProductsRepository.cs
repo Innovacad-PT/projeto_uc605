@@ -115,7 +115,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
         return products;
     }
 
-    public ProductEntity? AddSpecs(Guid productId, List<TechnicalSpecsEntity> specs)
+    public ProductEntity? AddSpecs(Guid productId, List<ProductTechnicalSpecsEntity> specs)
     {
         if (_products.All(p => p.Id != productId)) return null;
         
@@ -144,5 +144,17 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
         product.Stock -= amount;
 
         return product;
+    }
+
+    public bool CanCreateOrder(Guid productId, int quantity)
+    {
+        if(_products.Find(p => p.Id == productId) == null)
+        {
+            return false;
+        }
+
+        ProductEntity product = _products.First(p => p.Id == productId);
+
+        return product.Stock >= quantity;
     }
 }

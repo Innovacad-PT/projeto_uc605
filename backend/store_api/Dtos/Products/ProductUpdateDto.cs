@@ -11,7 +11,7 @@ public class ProductUpdateDto : IBaseDto<ProductEntity>
     public Guid? CategoryId { get; set; }
     public Guid? BrandId { get; set; }
     public List<ReviewEntity>? Reviews { get; set; }
-    public List<TechnicalSpecsEntity>? TechnicalSpecs { get; set; }
+    public List<ProductTechnicalSpecsEntity>? TechnicalSpecs { get; set; }
 
     public IFormFile? ImageFile { get; set; }
 }

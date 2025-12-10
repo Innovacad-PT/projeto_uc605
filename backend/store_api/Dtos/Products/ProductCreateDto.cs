@@ -9,7 +9,7 @@ public class ProductCreateDto
     public int Stock { get; set; }
     public decimal Price { get; set; }
     public string? Details { get; set; }
-    public List<TechnicalSpecsEntity>? TechnicalSpecs { get; set; }
+    public List<ProductTechnicalSpecsEntity>? TechnicalSpecs { get; set; }
 
     public IFormFile? Image { get; set; }
 }
