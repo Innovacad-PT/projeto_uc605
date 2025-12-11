@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
     options.EnableAnnotations();
+    options.SwaggerDoc("v1", new OpenApiInfo() { Title = "Capitek API", Version = "1.0" });
 });
 
 builder.Services.AddControllers().AddJsonOptions(options =>

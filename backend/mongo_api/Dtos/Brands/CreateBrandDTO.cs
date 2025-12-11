@@ -5,13 +5,13 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Dtos.Brands;
 
-public class CreateBrandDTO(string name)
+public class CreateBrandDTO(string? name)
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     [SwaggerIgnore]
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string Name { get; set; } = name;
+    public string? Name { get; set; } = name;
 
     public BrandEntity ToEntity()
     {

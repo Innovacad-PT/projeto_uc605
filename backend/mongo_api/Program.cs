@@ -1,8 +1,12 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using mongo_api.Entities;
 using mongo_api.Repositories;
 using mongo_api.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+var key = builder.Configuration["JwtSecretKey"];
 
 // OpenAPI / Swagger 
 builder.Services.AddControllers();
@@ -17,15 +21,22 @@ builder.Services.AddSingleton<Redis>();
 
 // JWT
 
-/*
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
-    options.Authority = builder.Configuration["JWT:Authority"];
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(options =>
     {
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["JWT:Audience"]!,
-    };
-});*/
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+        };
+    });
 
 var app = builder.Build();
 

@@ -12,7 +12,12 @@ namespace store_api.Controllers;
 [Route("/orders")]
 public class OrdersController : Controller
 {
-    private static readonly OrdersService _service = new();
+    private readonly OrdersService _service;
+
+    public OrdersController(IConfiguration configuration)
+    {
+        _service = new (configuration);
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderAddDto dto)

@@ -11,12 +11,17 @@ namespace store_api.Controllers;
 public class BrandsController : Controller  
 {
     
-    private readonly BrandsService _service = new BrandsService();
+    private readonly BrandsService _service;
+
+    public BrandsController(IConfiguration configuration)
+    {
+        _service = new(configuration);
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        Result<IEnumerable<BrandEntity>?> brands = _service.GetAllBrands();
+        Result<IEnumerable<BrandEntity>?> brands = await _service.GetAllBrands();
 
         return Ok(brands);
     }
@@ -24,7 +29,7 @@ public class BrandsController : Controller
     [HttpGet("id/{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        Result<BrandEntity?> brand = _service.GetById(id);
+        Result<BrandEntity?> brand = await _service.GetById(id);
 
         if (brand is Failure<BrandEntity>)
         {
@@ -34,23 +39,10 @@ public class BrandsController : Controller
         return Ok(brand as Success<BrandEntity>);
     }
 
-    [HttpGet("name/{name}")]
-    public async Task<IActionResult> GetByName(string name)
-    {
-        Result<BrandEntity?> brand = _service.GetByName(name);
-
-        if (brand is Failure<BrandEntity>)
-        {
-            return NotFound(brand is Failure<BrandEntity>);
-        }
-        
-        return Ok(brand as Success<BrandEntity>);
-    }
-
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] BrandAddDto<BrandEntity> dto)
     {
-        Result<BrandEntity?> brand = _service.CreateBrand(dto);
+        Result<BrandEntity?> brand = await _service.CreateBrand(dto);
 
         if (brand is Failure<BrandEntity>)
         {
@@ -63,7 +55,7 @@ public class BrandsController : Controller
     [HttpPut]
     public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] BrandUpdateDto<BrandEntity> dto)
     {
-        Result<BrandEntity?> brand = _service.Update(id, dto);
+        Result<BrandEntity?> brand = await _service.Update(id, dto);
 
         if (brand is Failure<BrandEntity>)
         {
@@ -76,7 +68,7 @@ public class BrandsController : Controller
     [HttpDelete]
     public async Task<IActionResult> Delete(Guid id)
     {
-        Result<BrandEntity?> brand  = _service.Delete(id);
+        Result<BrandEntity?> brand  = await _service.Delete(id);
 
         if (brand is Failure<BrandEntity>)
         {

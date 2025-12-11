@@ -7,16 +7,26 @@ namespace store_api.Services;
 
 public class ProductsService
 {
-    private readonly ProductsRepository _productsRepository = new();
-    private readonly BrandsService _brandsService = new();
-    private readonly CategoriesService _categoriesService = new();
-    private readonly DiscountService _discountsService = new();
+    private readonly ProductsRepository _productsRepository;
+    private readonly BrandsService _brandsService;
+    private readonly CategoriesService _categoriesService;
+    private readonly DiscountService _discountsService;
+    private readonly TechnicalSpecsService _technicalSpecsService;
+
+    public ProductsService(IConfiguration configuration)
+    {
+        _productsRepository = new (configuration);
+        _brandsService = new (configuration);
+        _categoriesService = new();
+        _discountsService = new (configuration);
+        _technicalSpecsService = new();
+    }
 
     public async Task<Result<ProductEntity?>> CreateProduct(ProductCreateDto dto)
     {
         try
         {
-            Result<BrandEntity?> brand = _brandsService.GetById(dto.BrandId);
+            Result<BrandEntity?> brand = await _brandsService.GetById(dto.BrandId);
             Result<CategoryEntity?> category = _categoriesService.GetById(dto.CategoryId);
 
             if (brand is Failure<BrandEntity>)
@@ -30,9 +40,30 @@ public class ProductsService
                 return new Failure<ProductEntity?>(ResultCode.CATEGORY_NOT_FOUND,
                     $"The category with id ({dto.CategoryId}) does not exist");
             }
+            
+            List<ProductTechnicalSpecsEntity> finalSpecs = new();
+
+            if (dto.TechnicalSpecs != null)
+            {
+                foreach (var specInput in dto.TechnicalSpecs) // Loop over the input DTO
+                {
+                    Result<TechnicalSpecsEntity?> specTemplate = _technicalSpecsService.GetById(specInput.TechnicalSpecsId);
+        
+                    if (specTemplate is Failure<TechnicalSpecsEntity>)
+                    {
+                        return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_NOT_FOUND,
+                            $"The Technical Spec ID ({specInput.TechnicalSpecsId}) is invalid or does not exist as a template.");
+                    }
+            
+                    ProductTechnicalSpecsEntity newSpecEntity = new ProductTechnicalSpecsEntity(productId: dto.Id,
+                        technicalSpecsId: specInput.TechnicalSpecsId, value: specInput.Value,
+                        key: (specTemplate as Success<TechnicalSpecsEntity>).Value.Key);
+            
+                    finalSpecs.Add(newSpecEntity);
+                }
+            }
 
             string? imageUrl = null;
-
             if (dto.Image != null)
             {
                 string folder = Path.Combine("wwwroot", "images");
@@ -54,8 +85,10 @@ public class ProductsService
             }
 
             var entity = new ProductEntity(dto.Id, dto.Name, (category as Success<CategoryEntity>).Value,
-                (brand as Success<BrandEntity>).Value, dto.TechnicalSpecs, imageUrl ?? "", dto.Price,
-                dto.Details ?? "");
+                (brand as Success<BrandEntity>).Value, 
+                finalSpecs,
+                imageUrl ?? "", dto.Price,
+                dto.Details ?? "", dto.Stock);
             ProductEntity? prod = _productsRepository.Add(entity);
 
             return new Success<ProductEntity?>(ResultCode.PRODUCT_CREATED, "Product created successfully", prod);
@@ -108,7 +141,7 @@ public class ProductsService
             productEntity.ImageUrl = $"/images/{newFileName}";
         }
         
-        ProductEntity? product = _productsRepository.Update(id, productDto);
+        ProductEntity? product = await _productsRepository.Update(id, productDto);
 
         if (product == null)
         {
@@ -209,15 +242,54 @@ public class ProductsService
             $"Product stock was decreased by {amount}", product);
     }
 
-    public Result<ProductEntity?> AddTechnicalSpecs(Guid productId, List<ProductTechnicalSpecsEntity> list){
-        ProductEntity? product = _productsRepository.AddSpecs(productId, list);
 
-        if (product == null)
+    public Result<ProductEntity?> AddTechnicalSpecs(Guid productId, List<ProductTechnicalSpecsEntity> list)
+    {
+        Result<ProductEntity?> productCheck = GetProductById(productId);
+        if (productCheck is Failure<ProductEntity?>)
         {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  "Product with the specified id does not exist");
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  $"Product with the specified id ({productId}) does not exist");
         }
 
-        return new Success<ProductEntity?>(ResultCode.PRODUCT_TECHNICAL_SPECS_ADDED, $"Technical specs added to product with id {product}", product);
+        try
+        {
+            foreach (var spec in list)
+            {
+                spec.ProductId = productId;
+
+                Result<TechnicalSpecsEntity?> specTemplate = _technicalSpecsService.GetById(spec.TechnicalSpecsId);
+
+                if (specTemplate is Failure<TechnicalSpecsEntity>)
+                {
+                    return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_NOT_FOUND,
+                        $"The Technical Spec ID ({spec.TechnicalSpecsId}) is invalid or does not exist as a template.");
+                }
+
+                spec.Key = (specTemplate as Success<TechnicalSpecsEntity>).Value.Key;
+            }
+        }
+        catch (Exception e)
+        {
+            return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_INVALID, $"Validation error on technical specs: {e.Message}");
+        }
+
+
+        try
+        {
+            ProductEntity? product = _productsRepository.AddSpecs(productId, list);
+
+            if (product == null)
+            {
+                return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  $"Product with the specified id ({productId}) does not exist");
+            }
+
+            return new Success<ProductEntity?>(ResultCode.PRODUCT_TECHNICAL_SPECS_ADDED,
+                $"Technical specs added to product with id {productId}", product);
+        }
+        catch (InvalidOperationException e)
+        {
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_TECHNICAL_SPECS_NOT_ADDED, e.Message);
+        }
     }
 
     public async Task<bool> CanCreateOrder(Guid productId, int quantity)

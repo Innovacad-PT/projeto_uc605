@@ -8,12 +8,18 @@ namespace store_api.Services;
 public class DiscountService
 {
 
-    private DiscountsRepository _repository = new();
-    private ProductsRepository _productsRepository = new();
+    private DiscountsRepository _repository;
+    private ProductsRepository _productsRepository;
+
+    public DiscountService(IConfiguration configuration)
+    {
+        _repository = new();
+        _productsRepository = new(configuration);
+    }
 
     public Result<IEnumerable<DiscountEntity>?> GetAll()
     {
-        IEnumerable<DiscountEntity> result = _repository.GetAll();
+        IEnumerable<DiscountEntity>? result = _repository.GetAll();
 
         if (result == null || result.Count() <= 0)
         {

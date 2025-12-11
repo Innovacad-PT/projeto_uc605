@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
-public class ReviewEntity(Guid id, Guid userId, Guid productId, double rating,
+public class ReviewEntity(Guid id, Guid userId, Guid productId, int? rating,
     string? comment, DateTime createdAt) : IBaseEntity
 {
     [BsonId]
@@ -14,7 +14,7 @@ public class ReviewEntity(Guid id, Guid userId, Guid productId, double rating,
     public Guid UserId { get; set; } = userId;
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid ProductId { get; set; } = productId;
-    public double Rating { get; set; } = rating;
+    public int? Rating { get; set; } = rating;
     public string? Comment { get; set; } = comment;
     public DateTime CreatedAt { get; set; } = createdAt;
 }

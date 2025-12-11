@@ -154,23 +154,23 @@ export const AdminUsers = () => {
       </Group>
 
       <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Email</Table.Th>
+            <Table.Th>Username</Table.Th>
+            <Table.Th>Role</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {users.map((user) => (
-            <tr key={user.id}>
-              <td>{`${user.firstName} ${user.lastName}`}</td>
-              <td>{user.email}</td>
-              <td>{user.username}</td>
-              <td>{user.role}</td>
-              <td>
+            <Table.Tr key={user.id}>
+              <Table.Td>{`${user.firstName} ${user.lastName}`}</Table.Td>
+              <Table.Td>{user.email}</Table.Td>
+              <Table.Td>{user.username}</Table.Td>
+              <Table.Td>{user.role}</Table.Td>
+              <Table.Td>
                 <Group gap="xs">
                   <ActionIcon color="blue" onClick={() => handleEdit(user)}>
                     <IconEdit size={16} />
@@ -179,10 +179,10 @@ export const AdminUsers = () => {
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
 
       <Modal

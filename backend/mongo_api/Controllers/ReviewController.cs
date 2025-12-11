@@ -50,4 +50,16 @@ public class ReviewController(MongoRepository repository, Redis redis) : Control
 
         return Ok(Json(oldReview));
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateReviewsDTO dto)
+    {
+        var discount = await _repository.GetById(id);
+        if (discount == null) return NotFound();
+
+        var updatedDiscount = await _repository.Update(id, dto);
+        if (updatedDiscount == null) return NotFound();
+
+        return Ok(Json(updatedDiscount));
+    }
 }

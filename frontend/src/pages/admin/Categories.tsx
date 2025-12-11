@@ -119,17 +119,17 @@ export const AdminCategories = () => {
       </Group>
 
       <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {categories.map((category) => (
-            <tr key={category.id}>
-              <td>{category.name}</td>
-              <td>
+            <Table.Tr key={category.id}>
+              <Table.Td>{category.name}</Table.Td>
+              <Table.Td>
                 <Group gap="xs">
                   <ActionIcon color="blue" onClick={() => handleEdit(category)}>
                     <IconEdit size={16} />
@@ -141,10 +141,10 @@ export const AdminCategories = () => {
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
 
       <Modal

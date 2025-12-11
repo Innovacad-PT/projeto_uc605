@@ -4,11 +4,11 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Entities;
 
-public class BrandEntity(Guid id, string name) : IBaseEntity
+public class BrandEntity(Guid id, string? name) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     [SwaggerIgnore]
     public Guid Id { get; set; } = id;
-    public string Name { get; set; } = name;
+    public string? Name { get; set; } = name;
 }

@@ -12,7 +12,12 @@ namespace store_api.Controllers;
 public class DiscountsController : Controller
 {
 
-    private readonly DiscountService _service = new();
+    private readonly DiscountService _service;
+
+    public DiscountsController(IConfiguration configuration)
+    {
+        _service = new(configuration);
+    }
 
     [HttpGet]
     public IActionResult GetAll()

@@ -5,7 +5,10 @@ namespace store_api.Controllers;
 
 public interface IBaseRepository<T> where T: class
 {
-    public T? Add(T dto);
+    public virtual T? Add(T dto)
+    {
+        throw new NotImplementedException();
+    }
 
     public virtual T? Update(Guid id, IBaseDto<T> dto)
     {
@@ -36,5 +39,9 @@ public interface IBaseRepository<T> where T: class
     {
         throw new NotImplementedException();
     }
-    public IEnumerable<T>? GetAll();
+
+    public virtual IEnumerable<T>? GetAll()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -25,7 +25,8 @@ public class ProductEntity
         List<ProductTechnicalSpecsEntity>? technicalSpecs,
         string? imageUrl,
         decimal price,
-        string description)
+        string description,
+        int stock)
     {
         Id = id;
         Name = name;
@@ -36,7 +37,7 @@ public class ProductEntity
         Description = description;
         TechnicalSpecs = technicalSpecs ?? new List<ProductTechnicalSpecsEntity>();
 
-        Stock = 0;
+        Stock = stock;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }

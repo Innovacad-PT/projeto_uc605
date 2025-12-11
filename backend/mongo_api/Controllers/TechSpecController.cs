@@ -7,7 +7,7 @@ namespace mongo_api.Controllers;
 
 [ApiController]
 [Route("/techspecs")]
-public class TechSepcController(MongoRepository repository, Redis redis) : Controller
+public class TechSpecController(MongoRepository repository, Redis redis) : Controller
 {
     private readonly TechSpecRepository _repository = repository.TechSpecRepo;
     
@@ -49,5 +49,17 @@ public class TechSepcController(MongoRepository repository, Redis redis) : Contr
         if (oldTechSpec == null) return NotFound();
 
         return Ok(Json(oldTechSpec));
+    }
+    
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateTechSpecDTO dto)
+    {
+        var discount = await _repository.GetById(id);
+        if (discount == null) return NotFound();
+
+        var updatedDiscount = await _repository.Update(id, dto);
+        if (updatedDiscount == null) return NotFound();
+
+        return Ok(Json(updatedDiscount));
     }
 }

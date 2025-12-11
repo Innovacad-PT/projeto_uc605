@@ -9,31 +9,88 @@ namespace store_api.Services;
 public class OrdersService
 {
     
-    private OrdersRepository _repository = new OrdersRepository();
-    private ProductsService _productsService = new();
+    private OrdersRepository _repository;
+    private ProductsService _productsService;
+
+    public OrdersService(IConfiguration configuration)
+    {
+        _repository = new ();
+        _productsService = new(configuration);
+    }
 
     public async Task<Result<OrderEntity?>> CreateOrder(OrderAddDto orderDto)
     {
-        var createdOrder = _repository.Add(orderDto.ToEntity());
-
-        bool canCreateOrder = false;
-
-       foreach (var kvp in orderDto.Products)
-       {
-           canCreateOrder = await _productsService.CanCreateOrder(kvp.Key, kvp.Value);
-
-           if (canCreateOrder == false) break;
-       }
-
-        if (createdOrder == null || !canCreateOrder)
-            return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, "NOT CREATED");
-
         foreach (var kvp in orderDto.Products)
         {
-            _productsService.DecreaseStock(kvp.Key,  kvp.Value);
-        }
+            bool canCreate = await _productsService.CanCreateOrder(kvp.Key, kvp.Value);
 
-        return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", createdOrder);
+            if (!canCreate)
+            {
+                return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED,
+                    $"Order cannot be created. Product ID {kvp.Key} has insufficient stock for quantity {kvp.Value}.");
+            }
+        }
+        
+        List<OrderItemEntity> orderItemEntities = new();
+        
+        try
+        {
+            foreach (var kvp in orderDto.Products)
+            {
+                Result<ProductEntity?> productResult = _productsService.GetProductById(kvp.Key);
+                
+                if (productResult is Failure<ProductEntity?> peFail)
+                {
+                     throw new Exception($"Product ID {kvp.Key} disappeared during checkout.");
+                }
+                
+                ProductEntity product = ((Success<ProductEntity?>)productResult).Value!;
+                
+                orderItemEntities.Add(new OrderItemEntity(
+                    0,
+                    product.Id,
+                    kvp.Value,
+                    product.Price
+                ));
+            }
+            
+            foreach (var kvp in orderDto.Products)
+            {
+                Result<ProductEntity?> decreaseResult = _productsService.DecreaseStock(kvp.Key, kvp.Value);
+                
+                if (decreaseResult is Failure<ProductEntity?>)
+                {
+                    throw new Exception($"Stock decrease failed for product {kvp.Key}. This might be a race condition.");
+                }
+            }
+            
+            var newOrderEntity = new OrderEntity(
+                (int)new Random().NextInt64(),
+                orderDto.UserId,
+                DateTime.UtcNow,
+                orderDto.Total,
+                orderDto.Status,
+                orderItemEntities
+            );
+
+            var createdOrder = _repository.Add(newOrderEntity);
+
+            if (createdOrder == null)
+            {
+                throw new Exception("Repository failed to persist the order record.");
+            }
+            
+            return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", createdOrder);
+        }
+        catch (Exception ex)
+        {
+            foreach (var kvp in orderDto.Products)
+            {
+                _productsService.IncreaseStock(kvp.Key, kvp.Value);
+            }
+
+            return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, $"NOT CREATED. Transaction failed: {ex.Message}");
+        }
     }
 
     public Result<OrderEntity?> Update(int id, OrderUpdateDto orderDto)

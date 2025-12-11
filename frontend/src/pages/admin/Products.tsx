@@ -116,11 +116,19 @@ export const AdminProducts = () => {
     });
     setImageFile(null);
     setProductSpecs(
-      product.technicalSpecs?.map((spec) => ({
-        technicalSpecsId: spec.id,
-        key: spec.name,
-        value: spec.value || "",
-      })) || []
+      product.technicalSpecs?.map((spec) => {
+        // Use technicalSpecsId if present (definition ID), otherwise fallback to id
+        // This is crucial because 'id' might be the instance ID, but we need definition ID for updates
+        const defId = spec.technicalSpecsId || spec.id;
+        return {
+          technicalSpecsId: defId,
+          key:
+            spec.name ||
+            availableSpecs.find((s) => s.technicalSpecsId === defId)?.key ||
+            "",
+          value: spec.value || "",
+        };
+      }) || []
     );
     setNewSpec({ technicalSpecsId: "", value: "" });
     setModalOpen(true);
@@ -128,55 +136,38 @@ export const AdminProducts = () => {
 
   const handleSubmit = async () => {
     try {
+      const formDataObj = new FormData();
+      formDataObj.append(
+        "Id",
+        editingProduct ? editingProduct.id : uuidv4().toString()
+      );
+      formDataObj.append("Name", formData.name);
+      formDataObj.append("Price", formatPriceForApi(formData.price));
+      formDataObj.append("Stock", (formData.stock || 0).toString());
+      formDataObj.append("Details", formData.description);
+      formDataObj.append("BrandId", formData.brandId);
+      formDataObj.append("CategoryId", formData.categoryId);
+
+      if (imageFile) {
+        formDataObj.append("Image", imageFile);
+      }
+
+      productSpecs.forEach((spec, index) => {
+        formDataObj.append(
+          `TechnicalSpecs[${index}].TechnicalSpecsId`,
+          spec.technicalSpecsId
+        );
+        formDataObj.append(`TechnicalSpecs[${index}].Value`, spec.value);
+      });
+
       if (editingProduct) {
-        const payload: any = { ...formData };
-        if (imageFile) {
-          payload.imageUrl = imageFile;
-        }
-
-        // Handle Tech Specs separate or if backend accepts them in update
-        // Assuming FormData update is preferred or we need to send JSON with images separately
-        // Since original update was JSON, let's keep it uniform or switch to FormData if needed.
-        // If API expects FormData for update now... let's check `productService.update`
-        // It seems `productService.update` takes `any` payload.
-        // If we need to update specs, we likely need to send them.
-        // Let's assume the backend handles list of specs in JSON or FormData.
-        // Given mixed usage, let's check if we can just append them.
-
-        // Actually, for Tech Specs to update correctly, we likely need to send them.
-        // Let's stick to the previous implementation style but add specs.
-        payload.technicalSpecs = productSpecs.map((spec) => ({
-          technicalSpecsId: spec.technicalSpecsId,
-          value: spec.value,
-        }));
-
-        await productService.update(editingProduct.id, payload);
+        await productService.update(editingProduct.id, formDataObj);
         notifications.show({
           title: "Success",
           message: "Product updated successfully",
           color: "green",
         });
       } else {
-        const formDataObj = new FormData();
-        formDataObj.append("Id", uuidv4().toString());
-        formDataObj.append("Name", formData.name);
-        formDataObj.append("Price", formatPriceForApi(formData.price));
-        formDataObj.append("Details", formData.description);
-        formDataObj.append("BrandId", formData.brandId);
-        formDataObj.append("CategoryId", formData.categoryId);
-
-        if (imageFile) {
-          formDataObj.append("Image", imageFile);
-        }
-
-        productSpecs.forEach((spec, index) => {
-          formDataObj.append(
-            `TechnicalSpecs[${index}].TechnicalSpecsId`,
-            spec.technicalSpecsId
-          );
-          formDataObj.append(`TechnicalSpecs[${index}].Value`, spec.value);
-        });
-
         await productService.create(formDataObj);
         notifications.show({
           title: "Success",
@@ -243,27 +234,27 @@ export const AdminProducts = () => {
       </Group>
 
       <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Brand</th>
-            <th>Category</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Id</Table.Th>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Price</Table.Th>
+            <Table.Th>Stock</Table.Th>
+            <Table.Th>Brand</Table.Th>
+            <Table.Th>Category</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-              <td>{product.name}</td>
-              <td>€{formatPriceForApi(product.price)}</td>
-              <td>{product.stock || 0}</td>
-              <td>{product.brand?.name || "-"}</td>
-              <td>{product.category?.name || "-"}</td>
-              <td>
+            <Table.Tr key={product.id}>
+              <Table.Td>{product.id}</Table.Td>
+              <Table.Td>{product.name}</Table.Td>
+              <Table.Td>€{formatPriceForApi(product.price)}</Table.Td>
+              <Table.Td>{product.stock || 0}</Table.Td>
+              <Table.Td>{product.brand?.name || "-"}</Table.Td>
+              <Table.Td>{product.category?.name || "-"}</Table.Td>
+              <Table.Td>
                 <Group gap="xs">
                   <ActionIcon color="blue" onClick={() => handleEdit(product)}>
                     <IconEdit size={16} />
@@ -275,10 +266,10 @@ export const AdminProducts = () => {
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
 
       <Modal
@@ -342,9 +333,6 @@ export const AdminProducts = () => {
             }
             data={categories.map((c) => ({ value: c.id, label: c.name }))}
           />
-          <Button onClick={handleSubmit}>
-            {editingProduct ? "Update" : "Create"}
-          </Button>
 
           <Text size="sm" fw={700} mt="md">
             Technical Specifications
@@ -398,6 +386,9 @@ export const AdminProducts = () => {
               </Group>
             ))}
           </Stack>
+          <Button onClick={handleSubmit}>
+            {editingProduct ? "Update" : "Create"}
+          </Button>
         </Stack>
       </Modal>
     </Stack>

@@ -1,89 +1,122 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Brands;
 using store_api.Entities;
-using store_api.Exceptions;
-using store_api.Utils;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace store_api.Repositories;
 
 public class BrandsRepository : IBaseRepository<BrandEntity>
 {
+    private static HttpClient _database;
+    private readonly IConfiguration _configuration;
     
-    private readonly static List<BrandEntity> _brands = [
-        new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo")
-    ];
-    
-    public BrandEntity? Add(BrandEntity entity)
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
-        
-        if (_brands.Any((b) => b.Id == entity.Id))
-        {
-            throw new SameIdException("Brand with the same id already exists.");
-        }
+        Converters = { new JsonStringEnumConverter() },
+        PropertyNameCaseInsensitive = true,
+    };
 
-        if (_brands.Any((b) => b.Name.ToLower() == entity.Name.ToLower()))
-        {
-            throw new SameNameException("Brand with the same name already exists.");
-        }
-        
-        _brands.Add(entity);
-
-        return entity;
+    public BrandsRepository(IConfiguration configuration)
+    {
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _database = new(clientHandler);
+        _configuration = configuration;
     }
     
-    public BrandEntity? Update(Guid id, IBaseDto<BrandEntity> dto)
+    public async Task<BrandEntity?> Add(BrandEntity entity)
     {
-        
-        var updateDto = dto as BrandUpdateDto<BrandEntity>;  
 
-        if (updateDto == null)
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        String? mongoBaseUrl = _configuration.GetValue<String>("MongoBaseUrl") + "/brands";
+
+        if (mongoBaseUrl == null)
         {
-            throw new InvalidDtoType("Invalid data transfer object type.");
+            throw new Exception("MongoBaseUrl not set");
         }
         
-        BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
+        var response = await _database.PostAsync(new Uri(mongoBaseUrl), httpContent);
 
-        if (entity == null)
+        if (response.IsSuccessStatusCode)
         {
-            return null;
+            var responseBody = await response.Content.ReadAsStringAsync();
+            
+            return JsonSerializer.Deserialize<BrandEntity>(responseBody, JsonOptions);
         }
 
-        entity.Name = updateDto.Name ?? entity.Name;
-        
-        return entity;
+        return null;
     }
-
-    public BrandEntity? Delete(Guid id)
+    
+    public async Task<BrandEntity?> Update(Guid id, IBaseDto<BrandEntity> dto)
     {
-        BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
+        
+        var updateDto = dto as BrandUpdateDto<BrandEntity>;
+        if (updateDto == null) return null;
+        
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+        
+        String mongoBaseUrl = _configuration.GetValue<String>("MongoBaseUrl") + $"/brands/{id}";
+        var response = await _database.PutAsync(new Uri(mongoBaseUrl), httpContent);
 
-        if (entity == null)
+        if (response.IsSuccessStatusCode)
         {
-            return null;
+            var responseBody = await response.Content.ReadAsStringAsync();
+            
+            return JsonSerializer.Deserialize<BrandEntity>(responseBody, JsonOptions);
         }
 
-        _brands.Remove(entity);
-
-        return entity;
+        return null;
     }
 
-    public BrandEntity? GetById(Guid id)
+    public async Task<BrandEntity?> Delete(Guid id)
     {
-        BrandEntity? entity = _brands.FirstOrDefault((b) => b.Id == id);
-        
-        return entity;
+        String mongoBaseUrl = _configuration.GetValue<String>("MongoBaseUrl") + $"/brands/{id}";
+        var response = await _database.DeleteAsync(new Uri(mongoBaseUrl));
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<BrandEntity>(responseBody, JsonOptions);
+        }
+
+        return null;
     }
 
-    public IEnumerable<BrandEntity>? GetAll()
+    public async Task<BrandEntity?> GetById(Guid id)
     {
-        return _brands;
+        String mongoBaseUrl = _configuration.GetValue<String>("MongoBaseUrl") + $"/brands/{id}";
+        var response = await _database.GetAsync(new Uri(mongoBaseUrl));
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<BrandEntity>(responseBody, JsonOptions);
+        }
+
+        return null;
     }
 
-    public BrandEntity? GetByName(String name)
+    public async Task<IEnumerable<BrandEntity>?> GetAll()
     {
-        BrandEntity? brand = _brands.FirstOrDefault((b) => b.Name.ToLower() == name.ToLower());
+        String mongoBaseUrl = _configuration.GetValue<String>("MongoBaseUrl") + "/brands";
+        var response = await _database.GetAsync(new Uri(mongoBaseUrl));
 
-        return brand;
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            
+            var deserialized = JsonSerializer.Deserialize<List<BrandEntity>>(responseBody, JsonOptions);
+            
+            return deserialized;
+        }
+
+        return null;
     }
 }

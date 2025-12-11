@@ -5,8 +5,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Dtos;
 
 public class CreateProductDTO(string name, string? description, double price, int? stock,
-    string? imageUrl, BrandEntity? brand, List<TechnicalSpecEntity>? technicalSpecs,
-    List<ReviewEntity>? reviews, DiscountEntity? discount)
+    string? imageUrl, Guid? categoryId, Guid? brandId, List<TechnicalSpecEntity>? technicalSpecs,
+    List<ReviewEntity>? reviews)
 {
     private static DateTime _date = DateTime.UtcNow;
 
@@ -19,15 +19,17 @@ public class CreateProductDTO(string name, string? description, double price, in
     public double Price { get; set; } = price;
     public int? Stock { get; set; } = stock;
     public string? ImageUrl { get; set; } = imageUrl;
-    public BrandEntity? Brand { get; set; } = brand;
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public Guid? CategoryId { get; set; } = categoryId;
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public Guid? BrandId { get; set; } = brandId;
     public List<TechnicalSpecEntity>? TechnicalSpecs { get; set; } = technicalSpecs;
     public List<ReviewEntity>? Reviews { get; set; } = reviews;
     public DateTime? CreatedAt { get; set; } = _date;
     public DateTime? UpdatedAt { get; set; } = _date;
-    public DiscountEntity? Discount { get; set; } = discount;
 
     public ProductEntity ToEntity()
     {
-        return new(Id, Name, Description, Price, Stock, ImageUrl, Brand, TechnicalSpecs, Reviews, CreatedAt, UpdatedAt, Discount);
+        return new(Id, Name, Description, Price, Stock, ImageUrl, CategoryId, BrandId, TechnicalSpecs, Reviews, CreatedAt, UpdatedAt);
     }
 }

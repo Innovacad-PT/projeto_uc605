@@ -8,23 +8,27 @@ namespace store_api.Repositories;
 
 public class ProductsRepository : IBaseRepository<ProductEntity>
 {
-    
-    private readonly CategoriesRepository _categoriesRepository = new();
-    private readonly BrandsRepository _brandsRepository = new();
+
+    private readonly CategoriesRepository _categoriesRepository;
+    private readonly BrandsRepository _brandsRepository;
+
+    public ProductsRepository(IConfiguration configuration)
+    {
+        _categoriesRepository = new();
+        _brandsRepository = new(configuration);
+    }
     
     private readonly static List<ProductEntity> _products = new ([
-       /* new(Guid.NewGuid(), "Pipocas Doces", [], "",3.99, "Pipocas doces com manteiga", ""),
-        new(Guid.NewGuid(), "Pipocas Salgadas", [],"",3.99, "Pipocas doces com sal", ""),
-        new(Guid.NewGuid(), "Pão Caseiro", [], "",3.99, "", ""),
-        new(Guid.NewGuid(), "Salsichas Frankfurt",[],"", 3.99, "", ""),*/
        new(Guid.Parse("7bd2718c-5e2c-48b0-8b99-04907b43e614"),
        "Portatil i9",
        new (Guid.Parse("40c9354a-1002-425d-a561-45895910ad86"), "Computador"),
        new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo"),
-       [],
+       [
+       new(Guid.Parse("7bd2718c-5e2c-48b0-8b99-04907b43e614"), Guid.Parse("1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"), "Processor", "i9-14700K")],
        "",
        decimal.Parse((169.99).ToString()),
-       "")
+       "",
+       3)
     ]);
 
 
@@ -42,7 +46,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
     }
 
     
-    public ProductEntity? Update(Guid id, IBaseDto<ProductEntity> entity)
+    public async Task< ProductEntity?> Update(Guid id, IBaseDto<ProductEntity> entity)
     {
         
         ProductUpdateDto updateDto = entity as ProductUpdateDto;
@@ -63,7 +67,7 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
         product.Reviews = updateDto.Reviews ?? product.Reviews;
         product.Stock = updateDto.Stock ?? product.Stock;
         product.Category = _categoriesRepository.GetById(updateDto.CategoryId ?? product.Category.Id) ?? product.Category;
-        product.Brand = _brandsRepository.GetById(updateDto.BrandId ?? product.Brand.Id) ?? product.Brand;
+        product.Brand = await _brandsRepository.GetById(updateDto.BrandId ?? product.Brand.Id) ?? product.Brand;
         
         if (updateDto.ImageFile != null)
         {
@@ -117,10 +121,42 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
 
     public ProductEntity? AddSpecs(Guid productId, List<ProductTechnicalSpecsEntity> specs)
     {
-        if (_products.All(p => p.Id != productId)) return null;
+        ProductEntity? product = _products.FirstOrDefault(p => p.Id == productId);
         
-        ProductEntity product = _products.First(p => p.Id == productId);
-        product.TechnicalSpecs.AddRange(specs);
+        if (product == null)
+        {
+            return null;
+        }
+
+        List<ProductTechnicalSpecsEntity> existingSpecs = product.TechnicalSpecs;
+        
+        HashSet<Guid> existingSpecIds = new(existingSpecs.Select(s => s.TechnicalSpecsId));
+
+        List<ProductTechnicalSpecsEntity> newSpecs = new();
+        List<ProductTechnicalSpecsEntity> duplicateSpecs = new();
+
+        foreach (var spec in specs)
+        {
+            spec.ProductId = productId;
+            
+            if (existingSpecIds.Contains(spec.TechnicalSpecsId))
+            {
+                duplicateSpecs.Add(spec); 
+            }
+            else
+            {
+                newSpecs.Add(spec);
+            }
+        }
+        
+        if (duplicateSpecs.Count > 0)
+        {
+            string duplicateKeys = string.Join(", ", duplicateSpecs.Select(d => d.Key));
+            throw new InvalidOperationException($"Cannot add technical specs. The following spec keys already exist for product {productId}: {duplicateKeys}");
+        }
+
+        product.TechnicalSpecs.AddRange(newSpecs);
+
         return product;
     }
 

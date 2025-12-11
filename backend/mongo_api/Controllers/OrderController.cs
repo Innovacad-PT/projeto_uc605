@@ -50,4 +50,16 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
 
         return Ok(Json(oldOrder));
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateOrdersDTO dto)
+    {
+        var order = await _repository.GetById(id);
+        if (order == null) return NotFound();
+
+        var updatedOrder = await _repository.Update(id, dto);
+        if (updatedOrder == null) return NotFound();
+
+        return Ok(Json(updatedOrder));
+    }
 }

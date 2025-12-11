@@ -1,6 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using store_api.Entities;
 using store_api.Services;
 using store_api.Utils;
@@ -11,7 +9,12 @@ namespace store_api.Controllers;
 [Route("/products")]
 public class ProductsController : Controller
 {
-    private readonly ProductsService _productsService = new();
+    private readonly ProductsService _productsService;
+
+    public ProductsController(IConfiguration configuration)
+    {
+        _productsService = new (configuration);
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAllProducts()

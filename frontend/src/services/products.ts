@@ -67,7 +67,38 @@ export const productService = {
     }
     return apiResponse.value;
   },
-  update: async (id: string, payload: Partial<Product>): Promise<Product> => {
+  update: async (
+    id: string,
+    payload: FormData | Partial<Product>
+  ): Promise<Product> => {
+    if (payload instanceof FormData) {
+      const token = localStorage.getItem("accessToken");
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+
+      const response = await fetch(`${baseUrl}/products/${id}`, {
+        method: "PUT",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: payload,
+      });
+
+      if (!response.ok) {
+        const txt = await response.text();
+        throw new Error(`Failed to update product: ${response.status} ${txt}`);
+      }
+
+      if (response.status === 204) {
+        return {} as Product;
+      }
+
+      const apiResponse = await response.json();
+      if (apiResponse.hasError) {
+        throw new Error(
+          `API Error [${apiResponse.code}]: ${apiResponse.message}`
+        );
+      }
+      return apiResponse.value;
+    }
+
     return apiClient.put<Product>(`/products/${id}`, payload);
   },
   delete: async (id: string): Promise<void> => {

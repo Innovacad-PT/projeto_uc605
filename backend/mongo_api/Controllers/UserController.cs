@@ -42,16 +42,7 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
 
         return Ok(Json(newUser));
     }
-    
-    /*[HttpPut]
-    public async Task<IActionResult> Update([FromBody] UserDTO dto)
-    {
-        var updatedUser = await _repository.UpdateUser(dto);
-        if (updatedUser == null) return NotFound();
 
-        return Ok(Json(updatedUser));
-    }*/
-    
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
@@ -59,5 +50,17 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
         if (oldUser == null) return NotFound();
 
         return Ok(Json(oldUser));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateUserDTO dto)
+    {
+        var user = await _repository.GetById(id);
+        if (user == null) return NotFound();
+
+        var updatedUser = await _repository.Update(id, dto);
+        if (updatedUser == null) return NotFound();
+
+        return Ok(Json(updatedUser));
     }
 }

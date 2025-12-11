@@ -50,4 +50,16 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
 
         return Ok(Json(oldCategory));
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateCategoryDTO dto)
+    {
+        var category = await _repository.GetById(id);
+        if (category == null) return NotFound();
+
+        var updatedCategory = await _repository.Update(id, dto);
+        if (updatedCategory == null) return NotFound();
+
+        return Ok(Json(updatedCategory));
+    }
 }

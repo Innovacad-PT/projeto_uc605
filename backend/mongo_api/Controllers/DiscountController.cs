@@ -50,4 +50,16 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
 
         return Ok(Json(oldDiscount));
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateDiscountDTO dto)
+    {
+        var discount = await _repository.GetById(id);
+        if (discount == null) return NotFound();
+
+        var updatedDiscount = await _repository.Update(id, dto);
+        if (updatedDiscount == null) return NotFound();
+
+        return Ok(Json(updatedDiscount));
+    }
 }

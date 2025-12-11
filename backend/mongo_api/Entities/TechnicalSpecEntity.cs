@@ -1,14 +1,30 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
-public class TechnicalSpecEntity(Guid id, string name, string? value) : IBaseEntity
+public class TechnicalSpecEntity : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
-    [SwaggerIgnore]
-    public Guid Id { get; set; } = id;
-    public string Name { get; set; } = name;
-    public string? Value { get; set; } = value;
+    public Guid Id { get; set; }
+    
+    [BsonElement("Key")]
+    public string Key { get; set; }
+    
+    [BsonElement("Value")]
+    public string? Value { get; set; }
+
+    public TechnicalSpecEntity(Guid id, string key, string value)
+    {
+        Id = id;
+        Key = key;
+        Value = value;
+    }
+    
+    public TechnicalSpecEntity(Guid id, string key)
+    {
+        Id = id;
+        Key = key;
+        Value = null;
+    }
 }

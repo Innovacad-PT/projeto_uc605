@@ -154,25 +154,29 @@ export const AdminDiscounts = () => {
       </Group>
 
       <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Percentage</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Product</Table.Th>
+            <Table.Th>Percentage</Table.Th>
+            <Table.Th>Start Date</Table.Th>
+            <Table.Th>End Date</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {discounts.map((discount) => {
             const product = products.find((p) => p.id === discount.productId);
             return (
-              <tr key={discount.id}>
-                <td>{product?.name || discount.productId}</td>
-                <td>{discount.percentage}%</td>
-                <td>{new Date(discount.startDate).toLocaleDateString()}</td>
-                <td>{new Date(discount.endDate).toLocaleDateString()}</td>
-                <td>
+              <Table.Tr key={discount.id}>
+                <Table.Td>{product?.name || discount.productId}</Table.Td>
+                <Table.Td>{discount.percentage}%</Table.Td>
+                <Table.Td>
+                  {new Date(discount.startDate).toLocaleDateString()}
+                </Table.Td>
+                <Table.Td>
+                  {new Date(discount.endDate).toLocaleDateString()}
+                </Table.Td>
+                <Table.Td>
                   <Group gap="xs">
                     <ActionIcon
                       color="blue"
@@ -187,11 +191,11 @@ export const AdminDiscounts = () => {
                       <IconTrash size={16} />
                     </ActionIcon>
                   </Group>
-                </td>
-              </tr>
+                </Table.Td>
+              </Table.Tr>
             );
           })}
-        </tbody>
+        </Table.Tbody>
       </Table>
 
       <Modal

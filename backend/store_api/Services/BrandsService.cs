@@ -10,13 +10,18 @@ namespace store_api.Services;
 public class BrandsService
 {
     
-    private readonly BrandsRepository _brandsRepository = new();
+    private readonly BrandsRepository _brandsRepository;
+
+    public BrandsService(IConfiguration configuration)
+    {
+        _brandsRepository = new(configuration);
+    }
     
-    public Result<BrandEntity?> CreateBrand(BrandAddDto<BrandEntity> dto)
+    public async Task<Result<BrandEntity?>> CreateBrand(BrandAddDto<BrandEntity> dto)
     {
         try
         {
-            BrandEntity? result = _brandsRepository.Add(dto.ToEntity());
+            BrandEntity? result = await _brandsRepository.Add(dto.ToEntity());
 
             if (result == null)
                 return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_CREATED, $"The brand with the following id ({dto.Id}) couldn't be created!");
@@ -29,11 +34,11 @@ public class BrandsService
         }
     }
 
-    public Result<IEnumerable<BrandEntity>?> GetAllBrands()
+    public async Task<Result<IEnumerable<BrandEntity>?>> GetAllBrands()
     {
         try
         {
-            IEnumerable<BrandEntity>? result = _brandsRepository.GetAll();
+            IEnumerable<BrandEntity>? result = await _brandsRepository.GetAll();
 
             if (result == null)
                 return new Failure<IEnumerable<BrandEntity>?>(ResultCode.BRAND_NOT_FOUND, "(0) brands were found!");
@@ -46,28 +51,11 @@ public class BrandsService
         }
     }
 
-    public Result<BrandEntity?> GetByName(String name)
+    public async Task<Result<BrandEntity?>> GetById(Guid id)
     {
         try
         {
-            BrandEntity? result = _brandsRepository.GetByName(name);
-
-            if (result == null)
-                return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_FOUND, $"The brand with the following name ({name}) couldn't be found!");
-
-            return new Success<BrandEntity?>(ResultCode.BRAND_FOUND, $"The brand with the following name ({name}) has been found!", result);
-        }
-        catch (Exception e)
-        {
-            return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_FOUND, $"[MESSAGE]: The brand with the following name ({name}) couldn't be found!\n[EXCEPTION]: {e.Message}]");
-        }
-    }
-
-    public Result<BrandEntity?> GetById(Guid id)
-    {
-        try
-        {
-            BrandEntity? result = _brandsRepository.GetById(id);
+            BrandEntity? result = await _brandsRepository.GetById(id);
 
             if (result == null)
                 return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_FOUND, $"The brand with the following id ({id}) couldn't be found!");
@@ -80,11 +68,11 @@ public class BrandsService
         }
     }
 
-    public Result<BrandEntity?> Update(Guid id, BrandUpdateDto<BrandEntity> dto)
+    public async Task<Result<BrandEntity?>> Update(Guid id, BrandUpdateDto<BrandEntity> dto)
     {
         try
         {
-            BrandEntity? result = _brandsRepository.Update(id, dto);
+            BrandEntity? result = await _brandsRepository.Update(id, dto);
 
             if (result == null)
                 return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_UPDATED, $"The brand with the following id ({id}) couldn't be updated!");
@@ -97,11 +85,11 @@ public class BrandsService
         }
     }
 
-    public Result<BrandEntity?> Delete(Guid id)
+    public async Task< Result<BrandEntity?>> Delete(Guid id)
     {
         try
         {
-            BrandEntity? result = _brandsRepository.Delete(id);
+            BrandEntity? result = await _brandsRepository.Delete(id);
 
             if (result == null)
                 return new Failure<BrandEntity?>(ResultCode.BRAND_NOT_DELETED, $"The brand with the following id ({id}) couldn't be deleted!");

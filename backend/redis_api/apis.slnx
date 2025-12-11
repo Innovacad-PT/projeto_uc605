@@ -1,5 +1,11 @@
 <Solution>
-  <Project Path="../store_api/store_api.csproj" Id="dbe2d2b9-7ef6-4a34-881e-a0cb32ffed57" />
-  <Project Path="..\mongo_api\mongo_api.csproj" />
-  <Project Path="redis_api.csproj" />
+  <Project Path="../store_api/store_api.csproj">
+    <Configuration Solution="Release|Any CPU" Project="Release|Any CPU|Deploy" />
+  </Project>
+  <Project Path="..\mongo_api\mongo_api.csproj">
+    <Configuration Solution="Release|Any CPU" Project="Release|Any CPU|Deploy" />
+  </Project>
+  <Project Path="redis_api.csproj">
+    <Configuration Solution="Release|Any CPU" Project="Release|Any CPU|Deploy" />
+  </Project>
 </Solution>

@@ -40,14 +40,17 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         return Ok(Json(newProduct));
     }
     
-    /*[HttpPut]
-    public async Task<IActionResult> Update([FromBody] ProductDTO dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductsDTO dto)
     {
-        var updatedProduct = await _repository.Update(dto);
-        if (updatedProduct == null) return NotFound();
+        var discount = await _repository.GetById(id);
+        if (discount == null) return NotFound();
 
-        return Ok(Json(updatedProduct));
-    }*/
+        var updatedDiscount = await _repository.Update(id, dto);
+        if (updatedDiscount == null) return NotFound();
+
+        return Ok(Json(updatedDiscount));
+    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)

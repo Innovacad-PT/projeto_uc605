@@ -8,6 +8,7 @@ namespace mongo_api.Utils;
 
 public class Redis
 {
+    private static readonly HttpClient _httpClient = new();
     private static string? _getUri;
     private static string? _setUri;
 
@@ -23,8 +24,7 @@ public class Redis
         {
             var uri = new Uri($"{_getUri}{key}");
             
-            using var client = new HttpClient();
-            var result = await client.GetAsync(uri);
+            var result = await _httpClient.GetAsync(uri);
 
             if (result.StatusCode == HttpStatusCode.NotFound) return null;
         
@@ -49,8 +49,7 @@ public class Redis
 
             var uri = new Uri($"{_setUri}{key}?value={encodedValue}");
 
-            using var client = new HttpClient();
-            var result = await client.PostAsync(uri, null);
+            var result = await _httpClient.PostAsync(uri, null);
 
             result.EnsureSuccessStatusCode();
         }

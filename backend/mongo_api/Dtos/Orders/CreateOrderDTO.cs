@@ -6,7 +6,7 @@ using mongo_api.Entities;
 
 namespace mongo_api.Dtos.Orders;
 
-public class CreateOrderDTO(Guid userId, double total, string status, List<ProductEntity> products)
+public class CreateOrderDTO(Guid userId, double? total, string? status, List<OrderItemEntity>? orderItems)
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
@@ -15,12 +15,12 @@ public class CreateOrderDTO(Guid userId, double total, string status, List<Produ
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid UserId { get; set; } = userId;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public double Total { get; set; } = total;
-    public string Status { get; set; } = status;
-    public  List<ProductEntity> Products { get; set; } = products;
+    public double? Total { get; set; } = total;
+    public string? Status { get; set; } = status;
+    public List<OrderItemEntity>? OrderItems { get; set; } = orderItems;
 
     public OrderEntity ToEntity()
     {
-        return new(Id, UserId, CreatedAt, Total, Status, Products);
+        return new(Id, UserId, CreatedAt, Total, Status, OrderItems);
     }
 }

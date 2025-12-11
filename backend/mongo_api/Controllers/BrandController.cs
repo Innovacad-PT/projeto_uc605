@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos.Brands;
 using mongo_api.Entities;
 using mongo_api.Repositories;
@@ -16,9 +17,9 @@ public class BrandController(MongoRepository repository, Redis redis) : Controll
     public async Task<IActionResult> GetAll()
     {
         var brands = await redis.GetOrSetCache("brands", async () => await _repository.GetAll());
-        if (brands.Count == 0) return NotFound();
+        if (brands == null || brands.Count == 0) return NotFound();
 
-        return Ok(Json(brands));
+        return Ok(brands);
     }
     
     [HttpGet("{id}")]
@@ -29,7 +30,7 @@ public class BrandController(MongoRepository repository, Redis redis) : Controll
         var brand = await redis.GetOrSetCache($"brand:{id}", async () => (await _repository.GetById(id))!);
         if (brand == null) return NotFound();
         
-        return Ok(Json(brand));
+        return Ok(brand);
     }
 
     [HttpPost]
@@ -37,10 +38,13 @@ public class BrandController(MongoRepository repository, Redis redis) : Controll
     {
         dto.Id = Guid.NewGuid();
 
-        var newBrand = await _repository.Create(dto);
+        BrandEntity? newBrand = await _repository.Create(dto);
+
+        Console.WriteLine(newBrand);
+
         if (newBrand == null) return NotFound();
 
-        return Ok(Json(newBrand));
+        return Ok(newBrand);
     }
     
     [HttpDelete("{id}")]
@@ -49,6 +53,18 @@ public class BrandController(MongoRepository repository, Redis redis) : Controll
         var oldBrand = await _repository.Delete(id);
         if (oldBrand == null) return NotFound();
 
-        return Ok(Json(oldBrand));
+        return Ok(oldBrand);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateBrandDTO dto)
+    {
+        var brand = await _repository.GetById(id);
+        if (brand == null) return NotFound();
+
+        var updatedBrand = await _repository.Update(id, dto);
+        if (updatedBrand == null) return NotFound();
+
+        return Ok(updatedBrand);
     }
 }

@@ -133,17 +133,17 @@ export const AdminTechSpecs = () => {
       </Group>
 
       <Table striped highlightOnHover>
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Key</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {specs.map((spec) => (
-            <tr key={spec.technicalSpecsId}>
-              <td>{spec.key}</td>
-              <td>
+            <Table.Tr key={spec.technicalSpecsId}>
+              <Table.Td>{spec.key}</Table.Td>
+              <Table.Td>
                 <Group gap="xs">
                   <ActionIcon color="blue" onClick={() => handleEdit(spec)}>
                     <IconEdit size={16} />
@@ -155,10 +155,10 @@ export const AdminTechSpecs = () => {
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
 
       <Modal

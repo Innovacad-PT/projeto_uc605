@@ -6,8 +6,8 @@ using mongo_api.Entities;
 
 namespace mongo_api.Dtos;
 
-public class CreateUserDTO(string firstName, string lastName, string userName,
-    string email, string password)
+public class CreateUserDTO(string? firstName, string? lastName, string? userName,
+    string? email, string? password)
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]

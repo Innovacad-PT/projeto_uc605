@@ -17,6 +17,7 @@ import { createOrder, type OrderAdd } from "@services/order";
 import { getUserId, isLoggedIn } from "@services/auth";
 import { notifications } from "@mantine/notifications";
 import AppHeader from "@components/header";
+import { sendOrderEmail } from "@utils/email";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -56,6 +57,12 @@ export default function CheckoutPage() {
       });
       return;
     }
+
+    // Send receipt email (Mock)
+    await sendOrderEmail(
+      { ...result, id: result.id.toString(), createdAt: result.createdAt },
+      items
+    );
 
     clearCart();
     notifications.show({

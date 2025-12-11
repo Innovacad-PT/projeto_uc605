@@ -9,6 +9,8 @@ import {
   Image,
   Stack,
   Text,
+  Rating,
+  Divider,
 } from "@mantine/core";
 import { IconShoppingCart } from "@tabler/icons-react";
 import AppHeader from "@components/header";
@@ -114,6 +116,33 @@ export default function ProductPage({ product }: ProductPageProps) {
                       ))}
                     </Stack>
                   )}
+
+                <Divider my="sm" />
+
+                <Stack gap="xs">
+                  <Text size="lg" fw={700}>
+                    Avaliações ({product.reviews?.length || 0})
+                  </Text>
+                  {product.reviews && product.reviews.length > 0 ? (
+                    product.reviews.map((review) => (
+                      <Card key={review.id} withBorder padding="sm" radius="md">
+                        <Group justify="space-between" mb="xs">
+                          <Rating value={review.rating} readOnly size="sm" />
+                          <Text size="xs" c="dimmed">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </Text>
+                        </Group>
+                        {review.comment && (
+                          <Text size="sm">{review.comment}</Text>
+                        )}
+                      </Card>
+                    ))
+                  ) : (
+                    <Text c="dimmed" size="sm">
+                      Este produto ainda não tem avaliações.
+                    </Text>
+                  )}
+                </Stack>
 
                 <Button
                   data-disabled={product.stock === 0}

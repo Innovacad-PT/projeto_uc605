@@ -1,4 +1,5 @@
-﻿using store_api.Entities;
+﻿using store_api.Dtos;
+using store_api.Entities;
 
 public class ProductCreateDto
 {
@@ -9,7 +10,7 @@ public class ProductCreateDto
     public int Stock { get; set; }
     public decimal Price { get; set; }
     public string? Details { get; set; }
-    public List<ProductTechnicalSpecsEntity>? TechnicalSpecs { get; set; }
+    public List<TechnicalSpecsAddDto>? TechnicalSpecs { get; set; }
 
     public IFormFile? Image { get; set; }
 }
