@@ -58,6 +58,7 @@ public class UsersController(IConfiguration configuration) : Controller
     [HttpPost("/login")]
     public async Task<IActionResult> LoginUser([FromBody] UserLoginDto<UserEntity> login)
     {
+        Console.WriteLine(login.Password);
         Result<UserLoggedInDao?> result = await _service.Login(login);
 
         if (result is Failure<UserLoggedInDao?> failure)
@@ -78,7 +79,7 @@ public class UsersController(IConfiguration configuration) : Controller
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] UserUpdateDto<UserEntity> dto)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UserUpdateDto<UserEntity> dto)
     {
         Result<UserEntity?> result = await _service.Update(id, dto);
 

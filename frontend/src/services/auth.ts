@@ -11,7 +11,7 @@ export interface AuthResponse {
 export async function login(email: string, password: string): Promise<void> {
   const data = await apiClient.post<AuthResponse>("/login", {
     identifier: email,
-    passwordHash: password,
+    password: password,
     type: "EMAIL",
   });
   logger(LogType.INFO, "Login Request Data", data);
@@ -38,7 +38,7 @@ export async function register(user: {
 }): Promise<void> {
   const payload = {
     ...user,
-    passwordHash: user.password,
+    password: user.password,
     role: "guest",
     createdAt: new Date().toISOString(),
   };

@@ -43,15 +43,15 @@ public class ProductsService
             {
                 foreach (var specInput in dto.TechnicalSpecs)
                 {
-                    Result<TechnicalSpecsEntity?> specTemplate = await _technicalSpecsService.GetById(specInput.TechnicalSpecsId);
+                    Result<TechnicalSpecsEntity?> specTemplate = await _technicalSpecsService.GetById(specInput.Id);
         
                     if (specTemplate is Failure<TechnicalSpecsEntity>)
                         return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_NOT_FOUND,
-                            $"The Technical Spec ID ({specInput.TechnicalSpecsId}) is invalid or does not exist as a template.");
+                            $"The Technical Spec ID ({specInput.Id}) is invalid or does not exist as a template.");
             
                     ProductTechnicalSpecsEntity newSpecEntity = new ProductTechnicalSpecsEntity(
                         productId: dto.Id,
-                        technicalSpecsId: specInput.TechnicalSpecsId,
+                        technicalSpecsId: specInput.Id,
                         value: specInput.Value,
                         key: (specTemplate as Success<TechnicalSpecsEntity>)!.Value.Key
                     );

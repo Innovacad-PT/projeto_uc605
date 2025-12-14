@@ -49,6 +49,7 @@ public class DiscountRepository(IMongoCollection<DiscountEntity> collection)
         var result = await _collection.UpdateOneAsync(
             b => b.Id.Equals(discount.Id),
             Builders<DiscountEntity>.Update
+                .Set(u => u.ProductId, dto.ProductId ?? discount.ProductId)
                 .Set(u => u.Percentage, dto.Percentage ?? discount.Percentage)
                 .Set(u => u.StartTime, dto.StartTime ?? discount.StartTime)
                 .Set(u => u.EndTime, dto.EndTime ?? discount.EndTime)

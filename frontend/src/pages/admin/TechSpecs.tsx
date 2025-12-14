@@ -69,7 +69,7 @@ export const AdminTechSpecs = () => {
   const handleSubmit = async () => {
     try {
       if (editingSpec) {
-        await updateTechSpec(editingSpec.technicalSpecsId, {
+        await updateTechSpec(editingSpec.id, {
           key: formData.key,
         });
         notifications.show({
@@ -79,7 +79,7 @@ export const AdminTechSpecs = () => {
         });
       } else {
         await createTechSpec({
-          technicalSpecsId: crypto.randomUUID(),
+          id: crypto.randomUUID(),
           key: formData.key,
         });
         notifications.show({
@@ -141,17 +141,14 @@ export const AdminTechSpecs = () => {
         </Table.Thead>
         <Table.Tbody>
           {specs.map((spec) => (
-            <Table.Tr key={spec.technicalSpecsId}>
+            <Table.Tr key={spec.id}>
               <Table.Td>{spec.key}</Table.Td>
               <Table.Td>
                 <Group gap="xs">
                   <ActionIcon color="blue" onClick={() => handleEdit(spec)}>
                     <IconEdit size={16} />
                   </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={() => handleDelete(spec.technicalSpecsId)}
-                  >
+                  <ActionIcon color="red" onClick={() => handleDelete(spec.id)}>
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>

@@ -44,9 +44,9 @@ export const AdminProducts = () => {
     []
   );
   const [productSpecs, setProductSpecs] = useState<
-    { technicalSpecsId: string; key: string; value: string }[]
+    { id: string; key: string; value: string }[]
   >([]);
-  const [newSpec, setNewSpec] = useState({ technicalSpecsId: "", value: "" });
+  const [newSpec, setNewSpec] = useState({ id: "", value: "" });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -99,7 +99,7 @@ export const AdminProducts = () => {
     });
     setImageFile(null);
     setProductSpecs([]);
-    setNewSpec({ technicalSpecsId: "", value: "" });
+    setNewSpec({ id: "", value: "" });
     setModalOpen(true);
   };
 
@@ -117,20 +117,18 @@ export const AdminProducts = () => {
     setImageFile(null);
     setProductSpecs(
       product.technicalSpecs?.map((spec) => {
-        // Use technicalSpecsId if present (definition ID), otherwise fallback to id
+        // Use id if present (definition ID), otherwise fallback to id
         // This is crucial because 'id' might be the instance ID, but we need definition ID for updates
-        const defId = spec.technicalSpecsId || spec.id;
+        const defId = spec.id || spec.id;
         return {
-          technicalSpecsId: defId,
+          id: defId,
           key:
-            spec.name ||
-            availableSpecs.find((s) => s.technicalSpecsId === defId)?.key ||
-            "",
+            spec.name || availableSpecs.find((s) => s.id === defId)?.key || "",
           value: spec.value || "",
         };
       }) || []
     );
-    setNewSpec({ technicalSpecsId: "", value: "" });
+    setNewSpec({ id: "", value: "" });
     setModalOpen(true);
   };
 
@@ -153,10 +151,7 @@ export const AdminProducts = () => {
       }
 
       productSpecs.forEach((spec, index) => {
-        formDataObj.append(
-          `TechnicalSpecs[${index}].TechnicalSpecsId`,
-          spec.technicalSpecsId
-        );
+        formDataObj.append(`TechnicalSpecs[${index}].id`, spec.id);
         formDataObj.append(`TechnicalSpecs[${index}].Value`, spec.value);
       });
 
@@ -187,13 +182,10 @@ export const AdminProducts = () => {
   };
 
   const handleAddSpec = () => {
-    if (!newSpec.technicalSpecsId || !newSpec.value) return;
-    const specKey =
-      availableSpecs.find(
-        (s) => s.technicalSpecsId === newSpec.technicalSpecsId
-      )?.key || "";
+    if (!newSpec.id || !newSpec.value) return;
+    const specKey = availableSpecs.find((s) => s.id === newSpec.id)?.key || "";
     setProductSpecs([...productSpecs, { ...newSpec, key: specKey }]);
-    setNewSpec({ technicalSpecsId: "", value: "" });
+    setNewSpec({ id: "", value: "" });
   };
 
   const handleRemoveSpec = (index: number) => {
@@ -342,13 +334,11 @@ export const AdminProducts = () => {
               label="Spec Key"
               placeholder="Select spec"
               data={availableSpecs.map((s) => ({
-                value: s.technicalSpecsId,
+                value: s.id,
                 label: s.key,
               }))}
-              value={newSpec.technicalSpecsId}
-              onChange={(val) =>
-                setNewSpec({ ...newSpec, technicalSpecsId: val || "" })
-              }
+              value={newSpec.id}
+              onChange={(val) => setNewSpec({ ...newSpec, id: val || "" })}
               style={{ flex: 1 }}
             />
             <TextInput

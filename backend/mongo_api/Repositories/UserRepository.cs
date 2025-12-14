@@ -52,7 +52,8 @@ public class UserRepository(IMongoCollection<UserEntity> collection)
         var user = await GetById(id);
         if (user == null) return null;
 
-        dto.Password = Crypto.ToHexString(dto.Password);
+        if (!string.IsNullOrEmpty(dto.Password))
+            dto.Password = Crypto.ToHexString(dto.Password);
 
         var result = await _collection.UpdateOneAsync(
             b => b.Id.Equals(user.Id),

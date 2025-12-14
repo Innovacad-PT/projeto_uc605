@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using mongo_api.Utils;
 using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Users;
@@ -122,9 +123,9 @@ public class UsersRepository: IBaseRepository<UserEntity>
         return result.FirstOrDefault(u => u.Username == username);
     }
 
-    public async Task<UserEntity?> Login(IBaseDto<UserEntity> dto)
+    public async Task<UserEntity?> Login(UserLoginDto<UserEntity> dto)
     {
-        var loginDto = dto as UserLoginDto<UserEntity>;
+        var loginDto = dto;
         if (loginDto == null) return null;
 
         var result = await GetAll();
@@ -138,7 +139,7 @@ public class UsersRepository: IBaseRepository<UserEntity>
         if (loginDto.Type == LoginType.EMAIL)
             user = result.FirstOrDefault(u => u.Email == loginDto.Identifier);
 
-        if (user == null || user.PasswordHash != loginDto.PasswordHash) return null;
+        if (user == null || user.Password != Crypto.ToHexString(loginDto.Password)) return null;
 
         return user;
     }

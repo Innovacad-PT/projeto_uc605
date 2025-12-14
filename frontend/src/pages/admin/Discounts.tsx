@@ -164,37 +164,39 @@ export const AdminDiscounts = () => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {discounts.map((discount) => {
-            const product = products.find((p) => p.id === discount.productId);
-            return (
-              <Table.Tr key={discount.id}>
-                <Table.Td>{product?.name || discount.productId}</Table.Td>
-                <Table.Td>{discount.percentage}%</Table.Td>
-                <Table.Td>
-                  {new Date(discount.startDate).toLocaleDateString()}
-                </Table.Td>
-                <Table.Td>
-                  {new Date(discount.endDate).toLocaleDateString()}
-                </Table.Td>
-                <Table.Td>
-                  <Group gap="xs">
-                    <ActionIcon
-                      color="blue"
-                      onClick={() => handleEdit(discount)}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      color="red"
-                      onClick={() => handleDelete(discount.id)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Table.Td>
-              </Table.Tr>
-            );
-          })}
+          {discounts &&
+            discounts.map((discount) => {
+              const product = products.find((p) => p.id === discount.productId);
+              logger(LogType.INFO, "DIS PROD", discount);
+              return (
+                <Table.Tr key={discount.id}>
+                  <Table.Td>{product?.name || discount.productId}</Table.Td>
+                  <Table.Td>{discount.percentage}%</Table.Td>
+                  <Table.Td>
+                    {new Date(discount.startDate).toLocaleDateString()}
+                  </Table.Td>
+                  <Table.Td>
+                    {new Date(discount.endDate).toLocaleDateString()}
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <ActionIcon
+                        color="blue"
+                        onClick={() => handleEdit(discount)}
+                      >
+                        <IconEdit size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        color="red"
+                        onClick={() => handleDelete(discount.id)}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
         </Table.Tbody>
       </Table>
 

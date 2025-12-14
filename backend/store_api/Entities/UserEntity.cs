@@ -9,7 +9,7 @@ public class UserEntity(
     string username,
     string email,
     string role,
-    DateTime createdAt, string passwordHash)
+    DateTime createdAt, string password)
 {
     public Guid Id { get; set; } = id;
     public string FirstName { get; set; } = firstName;
@@ -18,6 +18,6 @@ public class UserEntity(
     public string Email { get; set; } = email;
     public string Role { get; set; } = role;
     public DateTime CreatedAt { get; set; } = createdAt;
-    public string PasswordHash { get; set; } = passwordHash;
+    public string Password { get; set; } = password;
 
 }

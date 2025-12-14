@@ -1,8 +1,9 @@
 import { apiClient } from "@utils/api";
 
 export interface TechnicalSpecsEntity {
-  technicalSpecsId: string;
+  id: string;
   key: string;
+  value: string;
 }
 
 export async function getAllTechSpecs(): Promise<TechnicalSpecsEntity[]> {
