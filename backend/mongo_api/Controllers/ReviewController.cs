@@ -28,7 +28,7 @@ public class ReviewController(MongoRepository repository, Redis redis) : Control
         var review = await redis.GetOrSetCache($"review:{id}", async () => (await _repository.GetById(id))!);
         if (review == null) return NotFound();
 
-        return Ok(Json(review));
+        return Ok(review);
     }
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class ReviewController(MongoRepository repository, Redis redis) : Control
         var newReview = await _repository.Create(dto);
         if (newReview == null) return NotFound();
 
-        return Ok(Json(newReview));
+        return Ok(newReview);
     }
     
     [HttpDelete("{id}")]
@@ -48,7 +48,7 @@ public class ReviewController(MongoRepository repository, Redis redis) : Control
         var oldReview = await _repository.Delete(id);
         if (oldReview == null) return NotFound();
 
-        return Ok(Json(oldReview));
+        return Ok(oldReview);
     }
 
     [HttpPut("{id}")]
@@ -60,6 +60,6 @@ public class ReviewController(MongoRepository repository, Redis redis) : Control
         var updatedDiscount = await _repository.Update(id, dto);
         if (updatedDiscount == null) return NotFound();
 
-        return Ok(Json(updatedDiscount));
+        return Ok(updatedDiscount);
     }
 }

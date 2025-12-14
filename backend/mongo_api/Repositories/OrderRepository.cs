@@ -23,7 +23,7 @@ public class OrderRepository(IMongoCollection<OrderEntity> collection)
     
     public async Task<OrderEntity?> Create(CreateOrderDTO dto)
     {
-        var order = GetById(dto.Id);
+        var order = await GetById(dto.Id);
         if (order != null) return null;
 
         await _collection.InsertOneAsync(dto.ToEntity());

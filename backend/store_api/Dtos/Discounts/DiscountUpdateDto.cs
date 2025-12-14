@@ -2,7 +2,7 @@
 
 namespace store_api.Dtos.Discounts;
 
-public class DiscountUpdateDto : IBaseDto<DiscountEntity>
+public class DiscountUpdateDto<T> : IBaseDto<DiscountEntity>
 {
     public Guid? ProductId { get; set; }
     public int? Percentage { get; set; }

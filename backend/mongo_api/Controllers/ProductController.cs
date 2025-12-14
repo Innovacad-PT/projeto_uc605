@@ -17,7 +17,7 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         var products = await redis.GetOrSetCache("products", async () => await _repository.GetAll());
         if (products.Count == 0) return NotFound();
 
-        return Ok(Json(products));
+        return Ok(products);
     }
 
     [HttpGet("{id}")]
@@ -28,7 +28,7 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         var product = await redis.GetOrSetCache($"product:{id}", async () => (await _repository.GetById(id))!);
         if (product == null) return NotFound();
 
-        return Ok(Json(product));
+        return Ok(product);
     }
 
     [HttpPost]
@@ -37,7 +37,7 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         var newProduct = await _repository.Create(dto);
         if (newProduct == null) return NotFound();
 
-        return Ok(Json(newProduct));
+        return Ok(newProduct);
     }
     
     [HttpPut("{id}")]
@@ -49,7 +49,7 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         var updatedDiscount = await _repository.Update(id, dto);
         if (updatedDiscount == null) return NotFound();
 
-        return Ok(Json(updatedDiscount));
+        return Ok(updatedDiscount);
     }
 
     [HttpDelete("{id}")]
@@ -58,6 +58,6 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
         var oldProduct = await _repository.Delete(id);
         if (oldProduct == null) return NotFound();
 
-        return Ok(Json(oldProduct));
+        return Ok(oldProduct);
     }
 }

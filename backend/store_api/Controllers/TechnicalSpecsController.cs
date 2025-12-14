@@ -9,20 +9,17 @@ namespace store_api.Controllers;
 
 [ApiController]
 [Route("/technicalspecs")]
-public class TechnicalSpecsController : Controller  
+public class TechnicalSpecsController(IConfiguration configuration) : Controller
 {
-    
-    private readonly TechnicalSpecsService _service = new TechnicalSpecsService();
+    private readonly TechnicalSpecsService _service = new(configuration);
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        Result<IEnumerable<TechnicalSpecsEntity>?> specs = _service.GetAll();
+        Result<IEnumerable<TechnicalSpecsEntity>?> specs = await _service.GetAll();
 
         if (specs is Failure<IEnumerable<TechnicalSpecsEntity>?>)
-        {
              return NotFound(specs as Failure<IEnumerable<TechnicalSpecsEntity>?>);
-        }
         
         return Ok(specs as Success<IEnumerable<TechnicalSpecsEntity>?>);
     }
@@ -30,12 +27,10 @@ public class TechnicalSpecsController : Controller
     [HttpGet("id/{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        Result<TechnicalSpecsEntity?> spec = _service.GetById(id);
+        Result<TechnicalSpecsEntity?> spec = await _service.GetById(id);
 
         if (spec is Failure<TechnicalSpecsEntity>)
-        {
             return NotFound(spec as Failure<TechnicalSpecsEntity>);
-        }
         
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
@@ -43,12 +38,10 @@ public class TechnicalSpecsController : Controller
     [HttpGet("key/{key}")]
     public async Task<IActionResult> GetByKey(string key)
     {
-        Result<TechnicalSpecsEntity?> spec = _service.GetByKey(key);
+        Result<TechnicalSpecsEntity?> spec = await _service.GetByKey(key);
 
         if (spec is Failure<TechnicalSpecsEntity>)
-        {
             return NotFound(spec as Failure<TechnicalSpecsEntity>);
-        }
         
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
@@ -56,25 +49,21 @@ public class TechnicalSpecsController : Controller
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] TechnicalSpecsAddDto dto)
     {
-        Result<TechnicalSpecsEntity?> spec = _service.Create(dto);
+        Result<TechnicalSpecsEntity?> spec = await _service.Create(dto);
 
         if (spec is Failure<TechnicalSpecsEntity>)
-        {
             return BadRequest(spec as Failure<TechnicalSpecsEntity>);
-        }
         
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] TechnicalSpecsUpdateDto dto)
+    public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] TechnicalSpecsUpdateDto<TechnicalSpecsEntity> dto)
     {
-        Result<TechnicalSpecsEntity?> spec = _service.Update(id, dto);
+        Result<TechnicalSpecsEntity?> spec = await _service.Update(id, dto);
 
         if (spec is Failure<TechnicalSpecsEntity>)
-        {
             return BadRequest(spec as Failure<TechnicalSpecsEntity>);
-        }
         
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
@@ -82,12 +71,10 @@ public class TechnicalSpecsController : Controller
     [HttpDelete]
     public async Task<IActionResult> Delete(Guid id)
     {
-        Result<TechnicalSpecsEntity?> spec  = _service.Delete(id);
+        Result<TechnicalSpecsEntity?> spec  = await _service.Delete(id);
 
         if (spec is Failure<TechnicalSpecsEntity>)
-        {
             return BadRequest(spec as Failure<TechnicalSpecsEntity>);
-        }
         
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }

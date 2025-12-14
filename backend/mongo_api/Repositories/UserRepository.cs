@@ -27,7 +27,7 @@ public class UserRepository(IMongoCollection<UserEntity> collection)
 
     public async Task<UserEntity?> Create(CreateUserDTO dto)
     {
-        var user = GetById(dto.Id);
+        var user = await GetById(dto.Id);
         if (user != null) return null;
 
         dto.Password = Crypto.ToHexString(dto.Password);
@@ -60,6 +60,7 @@ public class UserRepository(IMongoCollection<UserEntity> collection)
                 .Set(u => u.FirstName, dto.FirstName ?? user.FirstName)
                 .Set(u => u.LastName, dto.LastName ?? user.LastName)
                 .Set(u => u.Email, dto.Email ?? user.Email)
+                .Set(u => u.Role, dto.Role ?? user.Role)
                 .Set(u => u.Password, dto.Password ?? user.Password)
         );
 

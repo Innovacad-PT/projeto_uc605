@@ -1,4 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Users;
@@ -8,127 +11,135 @@ using store_api.Utils;
 
 namespace store_api.Repositories;
 
-public class UsersRepository : IBaseRepository<UserEntity>
+public class UsersRepository: IBaseRepository<UserEntity>
 {
-    private readonly static List<UserEntity> _users = new ();
+    private readonly string _mongoBaseUrl;
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
 
-    public UserEntity? Add(UserEntity entity)
+    public UsersRepository(IConfiguration configuration)
     {
-        if (_users.Any(u => u.Id == entity.Id))
-            throw new SameIdException("An user with the provided id already exists!");
-
-        if (_users.Any(u => u.Username.Equals(entity.Username)))
-            throw new SameNameException("An user with the provided username already exists!");
-
-        if (_users.Any(u => u.Email.Equals(entity.Email)))
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new SameEmailException("An user with the provided email already exists!");
-        }
-
-        _users.Add(entity);
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
     }
 
-    public UserEntity? Update(Guid id, IBaseDto<UserEntity> dto)
+    public async Task<UserEntity?> Add(UserEntity entity)
     {
-        var updateDto = dto as UserUpdateDto;
-        
-        if (updateDto == null)
-            throw new InvalidDtoType("Invalid data transfer object type.");
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
 
-        var entity = _users.FirstOrDefault((b) => b.Id == id);
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-        if (entity == null)
-            return null;
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/users"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
 
-        entity.FirstName = updateDto.FirstName ?? entity.FirstName;
-        entity.LastName = updateDto.LastName ?? entity.LastName;
-        entity.Username = updateDto.Username ?? entity.Username;
-        entity.Email = updateDto.Email ?? entity.Email;
-        entity.Role = updateDto.Role ?? entity.Role;
-
-        return entity;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserEntity>(responseBody, _jsonOptions);
     }
 
-    public UserEntity? Delete(Guid id)
+    public async Task<UserEntity?> Update(Guid id, IBaseDto<UserEntity> dto)
     {
-        var entity = _users.FirstOrDefault(u => u.Id == id);
+        var updateDto = dto as UserUpdateDto<UserEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
 
-        if (entity == null)
-            return null;
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-        _users.Remove(entity);
-        return entity;
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/users/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<UserEntity> GetAll()
+    public async Task<UserEntity?> Delete(Guid id)
     {
-        return _users;
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/users/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<UserEntity>? GetAllByName(string? firstName, string? lastName)
+    public async Task<UserEntity?> GetById(Guid id)
     {
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/users/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UserEntity>(responseBody, _jsonOptions);
+    }
+
+    public async Task<IEnumerable<UserEntity>?> GetAll()
+    {
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/users"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<UserEntity>>(responseBody, _jsonOptions);
+    }
+
+    public async Task<IEnumerable<UserEntity>?> GetAllByName(string? firstName, string? lastName)
+    {
+        var result = await GetAll();
+        if (result == null) return null;
+
         var isFNameNullOrEmpty = string.IsNullOrEmpty(firstName);
         var isLNameNullOrEmpty = string.IsNullOrEmpty(lastName);
 
         switch (isFNameNullOrEmpty, isLNameNullOrEmpty)
         {
             case (false, false):
-                return _users.Where(u => u.FirstName.Equals(firstName) && u.LastName.Equals(lastName));
+                return result.Where(u => u.FirstName.Equals(firstName) && u.LastName.Equals(lastName));
             case (false, true):
-                return _users.Where(u => u.FirstName.Equals(firstName));
+                return result.Where(u => u.FirstName.Equals(firstName));
             case (true, false):
-                return _users.Where(u => u.LastName.Equals(lastName));
+                return result.Where(u => u.LastName.Equals(lastName));
             default: return null;
         }
     }
 
-    public UserEntity? GetById(Guid id)
+    public async Task<UserEntity?> GetByEmail(String email)
     {
-        return _users.FirstOrDefault(u => u.Id == id);
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.FirstOrDefault(u => u.Email == email);
     }
 
-    public UserEntity? GetByEmail(String email)
+    public async Task<UserEntity?> GetByUsername(String username)
     {
-        return _users.FirstOrDefault(u => u.Email == email);
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.FirstOrDefault(u => u.Username == username);
     }
 
-    public UserEntity? GetByUsername(String username)
+    public async Task<UserEntity?> Login(IBaseDto<UserEntity> dto)
     {
-        return _users.FirstOrDefault(u => u.Username == username);
-    }
+        var loginDto = dto as UserLoginDto<UserEntity>;
+        if (loginDto == null) return null;
 
-    public UserEntity? Login(IBaseDto<UserEntity> dto)
-    {
-        UserLoginDto loginDto = dto as UserLoginDto;
-        
-        if (loginDto == null)
-        {
-            return null;
-        }
+        var result = await GetAll();
+        if (result == null) return null;
 
         UserEntity? user = null;
         
         if (loginDto.Type == LoginType.USERNAME)
-        {
-            user = _users.FirstOrDefault(u => u.Username == loginDto.Identifier);
-        }
+            user = result.FirstOrDefault(u => u.Username == loginDto.Identifier);
 
         if (loginDto.Type == LoginType.EMAIL)
-        {
-            user = _users.FirstOrDefault(u => u.Email == loginDto.Identifier);
-        }
+            user = result.FirstOrDefault(u => u.Email == loginDto.Identifier);
 
-        if (user == null)
-        {
-            return null;
-        }
+        if (user == null || user.PasswordHash != loginDto.PasswordHash) return null;
 
-        if (user.PasswordHash == loginDto.PasswordHash)
-        {
-            return user;
-        }
-
-        return null;
+        return user;
     }
 }

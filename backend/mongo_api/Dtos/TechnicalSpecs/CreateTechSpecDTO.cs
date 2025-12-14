@@ -6,11 +6,11 @@ public class CreateTechSpecDTO(string key)
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string Key { get; set; } = key;
+    public string? Key { get; set; } = key;
     
 
     public TechnicalSpecEntity ToEntity()
     {
-        return new TechnicalSpecEntity(Id, Key);
+        return new (Id, Key);
     }
 }

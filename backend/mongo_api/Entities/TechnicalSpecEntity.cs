@@ -9,19 +9,19 @@ public class TechnicalSpecEntity : IBaseEntity
     public Guid Id { get; set; }
     
     [BsonElement("Key")]
-    public string Key { get; set; }
+    public string? Key { get; set; }
     
     [BsonElement("Value")]
     public string? Value { get; set; }
 
-    public TechnicalSpecEntity(Guid id, string key, string value)
+    public TechnicalSpecEntity(Guid id, string? key, string? value)
     {
         Id = id;
         Key = key;
         Value = value;
     }
     
-    public TechnicalSpecEntity(Guid id, string key)
+    public TechnicalSpecEntity(Guid id, string? key)
     {
         Id = id;
         Key = key;

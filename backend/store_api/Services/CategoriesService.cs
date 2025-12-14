@@ -6,16 +6,16 @@ using store_api.Utils;
 
 namespace store_api.Services;
 
-public class CategoriesService
+public class CategoriesService(IConfiguration configuration)
 {
     
-    private readonly CategoriesRepository _categoriesRepository = new();
+    private readonly CategoriesRepository _categoriesRepository = new(configuration);
 
-    public Result<CategoryEntity?> GetById(Guid id)
+    public async Task<Result<CategoryEntity?>> GetById(Guid id)
     {
         try
         {
-            var result = _categoriesRepository.GetById(id);
+            var result = await _categoriesRepository.GetById(id);
 
             if (result == null)
                 return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_FOUND, $"The category with the following id ({id}) couldn't be found!");
@@ -28,11 +28,11 @@ public class CategoriesService
         }
     }
     
-    public Result<CategoryEntity?> CreateCategory(CategoryAddDto dto)
+    public async Task<Result<CategoryEntity?>> CreateCategory(CategoryAddDto dto)
     {
         try
         {
-            var result = _categoriesRepository.Add(dto.ToEntity());
+            var result = await _categoriesRepository.Add(dto.ToEntity());
 
             if (result == null)
                 return new Failure<CategoryEntity?>(ResultCode.CATEGORY_NOT_CREATED, $"The category with the following id ({dto.Id}) couldn't be created!");
@@ -45,11 +45,11 @@ public class CategoriesService
         }
     }
 
-    public Result<IEnumerable<CategoryEntity>?> GetAllCategories()
+    public async Task<Result<IEnumerable<CategoryEntity>?>> GetAllCategories()
     {
         try
         {
-            var result = _categoriesRepository.GetAll();
+            var result = await _categoriesRepository.GetAll();
 
             if (result == null)
                 return new Failure<IEnumerable<CategoryEntity>?>(ResultCode.CATEGORY_NOT_FOUND, $"(0) categories were found!");

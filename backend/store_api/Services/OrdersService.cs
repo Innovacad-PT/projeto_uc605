@@ -6,17 +6,10 @@ using store_api.Utils;
 
 namespace store_api.Services;
 
-public class OrdersService
+public class OrdersService(IConfiguration configuration)
 {
-    
-    private OrdersRepository _repository;
-    private ProductsService _productsService;
-
-    public OrdersService(IConfiguration configuration)
-    {
-        _repository = new ();
-        _productsService = new(configuration);
-    }
+    private readonly OrdersRepository _ordersRepository = new(configuration);
+    private readonly ProductsService _productsService = new(configuration);
 
     public async Task<Result<OrderEntity?>> CreateOrder(OrderAddDto orderDto)
     {
@@ -37,7 +30,7 @@ public class OrdersService
         {
             foreach (var kvp in orderDto.Products)
             {
-                Result<ProductEntity?> productResult = _productsService.GetProductById(kvp.Key);
+                Result<ProductEntity?> productResult = await _productsService.GetProductById(kvp.Key);
                 
                 if (productResult is Failure<ProductEntity?> peFail)
                 {
@@ -56,7 +49,7 @@ public class OrdersService
             
             foreach (var kvp in orderDto.Products)
             {
-                Result<ProductEntity?> decreaseResult = _productsService.DecreaseStock(kvp.Key, kvp.Value);
+                Result<ProductEntity?> decreaseResult = await _productsService.DecreaseStock(kvp.Key, kvp.Value);
                 
                 if (decreaseResult is Failure<ProductEntity?>)
                 {
@@ -73,7 +66,7 @@ public class OrdersService
                 orderItemEntities
             );
 
-            var createdOrder = _repository.Add(newOrderEntity);
+            var createdOrder = await _ordersRepository.Add(newOrderEntity);
 
             if (createdOrder == null)
             {
@@ -86,16 +79,16 @@ public class OrdersService
         {
             foreach (var kvp in orderDto.Products)
             {
-                _productsService.IncreaseStock(kvp.Key, kvp.Value);
+                await _productsService.IncreaseStock(kvp.Key, kvp.Value);
             }
 
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, $"NOT CREATED. Transaction failed: {ex.Message}");
         }
     }
 
-    public Result<OrderEntity?> Update(int id, OrderUpdateDto orderDto)
+    public async Task<Result<OrderEntity?>> Update(Guid id, OrderUpdateDto<OrderEntity> orderDto)
     {
-        OrderEntity? orderEntity = _repository.Update(id, orderDto);
+        OrderEntity? orderEntity = await _ordersRepository.Update(id, orderDto);
 
         if (orderEntity == null)
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_CREATED, "NOT CREATED");
@@ -103,9 +96,9 @@ public class OrdersService
         return new Success<OrderEntity?>(ResultCode.ORDER_CREATED, "CREATED", orderEntity);
     }
 
-    public Result<OrderEntity?> Delete(int id)
+    public async Task<Result<OrderEntity?>> Delete(Guid id)
     {
-        OrderEntity? orderEntity = _repository.Delete(id);
+        OrderEntity? orderEntity = await _ordersRepository.Delete(id);
 
         if (orderEntity == null)
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_DELETED, "NOT DELETED");
@@ -113,19 +106,19 @@ public class OrdersService
         return new Success<OrderEntity?>(ResultCode.ORDER_DELETED, "DELETED", orderEntity);
     }
 
-    public Result<IEnumerable<OrderEntity>> GetAllOrder()
+    public async Task<Result<IEnumerable<OrderEntity>>?> GetAllOrder()
     {
-        var orders = _repository.GetAll();
+        var orders = await _ordersRepository.GetAll();
 
-        if (!orders.ToList().Any())
+        if (orders == null || !orders.ToList().Any())
             return new Failure<IEnumerable<OrderEntity>>(ResultCode.ORDER_NOT_FOUND, "NOT FOUND");
 
         return new Success<IEnumerable<OrderEntity>>(ResultCode.ORDER_FOUND, "FOUND", orders);
     }
 
-    public Result<OrderEntity?> GetOrderById(int id)
+    public async Task<Result<OrderEntity?>> GetOrderById(Guid id)
     {
-        var order = _repository.GetById(id);
+        var order = await _ordersRepository.GetById(id);
 
         if (order == null)
             return new Failure<OrderEntity?>(ResultCode.ORDER_NOT_FOUND, "NOT FOUND");
@@ -133,19 +126,19 @@ public class OrdersService
         return new Success<OrderEntity?>(ResultCode.ORDER_FOUND, "FOUND", order);
     }
 
-    public Result<IEnumerable<OrderEntity>> GetOrdersByUser(Guid userId)
+    public async Task<Result<IEnumerable<OrderEntity>?>> GetOrdersByUser(Guid userId)
     {
-        var orders = _repository.GetOrdersByUser(userId);
+        var orders = await _ordersRepository.GetOrdersByUser(userId);
 
         if (!orders.ToList().Any())
-            return new Failure<IEnumerable<OrderEntity>>(ResultCode.ORDER_NOT_FOUND, "NOT FOUND");
+            return new Failure<IEnumerable<OrderEntity>>(ResultCode.ORDER_NOT_FOUND, "NOT FOUND")!;
 
         return new Success<IEnumerable<OrderEntity>>(ResultCode.ORDER_FOUND, "FOUND", orders);
     }
 
-    public Result<decimal> CalculateOrderTotal(int orderId)
+    public async Task<Result<decimal>> CalculateOrderTotal(Guid orderId)
     {
-        decimal total = _repository.CalculateOrderTotal(orderId);
+        decimal total = await _ordersRepository.CalculateOrderTotal(orderId);
 
         if (total < 0)
             return new Failure<decimal>(ResultCode.ORDER_NOT_FOUND, "NOT FOUND");

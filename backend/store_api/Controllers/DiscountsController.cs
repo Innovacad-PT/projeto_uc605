@@ -9,74 +9,60 @@ namespace store_api.Controllers;
 
 [ApiController]
 [Route("/discounts")]
-public class DiscountsController : Controller
+public class DiscountsController(IConfiguration configuration) : Controller
 {
 
-    private readonly DiscountService _service;
-
-    public DiscountsController(IConfiguration configuration)
-    {
-        _service = new(configuration);
-    }
+    private readonly DiscountService _service = new(configuration);
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        Result<IEnumerable<DiscountEntity>?> result = _service.GetAll();
+        Result<IEnumerable<DiscountEntity>?> result = await _service.GetAll();
         
         return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
-        Result<DiscountEntity?> result = _service.GetById(id);
+        Result<DiscountEntity?> result = await _service.GetById(id);
 
         if (result is Failure<DiscountEntity?> failure)
-        {
             return BadRequest(failure);
-        }
-        
+
         return Ok(result);
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] DiscountAddDto dto)
+    public async Task<IActionResult> Create([FromBody] DiscountAddDto<DiscountEntity> dto)
     {
-        Result<DiscountEntity?> result = _service.AddDiscount(dto);
+        Result<DiscountEntity?> result = await _service.AddDiscount(dto);
 
         if (result is Failure<DiscountEntity?> failure)
-        {
             return BadRequest(failure);
-        }
 
         return Ok(result);
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(Guid id, [FromBody] DiscountUpdateDto dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] DiscountUpdateDto<DiscountEntity> dto)
     {
-        Result<DiscountEntity?> result = _service.Update(id, dto);
+        Result<DiscountEntity?> result = await _service.Update(id, dto);
 
         if (result is Failure<DiscountEntity?> failure)
-        {
             return BadRequest(failure);
-        }
-        
+
         return Ok(result);
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        Result<DiscountEntity?> result = _service.Delete(id);
+        Result<DiscountEntity?> result = await _service.Delete(id);
 
         if (result is Failure<DiscountEntity?> failure)
-        {
             return BadRequest(failure);
-        }
         
         return Ok(result);
     }
-
 }

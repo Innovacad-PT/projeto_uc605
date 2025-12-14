@@ -1,4 +1,7 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Categories;
 using store_api.Entities;
@@ -7,77 +10,83 @@ using store_api.Utils;
 
 namespace store_api.Repositories;
 
-public class CategoriesRepository : IBaseRepository<CategoryEntity>
+public class CategoriesRepository: IBaseRepository<CategoryEntity>
 {
-    
-    private readonly static List<CategoryEntity> _categories = [
-        new (Guid.Parse("40c9354a-1002-425d-a561-45895910ad86"), "Computador")
-    ];
-    
-    public CategoryEntity? Add(CategoryEntity entity)
-    {
-        if (_categories.Any(c => c.Id == entity.Id))
-        {
-            throw new SameIdException("Category with the same id already exists.");
-        }
+    private static string _mongoBaseUrl;
+    private static HttpClient _client;
+    private static JsonSerializerOptions _jsonOptions;
 
-        if (_categories.Any(c => c.Name == entity.Name))
+    public CategoriesRepository(IConfiguration configuration)
+    {
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new SameNameException("Category with the same name already exists.");
-        }
-        
-        _categories.Add(entity);
-        
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
     }
 
-    public CategoryEntity Update(Guid id, IBaseDto<CategoryEntity> dto)
+    public async Task<CategoryEntity?> Add(CategoryEntity entity)
     {
-        CategoryUpdateDto updateDto = dto as CategoryUpdateDto;
-        if(updateDto == null)
-        {
-            throw new InvalidDtoType("Invalid data transfer object type.");
-        }
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
+
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        Console.WriteLine(_mongoBaseUrl + $"/categories");
         
-        if (!_categories.Any(c => c.Id == id))
-        {
-            return null;
-        }
-        
-        CategoryEntity category = _categories.First(c => c.Id == id);
-        category.Name = updateDto.Name ?? category.Name;
-        
-        return category;
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/categories"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        Console.WriteLine(response);
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(responseBody);
+        return JsonSerializer.Deserialize<CategoryEntity>(responseBody, _jsonOptions);
     }
 
-    public CategoryEntity Delete(Guid id)
+    public async Task<CategoryEntity?> Update(Guid id, IBaseDto<CategoryEntity> dto)
     {
-        if (!_categories.Any(c => c.Id == id))
-        {
-            return null;
-        }
+        var updateDto = dto as CategoryUpdateDto<CategoryEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
+
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
         
-        CategoryEntity category = _categories.First(c => c.Id == id);
-        _categories.Remove(category);
-        return category;
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/categories/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<CategoryEntity>(responseBody, _jsonOptions);
     }
 
-    public CategoryEntity? GetById(Guid id)
+    public async Task<CategoryEntity?> Delete(Guid id)
     {
-        CategoryEntity? category = _categories.FirstOrDefault(c => c.Id == id);
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/categories/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
 
-        return category;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<CategoryEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<CategoryEntity>? GetAll()
+    public async Task<CategoryEntity?> GetById(Guid id)
     {
-        return _categories;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/categories/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<CategoryEntity>(responseBody, _jsonOptions);
     }
 
-    public CategoryEntity? GetByName(string name)
+    public async Task<IEnumerable<CategoryEntity>?> GetAll()
     {
-        CategoryEntity? category = _categories.FirstOrDefault(c => c.Name == name);
-        
-        return category;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/categories"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<CategoryEntity>>(responseBody, _jsonOptions);
     }
 }

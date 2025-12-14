@@ -1,4 +1,6 @@
-﻿namespace store_api.Entities;
+﻿using store_api.Dtos;
+
+namespace store_api.Entities;
 
 public class CategoryEntity
 {

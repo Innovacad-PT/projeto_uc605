@@ -10,29 +10,26 @@ using store_api.Utils;
 
 namespace store_api.Services;
 
-public class UsersService
+public class UsersService(IConfiguration configuration)
 {
-    
-    private readonly UsersRepository _repository = new UsersRepository();
+    private readonly UsersRepository _repository = new(configuration);
 
     public Result<UserEntity?> Register(UserRegisterDto registerDto)
     {
         throw new NotImplementedException();
     }
 
-    public Result<UserLoggedInDao?> Login(UserLoginDto loginDto, IConfiguration configuration)
+    public async Task<Result<UserLoggedInDao?>> Login(UserLoginDto<UserEntity> loginDto)
     {
         if (loginDto.Type != LoginType.USERNAME && loginDto.Type != LoginType.EMAIL)
-        {
-            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN, "The login type is not of 'username' nor 'email'.");
-        }
+            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN,
+                "The login type is not of 'username' nor 'email'.");
 
-        UserEntity? user = _repository.Login(loginDto);
+        UserEntity? user = await _repository.Login(loginDto);
 
         if (user == null)
-        {
-            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN, "User not logged in");
-        }
+            return new Failure<UserLoggedInDao?>(ResultCode.USER_NOT_LOGGED_IN,
+                "User not logged in");
 
         var claims = new[]
         {
@@ -51,53 +48,52 @@ public class UsersService
         return new Success<UserLoggedInDao?>(ResultCode.USER_LOGGED_IN, "User successfully logged in", dao);
     }
 
-    public UserEntity? UpdateProfile(Guid id, UserProfileUpdateDto dto)
+    public async Task<UserEntity?> UpdateProfile(Guid id, UserProfileUpdateDto dto)
     {
         throw new NotImplementedException();
     }
 
-    public UserEntity? ChangePassword(Guid id, UserChangePasswordDto dto)
+    public async Task<UserEntity?> ChangePassword(Guid id, UserChangePasswordDto dto)
     {
         throw new NotImplementedException();
     }
 
-    public Result<IEnumerable<UserEntity>?> GetAll()
+    public async Task<Result<IEnumerable<UserEntity>?>> GetAll()
     {
-        IEnumerable<UserEntity>? users = _repository.GetAll();
+        IEnumerable<UserEntity>? users = await _repository.GetAll();
 
-        if (users.Count() <= 0)
-        {
-            return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_NOT_FOUND, "Users list is empty", users);
-        }
+        if (!users.Any())
+            return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_NOT_FOUND,
+                "Users list is empty", users);
         
-        return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_FOUND, "Users found", users);
+        return new Success<IEnumerable<UserEntity>?>(ResultCode.USER_FOUND,
+            "Users found", users);
     }
 
-    public Result<UserEntity> GetById(Guid id)
+    public async Task<Result<UserEntity>> GetById(Guid id)
     {
-        var user =  _repository.GetById(id);
+        var user = await _repository.GetById(id);
 
         if (user == null)
-        {
-            return new Failure<UserEntity>(ResultCode.USER_NOT_FOUND, $"User not found with id {id}");
-        }
+            return new Failure<UserEntity>(ResultCode.USER_NOT_FOUND,
+                $"User not found with id {id}");
 
-        return new Success<UserEntity>(ResultCode.USER_FOUND, "User found", user);
+        return new Success<UserEntity>(ResultCode.USER_FOUND,
+            "User found", user);
     }
 
-    public Result<UserEntity?> Create(UserRegisterDto dto)
+    public async Task<Result<UserEntity?>> Create(UserRegisterDto dto)
     {
         try
         {
-
-            UserEntity? user = _repository.Add(dto.ToEntity());
+            UserEntity? user = await _repository.Add(dto.ToEntity());
 
             if (user == null)
-            {
-                return new Failure<UserEntity?>(ResultCode.USER_NOT_CREATED, $"User not created with id");
-            }
+                return new Failure<UserEntity?>(ResultCode.USER_NOT_CREATED,
+                    "User not created.");
 
-            return new Success<UserEntity?>(ResultCode.USER_CREATED, "User created", user);
+            return new Success<UserEntity?>(ResultCode.USER_CREATED,
+                "User created", user);
         }
         catch (Exception e)
         {
@@ -105,30 +101,29 @@ public class UsersService
         }
     }
 
-    public Result<UserEntity?> Update(Guid id, UserUpdateDto dto)
+    public async Task<Result<UserEntity?>> Update(Guid id, UserUpdateDto<UserEntity> dto)
     {
         
-        UserEntity? user = _repository.Update(id, dto);
+        UserEntity? user = await _repository.Update(id, dto);
 
         if (user == null)
-        {
-            return new Failure<UserEntity?>(ResultCode.USER_NOT_UPDATED, $"User not found with id {id}");
-        }
+            return new Failure<UserEntity?>(ResultCode.USER_NOT_UPDATED,
+                $"User not found with id {id}");
         
-        return new Success<UserEntity?>(ResultCode.USER_UPDATED, "User updated", user);
+        return new Success<UserEntity?>(ResultCode.USER_UPDATED,
+            "User updated", user);
     }
 
-    public Result<UserEntity?> Delete(Guid id)
+    public async Task<Result<UserEntity?>> Delete(Guid id)
     {
-
-        UserEntity? user = _repository.Delete(id);
+        UserEntity? user = await _repository.Delete(id);
 
         if (user == null)
-        {
-            return new Failure<UserEntity?>(ResultCode.USER_NOT_DELETED, $"User not found with id {id}");
-        }
+            return new Failure<UserEntity?>(ResultCode.USER_NOT_DELETED,
+                $"User not found with id {id}");
         
-        return new Success<UserEntity?>(ResultCode.USER_DELETED, "User deleted", user);
+        return new Success<UserEntity?>(ResultCode.USER_DELETED,
+            "User deleted", user);
     }
 
 }

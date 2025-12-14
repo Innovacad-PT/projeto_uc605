@@ -1,4 +1,7 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Reviews;
 using store_api.Entities;
@@ -9,80 +12,92 @@ namespace store_api.Repositories;
 
 public class ReviewsRepository : IBaseRepository<ReviewEntity>
 {
-    
-    private readonly static List<ReviewEntity> _reviews = new List<ReviewEntity>();
-    
-    public ReviewEntity? Add(ReviewEntity entity)
+    private readonly string _mongoBaseUrl;
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public ReviewsRepository(IConfiguration configuration)
     {
-        if (_reviews.Any(r => r.Id == entity.Id))
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new SameIdException("The review with the same id already exists");
-        }
-
-        if (_reviews.Any(r => r.ProductId == entity.ProductId && r.UserId == entity.UserId))
-        {
-            return null;
-        }
-        
-        _reviews.Add(entity);
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
     }
 
-    public ReviewEntity? Update(Guid id, IBaseDto<ReviewEntity> entity)
+    public async Task<ReviewEntity?> Add(ReviewEntity entity)
     {
-        ReviewUpdateDto updateDto = entity as ReviewUpdateDto;
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
 
-        if (updateDto == null)
-        {
-            throw new InvalidDtoType("Invalid data transfer object type");
-        }
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-        if (!_reviews.Any(r => r.Id == id))
-        {
-            return null;
-        }
-        
-        ReviewEntity review = _reviews.First(r => r.Id == id);
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/reviews"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
 
-        review.Rating = updateDto.Rating ?? review.Rating;
-        review.Comment = updateDto.Comment ?? review.Comment;
-
-        return review;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ReviewEntity>(responseBody, _jsonOptions);
     }
 
-    public ReviewEntity? Delete(Guid id)
+    public async Task<ReviewEntity?> Update(Guid id, IBaseDto<ReviewEntity> dto)
     {
-        if (!_reviews.Any(r => r.Id == id))
-        {
-            return null;
-        }
-        
-        ReviewEntity review = _reviews.First(r => r.Id == id);
-        _reviews.Remove(review);
-        return review;
+        var updateDto = dto as ReviewUpdateDto<ReviewEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
+
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/reviews/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ReviewEntity>(responseBody, _jsonOptions);
     }
 
-    public ReviewEntity? GetById(Guid id)
+    public async Task<ReviewEntity?> Delete(Guid id)
     {
-        ReviewEntity? review = _reviews.FirstOrDefault(r => r.Id == id);
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/reviews/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
 
-        return review;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ReviewEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<ReviewEntity> GetAll()
+    public async Task<ReviewEntity?> GetById(Guid id)
     {
-        return _reviews;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/reviews/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ReviewEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<ReviewEntity>? GetReviewsByProduct(Guid productId)
+    public async Task<IEnumerable<ReviewEntity>?> GetAll()
     {
-        IEnumerable<ReviewEntity>? reviews = _reviews.Where(r => r.ProductId == productId);
-        return reviews;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/reviews"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<ReviewEntity>>(responseBody, _jsonOptions);
     }
 
-    public ReviewEntity? GetUserReview(Guid userId, Guid productId)
+    public async Task<IEnumerable<ReviewEntity>?> GetReviewsByProduct(Guid productId)
     {
-        ReviewEntity? review = _reviews.FirstOrDefault(r => r.UserId == userId && r.ProductId == productId);
-        return review;
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.Where(r => r.ProductId == productId);;
+    }
+
+    public async Task<ReviewEntity?> GetUserReview(Guid userId, Guid productId)
+    {
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.FirstOrDefault(r => r.UserId == userId && r.ProductId == productId);
     }
 }

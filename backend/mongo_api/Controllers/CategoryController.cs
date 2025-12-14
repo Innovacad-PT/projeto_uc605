@@ -17,7 +17,7 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
         var categories = await redis.GetOrSetCache("categories", async () => await _repository.GetAll());
         if (categories.Count == 0) return NotFound();
 
-        return Ok(Json(categories));
+        return Ok(categories);
     }
     
     [HttpGet("{id}")]
@@ -28,7 +28,7 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
         var category = await redis.GetOrSetCache($"category:{id}", async () => (await _repository.GetById(id))!);
         if (category == null) return NotFound();
 
-        return Ok(Json(category));
+        return Ok(category);
     }
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
         var newCategory = await _repository.Create(dto);
         if (newCategory == null) return NotFound();
 
-        return Ok(Json(newCategory));
+        return Ok(newCategory);
     }
     
     [HttpDelete("{id}")]
@@ -48,7 +48,7 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
         var oldCategory = await _repository.Delete(id);
         if (oldCategory == null) return NotFound();
 
-        return Ok(Json(oldCategory));
+        return Ok(oldCategory);
     }
 
     [HttpPut("{id}")]
@@ -60,6 +60,6 @@ public class CategoryController(MongoRepository repository, Redis redis) : Contr
         var updatedCategory = await _repository.Update(id, dto);
         if (updatedCategory == null) return NotFound();
 
-        return Ok(Json(updatedCategory));
+        return Ok(updatedCategory);
     }
 }

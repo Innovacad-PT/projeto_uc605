@@ -1,4 +1,7 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Entities;
 using store_api.Exceptions;
@@ -8,127 +11,111 @@ namespace store_api.Repositories;
 
 public class ProductsRepository : IBaseRepository<ProductEntity>
 {
-
     private readonly CategoriesRepository _categoriesRepository;
     private readonly BrandsRepository _brandsRepository;
+    private readonly string _mongoBaseUrl;
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public ProductsRepository(IConfiguration configuration)
     {
-        _categoriesRepository = new();
+        _categoriesRepository = new(configuration);
         _brandsRepository = new(configuration);
-    }
-    
-    private readonly static List<ProductEntity> _products = new ([
-       new(Guid.Parse("7bd2718c-5e2c-48b0-8b99-04907b43e614"),
-       "Portatil i9",
-       new (Guid.Parse("40c9354a-1002-425d-a561-45895910ad86"), "Computador"),
-       new(Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "Lenovo"),
-       [
-       new(Guid.Parse("7bd2718c-5e2c-48b0-8b99-04907b43e614"), Guid.Parse("1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"), "Processor", "i9-14700K")],
-       "",
-       decimal.Parse((169.99).ToString()),
-       "",
-       3)
-    ]);
-
-
-    public ProductEntity Add(ProductEntity entity)
-    {
-
-        if (_products.Any(p => p.Id == entity.Id))
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new SameIdException("Product with same id already exists");
-        }
-        
-        _products.Add(entity);
-        
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
+    }
+
+    public async Task<ProductEntity?> Add(ProductEntity entity)
+    {
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
+
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/products"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ProductEntity>(responseBody, _jsonOptions);
     }
 
     
-    public async Task< ProductEntity?> Update(Guid id, IBaseDto<ProductEntity> entity)
+    public async Task<ProductEntity?> Update(Guid id, IBaseDto<ProductEntity> dto)
     {
-        
-        ProductUpdateDto updateDto = entity as ProductUpdateDto;
+        var updateDto = dto as ProductUpdateDto<ProductEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
 
-        if (updateDto == null)
-        {
-            throw new InvalidDtoType("Invalid data transfer object type");
-        }
-        
-        if (_products.All(p => p.Id != id)) return null;
-        
-        ProductEntity product = _products.First(p => p.Id == id);
-        
-        product.Name = updateDto.Name ?? product.Name;
-        product.Price = updateDto.Price ?? product.Price;
-        product.Description = updateDto.Description ?? product.Description;
-        product.TechnicalSpecs = updateDto.TechnicalSpecs ?? product.TechnicalSpecs;
-        product.Reviews = updateDto.Reviews ?? product.Reviews;
-        product.Stock = updateDto.Stock ?? product.Stock;
-        product.Category = _categoriesRepository.GetById(updateDto.CategoryId ?? product.Category.Id) ?? product.Category;
-        product.Brand = await _brandsRepository.GetById(updateDto.BrandId ?? product.Brand.Id) ?? product.Brand;
-        
-        if (updateDto.ImageFile != null)
-        {
-            string folder = Path.Combine("wwwroot", "images");
-            
-            string filename = $"{id}{Path.GetExtension(updateDto.ImageFile.FileName)}";
-            string filePath = Path.Combine(folder, filename);
-            
-            String imageUrl = $"/images/{filename}";
-            product.ImageUrl = imageUrl;
-        }
-        
-        return product;
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/products/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ProductEntity>(responseBody, _jsonOptions);
     }
 
-    public ProductEntity? Delete(Guid id)
+    public async Task<ProductEntity?> Delete(Guid id)
     {
-        if (_products.All(p => p.Id != id)) return null;
-        
-        ProductEntity product = _products.First(p => p.Id == id);
-        _products.Remove(product);
-        return product;
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/products/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ProductEntity>(responseBody, _jsonOptions);
     }
 
-    public ProductEntity? GetById(Guid id)
+    public async Task<ProductEntity?> GetById(Guid id)
     {
-        ProductEntity? product = _products.FirstOrDefault(p => p.Id == id);
-        
-        return product;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/products/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ProductEntity>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<ProductEntity>? GetAll()
+    public async Task<IEnumerable<ProductEntity>?> GetAll()
     {
-        return _products;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/products"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<ProductEntity>>(responseBody, _jsonOptions);
     }
 
-    public IEnumerable<ProductEntity>? GetAllWithFilters(string search, Guid categoryId, Guid brandId, decimal minPrice, decimal maxPrice)
+    public async Task<IEnumerable<ProductEntity>?> GetAllWithFilters(string search, Guid categoryId, Guid brandId, decimal minPrice, decimal maxPrice)
     {
-        IEnumerable<ProductEntity>? products = _products.Where(p =>
-            p.Name.ToLower().ContainsAny(search.ToLower().AsSpan()) && p.Category.Id == categoryId && p.Brand.Id == brandId && (p.Price >= minPrice && p.Price <= maxPrice));
+        var result = await GetAll();
+        if (result == null) return null;
 
-        return products;
+        return result.Where(p =>p.Name.ToLower()
+            .ContainsAny(search.ToLower().AsSpan())
+            && p.Category.Id == categoryId
+            && p.Brand.Id == brandId
+            && (p.Price >= minPrice && p.Price <= maxPrice)
+        );
     }
 
-    public IEnumerable<ProductEntity> GetProductsInStock()
+    public async Task<IEnumerable<ProductEntity>?> GetProductsInStock()
     {
-        IEnumerable<ProductEntity>? products = _products.Where(p => p.Stock > 0);
+        var result = await GetAll();
+        if (result == null) return null;
 
-        return products;
+        return result.Where(p => p.Stock > 0);
     }
 
-    public ProductEntity? AddSpecs(Guid productId, List<ProductTechnicalSpecsEntity> specs)
+    public async Task<ProductEntity?> AddSpecs(Guid productId, List<ProductTechnicalSpecsEntity> specs)
     {
-        ProductEntity? product = _products.FirstOrDefault(p => p.Id == productId);
-        
-        if (product == null)
-        {
-            return null;
-        }
+        var result = await GetById(productId);
+        if (result == null) return null;
 
-        List<ProductTechnicalSpecsEntity> existingSpecs = product.TechnicalSpecs;
+        List<ProductTechnicalSpecsEntity> existingSpecs = result.TechnicalSpecs;
         
         HashSet<Guid> existingSpecIds = new(existingSpecs.Select(s => s.TechnicalSpecsId));
 
@@ -155,42 +142,81 @@ public class ProductsRepository : IBaseRepository<ProductEntity>
             throw new InvalidOperationException($"Cannot add technical specs. The following spec keys already exist for product {productId}: {duplicateKeys}");
         }
 
-        product.TechnicalSpecs.AddRange(newSpecs);
+        result.TechnicalSpecs.AddRange(newSpecs);
 
-        return product;
+        var updateDto = new ProductUpdateDto<ProductEntity>(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            result.TechnicalSpecs,
+            null
+        );
+
+        var updateResult = await Update(productId, updateDto);
+        if (updateResult == null) return null;
+
+        return updateResult;
     }
 
-    public ProductEntity? IncreaseStock(Guid productId, int amount)
+    public async Task<ProductEntity?> IncreaseStock(Guid productId, int amount)
     {
-        if (_products.All(p => p.Id != productId)) return null;
+        var result = await GetById(productId);
+        if (result == null) return null;
 
-        ProductEntity product = _products.First(p => p.Id == productId);
+        result.Stock += amount;
 
-        product.Stock += amount;
+        var updateDto = new ProductUpdateDto<ProductEntity>(
+            null,
+            null,
+            null,
+            result.Stock,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
 
-        return product;
+        var updateResult = await Update(productId, updateDto);
+        if (updateResult == null) return null;
+
+        return updateResult;
     }
 
-    public ProductEntity? DecreaseStock(Guid productId, int amount)
+    public async Task<ProductEntity?> DecreaseStock(Guid productId, int amount)
     {
-        if (_products.All(p => p.Id != productId)) return null;
+        var result = await GetById(productId);
+        if (result == null) return null;
 
-        ProductEntity product = _products.First(p => p.Id == productId);
+        result.Stock -= amount;
 
-        product.Stock -= amount;
+        var updateDto = new ProductUpdateDto<ProductEntity>(
+            null,
+            null,
+            null,
+            result.Stock,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
 
-        return product;
+        var updateResult = await Update(productId, updateDto);
+        if (updateResult == null) return null;
+
+        return updateResult;
     }
 
-    public bool CanCreateOrder(Guid productId, int quantity)
+    public async Task<bool> CanCreateOrder(Guid productId, int quantity)
     {
-        if(_products.Find(p => p.Id == productId) == null)
-        {
-            return false;
-        }
+        var result = await GetById(productId);
+        if (result == null) return false;
 
-        ProductEntity product = _products.First(p => p.Id == productId);
-
-        return product.Stock >= quantity;
+        return result.Stock >= quantity;
     }
 }

@@ -18,7 +18,7 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
 
         if (users.Count == 0) return NotFound();
 
-        return Ok(Json(users));
+        return Ok(users);
     }
 
     [HttpGet("{id}")]
@@ -29,7 +29,7 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
         var user = await redis.GetOrSetCache($"user:{id}", async () => (await _repository.GetById(id))!);
         if (user == null) return NotFound();
 
-        return Ok(Json(user));
+        return Ok(user);
     }
 
     [HttpPost]
@@ -40,7 +40,7 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
         var newUser = await _repository.Create(dto);
         if (newUser == null) return NotFound();
 
-        return Ok(Json(newUser));
+        return Ok(newUser);
     }
 
     [HttpDelete("{id}")]
@@ -49,7 +49,7 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
         var oldUser = await _repository.Delete(id);
         if (oldUser == null) return NotFound();
 
-        return Ok(Json(oldUser));
+        return Ok(oldUser);
     }
 
     [HttpPut("{id}")]
@@ -61,6 +61,6 @@ public class UserController(MongoRepository repository, Redis redis) : Controlle
         var updatedUser = await _repository.Update(id, dto);
         if (updatedUser == null) return NotFound();
 
-        return Ok(Json(updatedUser));
+        return Ok(updatedUser);
     }
 }

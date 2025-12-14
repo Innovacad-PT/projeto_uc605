@@ -2,7 +2,7 @@
 
 namespace store_api.Dtos.Users;
 
-public class UserUpdateDto(string? firstName, string? lastName, string? username, string? email, string? role) : IBaseDto<UserEntity>
+public class UserUpdateDto<T>(string? firstName, string? lastName, string? username, string? email, string? role) : IBaseDto<UserEntity>
 {
     public string? FirstName { get; set; } = firstName;
     public string? LastName { get; set; } = lastName;

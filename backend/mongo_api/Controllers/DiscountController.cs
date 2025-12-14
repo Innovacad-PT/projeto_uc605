@@ -17,7 +17,7 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
         var discounts = await redis.GetOrSetCache("discounts", async () => await _repository.GetAll());
         if (discounts.Count == 0) return NotFound();
 
-        return Ok(Json(discounts));
+        return Ok(discounts);
     }
     
     [HttpGet("{id}")]
@@ -28,7 +28,7 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
         var discount = await redis.GetOrSetCache($"discount:{id}", async () => (await _repository.GetById(id))!);
         if (discount == null) return NotFound();
 
-        return Ok(Json(discount));
+        return Ok(discount);
     }
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
         var newDiscount = await _repository.Create(dto);
         if (newDiscount == null) return NotFound();
 
-        return Ok(Json(newDiscount));
+        return Ok(newDiscount);
     }
     
     [HttpDelete("{id}")]
@@ -48,7 +48,7 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
         var oldDiscount = await _repository.Delete(id);
         if (oldDiscount == null) return NotFound();
 
-        return Ok(Json(oldDiscount));
+        return Ok(oldDiscount);
     }
 
     [HttpPut("{id}")]
@@ -60,6 +60,6 @@ public class DiscountController(MongoRepository repository, Redis redis) : Contr
         var updatedDiscount = await _repository.Update(id, dto);
         if (updatedDiscount == null) return NotFound();
 
-        return Ok(Json(updatedDiscount));
+        return Ok(updatedDiscount);
     }
 }

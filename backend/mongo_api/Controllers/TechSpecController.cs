@@ -17,7 +17,7 @@ public class TechSpecController(MongoRepository repository, Redis redis) : Contr
         var techSpecs = await redis.GetOrSetCache("techspecs", async () => await _repository.GetAll());
         if (techSpecs.Count == 0) return NotFound();
 
-        return Ok(Json(techSpecs));
+        return Ok(techSpecs);
     }
     
     [HttpGet("{id}")]
@@ -28,7 +28,7 @@ public class TechSpecController(MongoRepository repository, Redis redis) : Contr
         var techSpec = await redis.GetOrSetCache($"techspec:{id}", async () => (await _repository.GetById(id))!);
         if (techSpec == null) return NotFound();
 
-        return Ok(Json(techSpec));
+        return Ok(techSpec);
     }
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class TechSpecController(MongoRepository repository, Redis redis) : Contr
         var newTechSpec = await _repository.Create(dto);
         if (newTechSpec == null) return NotFound();
 
-        return Ok(Json(newTechSpec));
+        return Ok(newTechSpec);
     }
     
     [HttpDelete("{id}")]
@@ -48,7 +48,7 @@ public class TechSpecController(MongoRepository repository, Redis redis) : Contr
         var oldTechSpec = await _repository.Delete(id);
         if (oldTechSpec == null) return NotFound();
 
-        return Ok(Json(oldTechSpec));
+        return Ok(oldTechSpec);
     }
     
     [HttpPut("{id}")]
@@ -60,6 +60,6 @@ public class TechSpecController(MongoRepository repository, Redis redis) : Contr
         var updatedDiscount = await _repository.Update(id, dto);
         if (updatedDiscount == null) return NotFound();
 
-        return Ok(Json(updatedDiscount));
+        return Ok(updatedDiscount);
     }
 }

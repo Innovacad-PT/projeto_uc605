@@ -1,4 +1,7 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.TechnicalSpecs;
 using store_api.Entities;
@@ -8,88 +11,84 @@ namespace store_api.Repositories;
 
 public class TechnicalSpecsRepository : IBaseRepository<TechnicalSpecsEntity>
 {
-    private readonly static List<TechnicalSpecsEntity> _specs = [
-        new() { TechnicalSpecsId = Guid.Parse("b1f7d9c8-4a5e-4c7b-9f0e-2d1a3f6e8c0d"), Key = "RAM" },
-        new() { TechnicalSpecsId = Guid.Parse("f9e6a0d2-1b3c-4e5f-8a7b-0c9d2e4f6a8b"), Key = "Screen Size" },
-        new() { TechnicalSpecsId = Guid.Parse("1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"), Key = "Processor" }
-    ];
-    
-    public TechnicalSpecsEntity? Add(TechnicalSpecsEntity entity)
+    private readonly string _mongoBaseUrl;
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public TechnicalSpecsRepository(IConfiguration configuration)
     {
-        
-        if (_specs.Any((s) => s.TechnicalSpecsId == entity.TechnicalSpecsId))
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new SameIdException("Technical Spec with the same id already exists.");
-        }
-
-        if (_specs.Any((s) => s.Key.ToLower() == entity.Key.ToLower()))
-        {
-            throw new SameNameException("Technical Spec with the same key/name already exists.");
-        }
-        
-        _specs.Add(entity);
-
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
     }
     
-    public IEnumerable<TechnicalSpecsEntity>? GetAll()
+    public async Task<TechnicalSpecsEntity?> Add(TechnicalSpecsEntity entity)
     {
-        return _specs;
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
+
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/techspecs"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TechnicalSpecsEntity>(responseBody, _jsonOptions);
     }
 
-    public TechnicalSpecsEntity? GetById(Guid id)
+    public async Task<TechnicalSpecsEntity?> Update(Guid id, IBaseDto<TechnicalSpecsEntity> dto)
     {
-        TechnicalSpecsEntity? entity = _specs.FirstOrDefault((s) => s.TechnicalSpecsId == id);
-        return entity;
+        var updateDto = dto as TechnicalSpecsUpdateDto<TechnicalSpecsEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
+
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/techspecs/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TechnicalSpecsEntity>(responseBody, _jsonOptions);
     }
 
-    public TechnicalSpecsEntity? GetByKey(String key)
+    public async Task<TechnicalSpecsEntity?> Delete(Guid id)
     {
-        TechnicalSpecsEntity? spec = _specs.FirstOrDefault((s) => s.Key.ToLower() == key.ToLower());
-        return spec;
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/techspecs/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TechnicalSpecsEntity>(responseBody, _jsonOptions);
     }
 
-    public TechnicalSpecsEntity? Update(Guid id, IBaseDto<TechnicalSpecsEntity> dto)
+    public async Task<TechnicalSpecsEntity?> GetById(Guid id)
     {
-        
-        var updateDto = dto as TechnicalSpecsUpdateDto;  
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/techspecs/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
 
-        if (updateDto == null)
-        {
-            throw new InvalidDtoType("Invalid data transfer object type.");
-        }
-        
-        TechnicalSpecsEntity? entity = _specs.FirstOrDefault((s) => s.TechnicalSpecsId == id);
-
-        if (entity == null)
-        {
-            return null;
-        }
-        
-        if (updateDto.Key != null && _specs.Any(s => s.TechnicalSpecsId != id && s.Key.ToLower() == updateDto.Key.ToLower()))
-        {
-             throw new SameNameException($"Technical Spec with the key '{updateDto.Key}' already exists.");
-        }
-
-
-        entity.Key = updateDto.Key ?? entity.Key;
-        
-        return entity;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TechnicalSpecsEntity>(responseBody, _jsonOptions);
     }
 
-    public TechnicalSpecsEntity? Delete(Guid id)
+    public async Task<IEnumerable<TechnicalSpecsEntity>?> GetAll()
     {
-        TechnicalSpecsEntity? entity = _specs.FirstOrDefault((s) => s.TechnicalSpecsId == id);
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/techspecs"));
+        if (!response.IsSuccessStatusCode) return null;
 
-        if (entity == null)
-        {
-            return null;
-        }
-
-        _specs.Remove(entity);
-
-        return entity;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<TechnicalSpecsEntity>>(responseBody, _jsonOptions);
     }
-    
-    public TechnicalSpecsEntity? GetByName(string name) => GetByKey(name);
+
+    public async Task<TechnicalSpecsEntity?> GetByKey(String key)
+    {
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.FirstOrDefault((s) => s.Key.ToLower() == key.ToLower());
+    }
 }

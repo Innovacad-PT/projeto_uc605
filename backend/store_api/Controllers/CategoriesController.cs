@@ -10,35 +10,27 @@ namespace store_api.Controllers;
 
 [ApiController]
 [Route("/categories")]
-public class CategoriesController : ControllerBase
+public class CategoriesController(IConfiguration configuration) : ControllerBase
 {
     
-    private readonly CategoriesService _service = new();
+    private readonly CategoriesService _service = new(configuration);
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        Result<IEnumerable<CategoryEntity>> _categories = _service.GetAllCategories();
-
-        if (_categories is Failure<IEnumerable<CategoryEntity>?> categories)
-        {
-            return NotFound(categories);
-        }
+        Result<IEnumerable<CategoryEntity>?> categories = await _service.GetAllCategories();
+        if (categories is Failure<IEnumerable<CategoryEntity>?> failure) return NotFound(failure);
         
-        return Ok(_categories);
+        return Ok(categories);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CategoryAddDto dto)
     {
-        Result<CategoryEntity> result = _service.CreateCategory(dto);
+        Result<CategoryEntity?> category = await _service.CreateCategory(dto);
+        if (category is Failure<CategoryEntity?> failure) return BadRequest(failure);
 
-        if (result is Failure<CategoryEntity?> category)
-        {
-            return BadRequest(category);
-        }
-        
-        return Ok(result);
+        return Ok(category);
     }
     
 }

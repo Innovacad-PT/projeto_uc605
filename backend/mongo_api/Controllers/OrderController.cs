@@ -17,7 +17,7 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
         var orders = await redis.GetOrSetCache("orders", async () => await _repository.GetAll());
         if (orders.Count == 0) return NotFound();
 
-        return Ok(Json(orders));
+        return Ok(orders);
     }
     
     [HttpGet("{id}")]
@@ -28,7 +28,7 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
         var order = await redis.GetOrSetCache($"order:{id}", async () => (await _repository.GetById(id))!);
         if (order == null) return NotFound();
 
-        return Ok(Json(order));
+        return Ok(order);
     }
 
     [HttpPost]
@@ -39,7 +39,7 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
         var newOrder = await _repository.Create(dto);
         if (newOrder == null) return NotFound();
 
-        return Ok(Json(newOrder));
+        return Ok(newOrder);
     }
     
     [HttpDelete("{id}")]
@@ -48,7 +48,7 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
         var oldOrder = await _repository.Delete(id);
         if (oldOrder == null) return NotFound();
 
-        return Ok(Json(oldOrder));
+        return Ok(oldOrder);
     }
 
     [HttpPut("{id}")]
@@ -60,6 +60,6 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
         var updatedOrder = await _repository.Update(id, dto);
         if (updatedOrder == null) return NotFound();
 
-        return Ok(Json(updatedOrder));
+        return Ok(updatedOrder);
     }
 }

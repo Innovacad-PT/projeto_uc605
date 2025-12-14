@@ -1,4 +1,7 @@
-﻿using store_api.Controllers;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using store_api.Controllers;
 using store_api.Dtos;
 using store_api.Dtos.Discounts;
 using store_api.Entities;
@@ -9,84 +12,88 @@ namespace store_api.Repositories;
 
 public class DiscountsRepository : IBaseRepository<DiscountEntity>
 {
-    
-    private readonly static List<DiscountEntity> _discounts = new();
-    
-    public DiscountEntity? Add(DiscountEntity entity)
+    private readonly string _mongoBaseUrl;
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public DiscountsRepository(IConfiguration configuration)
     {
-        if (_discounts.Any((d) => d.Id == entity.Id))
+        _mongoBaseUrl = configuration.GetValue<string>("MongoBaseUrl")!;
+        var clientHandler = new HttpClientHandler();
+        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+        _client = new HttpClient(clientHandler);
+        _jsonOptions = new JsonSerializerOptions
         {
-            throw new Exception("Discount already exists");
-        }
-
-        if (_discounts.Any((d) => d.ProductId == entity.ProductId && DateTime.Now.CompareTo(d.EndDate) == -1))
-        {
-            throw new Exception("Discount already exists for this product");
-        }
-
-        if (entity.Percentage < 0 || entity.Percentage > 100) throw new Exception("Percentage out of range");
-
-        Console.WriteLine($"Adding new discount: {entity}");
-
-        _discounts.Add(entity);
-        return entity;
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
     }
 
-    public DiscountEntity? Update(Guid id, IBaseDto<DiscountEntity> entity)
+    public async Task<DiscountEntity?> Add(DiscountEntity entity)
     {
+        if (_mongoBaseUrl == null) throw new Exception("MongoBaseUrl not set");
 
-        DiscountUpdateDto updateDto = entity as DiscountUpdateDto;
+        var content = JsonSerializer.Serialize(entity);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-        if (updateDto == null)
-        {
-            throw new InvalidDtoType("Invalid data transfer object type");
-        }
-        
-        if (_discounts.All(d => d.Id != id)) return null;
-        
-        DiscountEntity discount = _discounts.First((d) => d.Id == id);
+        var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/discounts"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
 
-        var percentage = updateDto.Percentage ?? discount.Percentage;
-        percentage = (percentage < 0 || percentage > 100) ? discount.Percentage : percentage;
-
-        discount.ProductId = updateDto.ProductId ?? discount.ProductId;
-        discount.Percentage = percentage;
-        discount.EndDate = updateDto.EndDate ?? discount.EndDate;
-        discount.StartDate = updateDto.StartDate ?? discount.StartDate;
-        
-        return discount;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
     }
 
-    public DiscountEntity? Delete(Guid id)
+    public async Task<DiscountEntity?> Update(Guid id, IBaseDto<DiscountEntity> dto)
     {
-        if (_discounts.All(d => d.Id != id)) return null;
+        var updateDto = dto as DiscountUpdateDto<DiscountEntity>;
+        if(updateDto == null) throw new InvalidDtoType("Invalid data transfer object type.");
 
-        
-        DiscountEntity discount = _discounts.First((d) => d.Id == id);
-        _discounts.Remove(discount);
-        return discount;
+        var content = JsonSerializer.Serialize(updateDto);
+        var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+        var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/discounts/{id}"), httpContent);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
     }
 
-    public DiscountEntity? GetById(Guid id)
+    public async Task<DiscountEntity?> Delete(Guid id)
     {
-        DiscountEntity? discount = _discounts.FirstOrDefault(d => d.Id == id);
-        
-        return discount;
+        var response = await _client.DeleteAsync(new Uri(_mongoBaseUrl + $"/discounts/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
+    }
+
+    public async Task<DiscountEntity?> GetById(Guid id)
+    {
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/discounts/{id}"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
     }
     
-    public IEnumerable<DiscountEntity>? GetAll()
+    public async Task<IEnumerable<DiscountEntity>?> GetAll()
     {
-        return _discounts;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + "/discounts"));
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<DiscountEntity>>(responseBody, _jsonOptions);
     }
 
-    public DiscountEntity? GetActiveDiscount(Guid productId)
+    public async Task<DiscountEntity?> GetActiveDiscount(Guid productId)
     {
-        DiscountEntity? discount = _discounts.FirstOrDefault(d => 
-                d.ProductId == productId &&
-                d.StartDate <= DateTime.Now &&
-                DateTime.Now < d.EndDate
+        var result = await GetAll();
+        if (result == null) return null;
+
+        return result.FirstOrDefault(d =>
+            d.ProductId == productId &&
+            d.StartDate <= DateTime.Now &&
+            DateTime.Now < d.EndDate
         );
-        
-        return discount;
     }
 }

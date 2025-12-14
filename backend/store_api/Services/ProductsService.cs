@@ -17,9 +17,9 @@ public class ProductsService
     {
         _productsRepository = new (configuration);
         _brandsService = new (configuration);
-        _categoriesService = new();
+        _categoriesService = new(configuration);
         _discountsService = new (configuration);
-        _technicalSpecsService = new();
+        _technicalSpecsService = new(configuration);
     }
 
     public async Task<Result<ProductEntity?>> CreateProduct(ProductCreateDto dto)
@@ -27,56 +27,51 @@ public class ProductsService
         try
         {
             Result<BrandEntity?> brand = await _brandsService.GetById(dto.BrandId);
-            Result<CategoryEntity?> category = _categoriesService.GetById(dto.CategoryId);
+            Result<CategoryEntity?> category = await _categoriesService.GetById(dto.CategoryId);
 
             if (brand is Failure<BrandEntity>)
-            {
                 return new Failure<ProductEntity?>(ResultCode.BRAND_NOT_FOUND,
                     $"The brand with id ({dto.BrandId}) does not exist");
-            }
 
             if (category is Failure<CategoryEntity>)
-            {
                 return new Failure<ProductEntity?>(ResultCode.CATEGORY_NOT_FOUND,
                     $"The category with id ({dto.CategoryId}) does not exist");
-            }
             
             List<ProductTechnicalSpecsEntity> finalSpecs = new();
 
             if (dto.TechnicalSpecs != null)
             {
-                foreach (var specInput in dto.TechnicalSpecs) // Loop over the input DTO
+                foreach (var specInput in dto.TechnicalSpecs)
                 {
-                    Result<TechnicalSpecsEntity?> specTemplate = _technicalSpecsService.GetById(specInput.TechnicalSpecsId);
+                    Result<TechnicalSpecsEntity?> specTemplate = await _technicalSpecsService.GetById(specInput.TechnicalSpecsId);
         
                     if (specTemplate is Failure<TechnicalSpecsEntity>)
-                    {
                         return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_NOT_FOUND,
                             $"The Technical Spec ID ({specInput.TechnicalSpecsId}) is invalid or does not exist as a template.");
-                    }
             
-                    ProductTechnicalSpecsEntity newSpecEntity = new ProductTechnicalSpecsEntity(productId: dto.Id,
-                        technicalSpecsId: specInput.TechnicalSpecsId, value: specInput.Value,
-                        key: (specTemplate as Success<TechnicalSpecsEntity>).Value.Key);
+                    ProductTechnicalSpecsEntity newSpecEntity = new ProductTechnicalSpecsEntity(
+                        productId: dto.Id,
+                        technicalSpecsId: specInput.TechnicalSpecsId,
+                        value: specInput.Value,
+                        key: (specTemplate as Success<TechnicalSpecsEntity>)!.Value.Key
+                    );
             
                     finalSpecs.Add(newSpecEntity);
                 }
             }
 
             string? imageUrl = null;
+
             if (dto.Image != null)
             {
                 string folder = Path.Combine("wwwroot", "images");
 
-                if (!Directory.Exists(folder))
-                {
-                    Directory.CreateDirectory(folder);
-                }
+                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
                 string filename = $"{dto.Id}{Path.GetExtension(dto.Image.FileName)}";
                 string filePath = Path.Combine(folder, filename);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await dto.Image.CopyToAsync(stream);
                 }
@@ -84,24 +79,32 @@ public class ProductsService
                 imageUrl = $"/images/{filename}";
             }
 
-            var entity = new ProductEntity(dto.Id, dto.Name, (category as Success<CategoryEntity>).Value,
-                (brand as Success<BrandEntity>).Value, 
+            var entity = new ProductEntity(
+                dto.Id,
+                dto.Name,
+                (category as Success<CategoryEntity>)!.Value,
+                (brand as Success<BrandEntity>)!.Value,
                 finalSpecs,
                 imageUrl ?? "", dto.Price,
-                dto.Details ?? "", dto.Stock);
-            ProductEntity? prod = _productsRepository.Add(entity);
+                dto.Details ?? "",
+                dto.Stock
+            );
 
-            return new Success<ProductEntity?>(ResultCode.PRODUCT_CREATED, "Product created successfully", prod);
+            ProductEntity? prod = await _productsRepository.Add(entity);
+
+            return new Success<ProductEntity?>(ResultCode.PRODUCT_CREATED,
+                "Product created successfully", prod);
         }
         catch (SameIdException e)
         {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_CREATED, "Product with the same id already exists");
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_CREATED,
+                "Product with the same id already exists");
         }
         
     }
 
-    public async Task<Result<ProductEntity?>> UpdateProduct(Guid id, ProductUpdateDto productDto){
-        ProductEntity? productEntity = _productsRepository.GetById(id);
+    public async Task<Result<ProductEntity?>> UpdateProduct(Guid id, ProductUpdateDto<ProductEntity> productDto){
+        ProductEntity? productEntity = await _productsRepository.GetById(id);
 
         if (productEntity == null)
         {
@@ -152,104 +155,95 @@ public class ProductsService
         return new Success<ProductEntity?>(ResultCode.PRODUCT_UPDATED, "Product updated successfully", product);
     }
 
-    public Result<ProductEntity?> DeleteProduct(Guid id)
+    public async Task<Result<ProductEntity?>> DeleteProduct(Guid id)
     {
-        ProductEntity? product = _productsRepository.Delete(id);
+        ProductEntity? product = await _productsRepository.Delete(id);
 
         if (product == null)
-        {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_DELETED, "Product with the specified id does not exist");
-        }
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_DELETED,
+                "Product with the specified id does not exist");
 
         if (product.ImageUrl.Length > 0)
         {
             string folder = Path.Combine("wwwroot", "images");
 
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
             if (!string.IsNullOrEmpty(product.ImageUrl))
             {
                 string oldFilePath = Path.Combine(folder, product.ImageUrl);
-                if (File.Exists(oldFilePath))
-                {
-                    File.Delete(oldFilePath);
-                }
+                if (File.Exists(oldFilePath)) File.Delete(oldFilePath);
             }
         }
         
-        return new Success<ProductEntity?>(ResultCode.PRODUCT_DELETED, "Product deleted successfully", product);
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_DELETED,
+            "Product deleted successfully", product);
     }
 
-    public Result<ProductEntity?> GetProductById(Guid id)
+    public async Task<Result<ProductEntity?>> GetProductById(Guid id)
     {
-        ProductEntity? product = _productsRepository.GetById(id);
+        ProductEntity? product = await _productsRepository.GetById(id);
 
         if (product == null)
-        {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
-        }
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                "Product with the specified id does not exist");
         
-        return new Success<ProductEntity?>(ResultCode.PRODUCT_FOUND, "Product found successfully", product);
+        return new Success<ProductEntity?>(ResultCode.PRODUCT_FOUND,
+            "Product found successfully", product);
     }
 
     public async Task<Result<IEnumerable<ProductEntity>?>> GetAllProducts(String search, String category, decimal minPice, decimal maxPrice){
-        IEnumerable<ProductEntity>? result = _productsRepository.GetAll();
+        IEnumerable<ProductEntity>? result = await _productsRepository.GetAll();
 
         if (result.ToList().Count <= 0)
-        {
-            return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND, "Products list is empty", result);
-        }
+            return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_NOT_FOUND,
+                "Products list is empty", result);
 
-        return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_FOUND, "Products list retrieved successfuly", result);
+        return new Success<IEnumerable<ProductEntity>?>(ResultCode.PRODUCT_FOUND,
+            "Products list retrieved successfuly", result);
     }
 
-    public Result<DiscountEntity?> GetActiveDiscount(Guid productId)
+    public async Task<Result<DiscountEntity?>> GetActiveDiscount(Guid productId)
     {
-        Result<DiscountEntity?> product = _discountsService.GetActiveDiscount(productId);
+        Result<DiscountEntity?> product = await _discountsService.GetActiveDiscount(productId);
 
         if (product is Failure<DiscountEntity?>)
-        {
-            return new Success<DiscountEntity?>(ResultCode.DISCOUNT_NOT_FOUND, "This product has no discount.", null);
-        }
+            return new Success<DiscountEntity?>(ResultCode.DISCOUNT_NOT_FOUND,
+                "This product has no discount.", null);
 
-        return new Success<DiscountEntity?>(ResultCode.PRODUCT_DISCOUNT_FOUND, "Discount found successfully", (product as Success<DiscountEntity>).Value);
+        return new Success<DiscountEntity?>(ResultCode.PRODUCT_DISCOUNT_FOUND,
+            "Discount found successfully", (product as Success<DiscountEntity>)?.Value);
     }
 
-    public Result<ProductEntity?> IncreaseStock(Guid productId, int amount){
-        ProductEntity? product = _productsRepository.IncreaseStock(productId, amount);
+    public async Task<Result<ProductEntity?>> IncreaseStock(Guid productId, int amount){
+        ProductEntity? product = await _productsRepository.IncreaseStock(productId, amount);
 
         if (product == null)
-        {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
-        }
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                "Product with the specified id does not exist");
 
         return new Success<ProductEntity?>(ResultCode.PRODUCT_STOCK_INCREASED,
             $"Product stock was increased by {amount}", product);
     }
 
-    public Result<ProductEntity?> DecreaseStock(Guid productId, int amount){
-        ProductEntity? product = _productsRepository.DecreaseStock(productId, amount);
+    public async Task<Result<ProductEntity?>> DecreaseStock(Guid productId, int amount){
+        ProductEntity? product = await _productsRepository.DecreaseStock(productId, amount);
 
         if (product == null)
-        {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND, "Product with the specified id does not exist");
-        }
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                "Product with the specified id does not exist");
 
         return new Success<ProductEntity?>(ResultCode.PRODUCT_STOCK_DECREASED,
             $"Product stock was decreased by {amount}", product);
     }
 
 
-    public Result<ProductEntity?> AddTechnicalSpecs(Guid productId, List<ProductTechnicalSpecsEntity> list)
+    public async Task<Result<ProductEntity?>> AddTechnicalSpecs(Guid productId, List<ProductTechnicalSpecsEntity> list)
     {
-        Result<ProductEntity?> productCheck = GetProductById(productId);
+        Result<ProductEntity?> productCheck = await GetProductById(productId);
         if (productCheck is Failure<ProductEntity?>)
-        {
-            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  $"Product with the specified id ({productId}) does not exist");
-        }
+            return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                $"Product with the specified id ({productId}) does not exist");
 
         try
         {
@@ -257,15 +251,14 @@ public class ProductsService
             {
                 spec.ProductId = productId;
 
-                Result<TechnicalSpecsEntity?> specTemplate = _technicalSpecsService.GetById(spec.TechnicalSpecsId);
+                Result<TechnicalSpecsEntity?> specTemplate = await _technicalSpecsService.GetById(spec.TechnicalSpecsId);
 
                 if (specTemplate is Failure<TechnicalSpecsEntity>)
-                {
                     return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_NOT_FOUND,
                         $"The Technical Spec ID ({spec.TechnicalSpecsId}) is invalid or does not exist as a template.");
-                }
 
-                spec.Key = (specTemplate as Success<TechnicalSpecsEntity>).Value.Key;
+
+                spec.Key = (specTemplate as Success<TechnicalSpecsEntity>)?.Value.Key;
             }
         }
         catch (Exception e)
@@ -273,15 +266,13 @@ public class ProductsService
             return new Failure<ProductEntity?>(ResultCode.TECHNICAL_SPEC_INVALID, $"Validation error on technical specs: {e.Message}");
         }
 
-
         try
         {
-            ProductEntity? product = _productsRepository.AddSpecs(productId, list);
+            ProductEntity? product = await _productsRepository.AddSpecs(productId, list);
 
             if (product == null)
-            {
-                return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,  $"Product with the specified id ({productId}) does not exist");
-            }
+                return new Failure<ProductEntity?>(ResultCode.PRODUCT_NOT_FOUND,
+                    $"Product with the specified id ({productId}) does not exist");
 
             return new Success<ProductEntity?>(ResultCode.PRODUCT_TECHNICAL_SPECS_ADDED,
                 $"Technical specs added to product with id {productId}", product);
@@ -294,8 +285,6 @@ public class ProductsService
 
     public async Task<bool> CanCreateOrder(Guid productId, int quantity)
     {
-        bool can = _productsRepository.CanCreateOrder(productId, quantity);
-
-        return can;
+        return await _productsRepository.CanCreateOrder(productId, quantity);
     }
 }

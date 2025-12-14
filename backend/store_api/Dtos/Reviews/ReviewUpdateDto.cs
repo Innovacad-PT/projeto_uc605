@@ -1,6 +1,8 @@
-﻿namespace store_api.Dtos.Reviews;
+﻿using store_api.Entities;
 
-public class ReviewUpdateDto
+namespace store_api.Dtos.Reviews;
+
+public class ReviewUpdateDto<T> : IBaseDto<ReviewEntity>
 {
     public int? Rating { get; set; }
     public string? Comment { get; set; }

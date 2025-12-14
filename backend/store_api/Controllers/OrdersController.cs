@@ -10,14 +10,9 @@ namespace store_api.Controllers;
 
 [ApiController]
 [Route("/orders")]
-public class OrdersController : Controller
+public class OrdersController(IConfiguration configuration) : Controller
 {
-    private readonly OrdersService _service;
-
-    public OrdersController(IConfiguration configuration)
-    {
-        _service = new (configuration);
-    }
+    private readonly OrdersService _service = new(configuration);
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderAddDto dto)
@@ -25,46 +20,74 @@ public class OrdersController : Controller
         Result<OrderEntity?> result = await _service.CreateOrder(dto);
 
         if (result is Failure<OrderEntity> failure)
-        {
             return BadRequest(failure);
-        }
         
         return Ok(result as Success<OrderEntity>);
     }
 
     [HttpPut]
-    public IActionResult Update([FromRoute] int id, [FromBody] OrderUpdateDto dto)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] OrderUpdateDto<OrderEntity> dto)
     {
-        return Ok(_service.Update(id, dto));
+        Result<OrderEntity?> result = await _service.Update(id, dto);
+
+        if (result is Failure<OrderEntity> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<OrderEntity>);
     }
 
     [HttpDelete]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        return Ok(_service.Delete(id));
+        Result<OrderEntity?> result = await _service.Delete(id);
+
+        if (result is Failure<OrderEntity> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<OrderEntity>);
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        return Ok(_service.GetAllOrder());
+        Result<IEnumerable<OrderEntity>>? result = await _service.GetAllOrder();
+
+        if (result is Failure<IEnumerable<OrderEntity>> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<IEnumerable<OrderEntity>>);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetByOrderId([FromRoute] int id)
+    public async Task<IActionResult> GetByOrderId([FromRoute] Guid id)
     {
-        return Ok(_service.GetOrderById(id));
+        Result<OrderEntity?> result = await _service.GetOrderById(id);
+
+        if (result is Failure<OrderEntity> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<OrderEntity>);
     }
 
     [HttpGet("user/{id}")]
-    public IActionResult GetByUserId([FromRoute] Guid id)
+    public async Task<IActionResult> GetByUserId([FromRoute] Guid id)
     {
-        return Ok(_service.GetOrdersByUser(id));
+        Result<IEnumerable<OrderEntity>?> result = await _service.GetOrdersByUser(id);
+
+        if (result is Failure<IEnumerable<OrderEntity>> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<IEnumerable<OrderEntity>>);
     }
 
     [HttpGet("{id}/total")]
-    public IActionResult CalculateTotal([FromRoute] int id)
+    public async Task<IActionResult> CalculateTotal([FromRoute] Guid id)
     {
-        return Ok(_service.CalculateOrderTotal(id));
+        var result = await _service.CalculateOrderTotal(id);
+
+        if (result is Failure<decimal> failure)
+            return BadRequest(failure);
+
+        return Ok(result as Success<decimal>);
     }
 }

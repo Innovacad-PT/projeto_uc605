@@ -2,7 +2,7 @@
 
 namespace store_api.Dtos.Discounts;
 
-public class DiscountAddDto : IBaseDto<DiscountEntity>
+public class DiscountAddDto<T> : IBaseDto<DiscountEntity>
 {
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }

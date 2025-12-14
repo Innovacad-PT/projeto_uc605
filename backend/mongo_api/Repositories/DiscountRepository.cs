@@ -23,7 +23,7 @@ public class DiscountRepository(IMongoCollection<DiscountEntity> collection)
     
     public async Task<DiscountEntity?> Create(CreateDiscountDTO dto)
     {
-        var discount = GetById(dto.Id);
+        var discount = await GetById(dto.Id);
         if (discount != null) return null;
 
         await _collection.InsertOneAsync(dto.ToEntity());

@@ -23,7 +23,7 @@ public class CategoryRepository(IMongoCollection<CategoryEntity> collection)
     
     public async Task<CategoryEntity?> Create(CreateCategoryDTO dto)
     {
-        var category = GetById(dto.Id);
+        var category = await GetById(dto.Id);
         if (category != null) return null;
 
         await _collection.InsertOneAsync(dto.ToEntity());

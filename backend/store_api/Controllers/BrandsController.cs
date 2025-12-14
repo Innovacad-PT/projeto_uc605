@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using store_api.Dtos.Brands;
 using store_api.Entities;
 using store_api.Services;
@@ -8,15 +9,9 @@ namespace store_api.Controllers;
 
 [ApiController]
 [Route("/brands")]
-public class BrandsController : Controller  
+public class BrandsController(IConfiguration configuration) : Controller
 {
-    
-    private readonly BrandsService _service;
-
-    public BrandsController(IConfiguration configuration)
-    {
-        _service = new(configuration);
-    }
+    private readonly BrandsService _service =  new(configuration);
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -32,9 +27,7 @@ public class BrandsController : Controller
         Result<BrandEntity?> brand = await _service.GetById(id);
 
         if (brand is Failure<BrandEntity>)
-        {
             return NotFound(brand as Failure<BrandEntity>);
-        }
         
         return Ok(brand as Success<BrandEntity>);
     }
@@ -45,9 +38,7 @@ public class BrandsController : Controller
         Result<BrandEntity?> brand = await _service.CreateBrand(dto);
 
         if (brand is Failure<BrandEntity>)
-        {
             return BadRequest(brand as Failure<BrandEntity>);
-        }
         
         return Ok(brand as Success<BrandEntity>);
     }
@@ -58,9 +49,7 @@ public class BrandsController : Controller
         Result<BrandEntity?> brand = await _service.Update(id, dto);
 
         if (brand is Failure<BrandEntity>)
-        {
             return BadRequest(brand as Failure<BrandEntity>);
-        }
         
         return Ok(brand as Success<BrandEntity>);
     }
@@ -71,11 +60,8 @@ public class BrandsController : Controller
         Result<BrandEntity?> brand  = await _service.Delete(id);
 
         if (brand is Failure<BrandEntity>)
-        {
             return BadRequest(brand as Failure<BrandEntity>);
-        }
         
         return Ok(brand as Success<BrandEntity>);
     }
-    
 }

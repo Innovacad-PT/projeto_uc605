@@ -13,7 +13,6 @@ public class BrandsRepository : IBaseRepository<BrandEntity>
 {
     private static HttpClient _database;
     private readonly IConfiguration _configuration;
-    
     private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
         Converters = { new JsonStringEnumConverter() },
