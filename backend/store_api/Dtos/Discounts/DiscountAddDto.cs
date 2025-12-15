@@ -7,10 +7,10 @@ public class DiscountAddDto<T> : IBaseDto<DiscountEntity>
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
     public int Percentage { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public long StartDate { get; set; }
+    public long EndDate { get; set; }
 
-    public DiscountAddDto(Guid productId, int percentage, DateTime startDate, DateTime endDate)
+    public DiscountAddDto(Guid productId, int percentage, long startDate, long endDate)
     {
         Id = Guid.NewGuid();
         ProductId = productId;

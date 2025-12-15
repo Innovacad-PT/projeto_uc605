@@ -1,19 +1,21 @@
 ﻿using mongo_api.Entities;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace mongo_api.Dtos;
 
-public class UpdateProductsDTO(string name,  string description, double price,
-    int stock, Guid categoryId, Guid brandId, List<ReviewEntity> reviews,
-    List<TechnicalSpecEntity> specs, string img)
+public class UpdateProductsDTO
 {
-    public string? Name = name;
-    public string? Description = description;
-    public double? Price = price;
-    public int? Stock = stock;
-    public string? Img = img;
-    public Guid? CategoryId = categoryId;
-    public Guid? BrandId = brandId;
-    public List<TechnicalSpecEntity>? Specs = specs;
-    public List<ReviewEntity>? Reviews = reviews;
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public double? Price { get; set; }
+    public int? Stock { get; set; }
+    public string? ImageUrl { get; set; }
+    public Guid? CategoryId { get; set; }
+    public Guid? BrandId { get; set; }
+    
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public List<Guid>? TechnicalSpecs { get; set; }
+    public List<Guid>? Reviews { get; set; }
 
 }

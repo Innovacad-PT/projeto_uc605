@@ -2,16 +2,14 @@
 
 public class ProductTechnicalSpecsEntity
 {
-    public ProductTechnicalSpecsEntity(Guid productId, Guid technicalSpecsId, String key, String value)
+    public ProductTechnicalSpecsEntity(Guid id, String key, String value)
     {
-        ProductId = productId;
-        TechnicalSpecsId = technicalSpecsId;
+        Id = id;
         Key = key;
         Value = value;
     }
 
-    public Guid ProductId { get; set; }
-    public Guid TechnicalSpecsId  { get; set; }
+    public Guid Id  { get; set; }
     public String? Key { get; set; }
     public String Value { get; set; }
 }

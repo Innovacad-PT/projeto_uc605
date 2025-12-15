@@ -7,16 +7,16 @@ export const brandService = {
   },
 
   getById: async (id: string): Promise<Brand> => {
-    return apiClient.get<Brand>(`/brands/id/${id}`);
+    return apiClient.get<Brand>(`/brands/${id}`);
   },
   create: async (data: { id: string; name: string }): Promise<Brand> => {
     return apiClient.post<Brand>("/brands", data);
   },
 
   update: async (id: string, data: { name: string }): Promise<Brand> => {
-    return apiClient.put<Brand>(`/brands?id=${id}`, data);
+    return apiClient.put<Brand>(`/brands/${id}`, data);
   },
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete<void>(`/brands?id=${id}`);
+    await apiClient.delete<void>(`/brands/${id}`);
   },
 };

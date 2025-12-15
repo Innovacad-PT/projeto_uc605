@@ -6,7 +6,6 @@ using store_api.Dtos;
 using store_api.Dtos.Discounts;
 using store_api.Entities;
 using store_api.Exceptions;
-using store_api.Utils;
 
 namespace store_api.Repositories;
 
@@ -40,6 +39,7 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
         if (!response.IsSuccessStatusCode) return null;
 
         var responseBody = await response.Content.ReadAsStringAsync();
+        
         return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
     }
 
@@ -52,6 +52,11 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
         var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
         var response = await _client.PutAsync(new Uri(_mongoBaseUrl + $"/discounts/{id}"), httpContent);
+        Console.WriteLine(response.Content.ToString());
+        Console.WriteLine(content);
+        Console.WriteLine(response.StatusCode);
+        Console.WriteLine(response.ReasonPhrase);
+        Console.WriteLine(response.Content.ReadAsStringAsync().Result);
         if (!response.IsSuccessStatusCode) return null;
 
         var responseBody = await response.Content.ReadAsStringAsync();
@@ -87,13 +92,10 @@ public class DiscountsRepository : IBaseRepository<DiscountEntity>
 
     public async Task<DiscountEntity?> GetActiveDiscount(Guid productId)
     {
-        var result = await GetAll();
-        if (result == null) return null;
+        var response = await _client.GetAsync(new Uri(_mongoBaseUrl + $"/discounts/{productId}"));
+        if (!response.IsSuccessStatusCode) return null;
 
-        return result.FirstOrDefault(d =>
-            d.ProductId == productId &&
-            d.StartDate <= DateTime.Now &&
-            DateTime.Now < d.EndDate
-        );
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DiscountEntity>(responseBody, _jsonOptions);
     }
 }

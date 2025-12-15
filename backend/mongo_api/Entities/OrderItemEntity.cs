@@ -4,14 +4,14 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Entities;
 
-public class OrderItemEntity(Guid id, Guid productId, int? quantity, decimal? unitPrice)
+public class OrderItemEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     [SwaggerIgnore]
-    public Guid Id { get; set; } = id;
+    public Guid Id { get; set; }
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
-    public Guid ProductId { get; set; } = productId;
-    public int? Quantity { get; set; } = quantity;
-    public decimal? UnitPrice { get; set; } = unitPrice;
+    public Guid ProductId { get; set; }
+    public int? Quantity { get; set; }
+    public decimal? UnitPrice { get; set; }
 }

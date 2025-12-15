@@ -9,6 +9,7 @@ import {
   Stack,
   ActionIcon,
   Image,
+  Badge,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useCart } from "@contexts/CartContext";
@@ -47,6 +48,8 @@ export default function CheckoutPage() {
       }, {} as Record<string, number>),
     };
 
+    console.log(order);
+
     const result = await createOrder(order);
 
     if (!result) {
@@ -58,7 +61,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Send receipt email (Mock)
     await sendOrderEmail(
       { ...result, id: result.id.toString(), createdAt: result.createdAt },
       items
@@ -110,7 +112,14 @@ export default function CheckoutPage() {
                     />
 
                     <Stack gap={4} style={{ flex: 1 }}>
-                      <Text fw={600}>{item.product.name}</Text>
+                      <Group>
+                        <Text fw={600}>{item.product.name}</Text>
+                        {item.product.discount?.percentage && (
+                          <Badge color="red" variant="filled">
+                            {item.product.discount.percentage}% de Desconto
+                          </Badge>
+                        )}
+                      </Group>
                       <Text size="sm" c="dimmed">
                         €{Number(item.product.price).toFixed(2)} / un
                       </Text>

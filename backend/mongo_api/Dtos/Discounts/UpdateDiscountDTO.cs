@@ -2,11 +2,10 @@
 
 namespace mongo_api.Dtos.Discounts;
 
-public class UpdateDiscountDTO(Guid? productId, double? percentage, DateTime? startTime, DateTime? endTime)
+public class UpdateDiscountDTO
 {
-    public readonly Guid? ProductId = productId;
-    public readonly double? Percentage = percentage;
-    public readonly DateTime? StartTime = startTime;
-    public readonly DateTime? EndTime = endTime;
-
+    public Guid? ProductId { get; set; }
+    public double? Percentage { get; set; }
+    public long? StartDate { get; set; }
+    public long? EndDate { get; set; }
 }

@@ -8,6 +8,7 @@ import {
   TextInput,
   Stack,
   ActionIcon,
+  Card,
 } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { brandService } from "@services/brands";
@@ -31,8 +32,8 @@ export const AdminBrands = () => {
       setBrands(data);
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to load brands",
+        title: "Erro",
+        message: "Falha ao carregar marcas",
         color: "red",
       });
     } finally {
@@ -55,10 +56,11 @@ export const AdminBrands = () => {
   const handleSubmit = async () => {
     try {
       if (editingBrand) {
+        console.log(editingBrand);
         await brandService.update(editingBrand.id, formData);
         notifications.show({
-          title: "Success",
-          message: "Brand updated successfully",
+          title: "Sucesso",
+          message: "Marca atualizada com sucesso",
           color: "green",
         });
       } else {
@@ -67,8 +69,8 @@ export const AdminBrands = () => {
           name: formData.name,
         });
         notifications.show({
-          title: "Success",
-          message: "Brand created successfully",
+          title: "Sucesso",
+          message: "Marca criada com sucesso",
           color: "green",
         });
       }
@@ -76,74 +78,108 @@ export const AdminBrands = () => {
       loadBrands();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to save brand",
+        title: "Erro",
+        message: "Falha ao guardar marca",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this brand?")) return;
+    if (!confirm("Tens a certeza que queres eliminar esta marca?")) return;
 
     try {
       await brandService.delete(id);
       notifications.show({
-        title: "Success",
-        message: "Brand deleted successfully",
+        title: "Sucesso",
+        message: "Marca eliminada com sucesso",
         color: "green",
       });
       loadBrands();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to delete brand",
+        title: "Erro",
+        message: "Falha ao eliminar marca",
         color: "red",
       });
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>A Carregar...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Brands
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Brand
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Marcas
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir marcas de produtos
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Marca
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {brands.map((brand) => (
-            <Table.Tr key={brand.id}>
-              <Table.Td>{brand.name}</Table.Td>
-              <Table.Td>
-                <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(brand)}>
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={() => handleDelete(brand.id)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={600}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nome</Table.Th>
+                <Table.Th style={{ width: 100 }}>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {brands.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={2} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhuma marca encontrada
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : (
+                brands.length > 0 &&
+                brands.map((brand) => (
+                  <Table.Tr key={brand.id}>
+                    <Table.Td>
+                      <Text fw={500} size="sm">
+                        {brand.name}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={() => handleEdit(brand)}
+                        >
+                          <IconEdit size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleDelete(brand.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}

@@ -2,7 +2,7 @@
 
 namespace mongo_api.Dtos.Orders;
 
-public class UpdateOrdersDTO(string? status)
+public class UpdateOrdersDTO
 {
-    public readonly string? Status = status;
+    public string Status { get; set; }
 }

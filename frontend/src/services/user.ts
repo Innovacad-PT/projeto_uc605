@@ -13,10 +13,10 @@ export async function getUser(id: string): Promise<UserType | undefined> {
 export async function createUser(
   user: Omit<UserType, "createdAt" | "role"> & {
     role: string;
-    password?: string;
+    passwordHash?: string;
   }
 ): Promise<UserType | undefined> {
-  return await apiClient.post<UserType>("/users", user);
+  return await apiClient.post<UserType>("/register", user);
 }
 
 export async function updateUser(

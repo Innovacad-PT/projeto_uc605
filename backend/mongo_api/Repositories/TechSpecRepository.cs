@@ -65,7 +65,7 @@ public class TechSpecRepository(IMongoCollection<TechnicalSpecEntity> collection
             t => t.Id.Equals(techSpec.Id),
             Builders<TechnicalSpecEntity>.Update
                 .Set(u => u.Key, dto.Key ?? techSpec.Key)
-                .Unset(u => u.Value)
+                .Set(u => u.Value, dto.Value ?? techSpec.Value)
         );
 
         if (result.MatchedCount == 0 || result.ModifiedCount == 0) return null;

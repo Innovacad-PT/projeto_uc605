@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
-public class DiscountEntity(Guid id, Guid? productId, double? percentage, DateTime? startTime, DateTime? endTime) : IBaseEntity
+public class DiscountEntity(Guid id, Guid? productId, double? percentage, long? startTime, long? endTime) : IBaseEntity
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
@@ -12,6 +12,6 @@ public class DiscountEntity(Guid id, Guid? productId, double? percentage, DateTi
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid? ProductId { get; set; } = productId;
     public double? Percentage { get; set; } = percentage;
-    public DateTime? StartTime { get; set; } = startTime;
-    public DateTime? EndTime { get; set; } = endTime;
+    public long? StartDate { get; set; } = startTime;
+    public long? EndDate { get; set; } = endTime;
 }

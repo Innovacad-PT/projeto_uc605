@@ -16,16 +16,21 @@ public class DiscountRepository(IMongoCollection<DiscountEntity> collection)
     
     public async Task<DiscountEntity?> GetById(Guid id)
     {
-        var cursor = await _collection.FindAsync(d => d.Id.Equals(id));
+        var cursor = await _collection.FindAsync(d => d.Id.Equals(id) || d.ProductId.Equals(id));
 
         return await cursor.FirstOrDefaultAsync();
     }
     
     public async Task<DiscountEntity?> Create(CreateDiscountDTO dto)
     {
-        var discount = await GetById(dto.Id);
-        if (discount != null) return null;
+        var discounts = await GetAll();
 
+        foreach (var discount in discounts)
+        {
+           if (discount.Id == dto.Id) return null;
+           if (discount.ProductId == dto.ProductId) return null;
+        }
+        
         await _collection.InsertOneAsync(dto.ToEntity());
 
         return await GetById(dto.Id);
@@ -51,8 +56,8 @@ public class DiscountRepository(IMongoCollection<DiscountEntity> collection)
             Builders<DiscountEntity>.Update
                 .Set(u => u.ProductId, dto.ProductId ?? discount.ProductId)
                 .Set(u => u.Percentage, dto.Percentage ?? discount.Percentage)
-                .Set(u => u.StartTime, dto.StartTime ?? discount.StartTime)
-                .Set(u => u.EndTime, dto.EndTime ?? discount.EndTime)
+                .Set(u => u.StartDate, dto.StartDate ?? discount.StartDate)
+                .Set(u => u.EndDate, dto.EndDate ?? discount.EndDate)
         );
 
         if (result.MatchedCount == 0 || result.ModifiedCount == 0) return null;

@@ -37,17 +37,19 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
         var product = await GetById(id);
         if (product == null) return null;
 
+        Console.WriteLine(dto.ImageUrl);
+        
         var updateResult = await _collection.UpdateOneAsync(
             p => p.Id.Equals(product.Id),
             Builders<ProductEntity>.Update
                 .Set(p => p.Name, dto.Name ?? product.Name)
                 .Set(p => p.Description, dto.Description ?? product.Description)
-                .Set(p => p.TechnicalSpecs, dto.Specs ?? product.TechnicalSpecs)
+                .Set(p => p.TechnicalSpecs, dto.TechnicalSpecs ?? product.TechnicalSpecs)
                 .Set(p => p.Price, dto.Price ?? product.Price)
                 .Set(p => p.CategoryId, dto.CategoryId ?? product.CategoryId)
                 .Set(p => p.BrandId, dto.BrandId ?? product.BrandId)
                 .Set(p => p.Stock, dto.Stock ?? product.Stock)
-                .Set(p => p.ImageUrl, product.ImageUrl ?? product.ImageUrl)
+                .Set(p => p.ImageUrl, dto.ImageUrl ?? product.ImageUrl)
                 .Set(p => p.Reviews, dto.Reviews ?? product.Reviews)
                 .Set(p => p.UpdatedAt, DateTime.UtcNow)
         );
@@ -67,7 +69,7 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
         return result.DeletedCount == 0 ? null : product;
     }
     
-    public async Task<ProductEntity?> AddTechnicalSpecs(Guid productId, List<TechnicalSpecEntity> specs)
+    public async Task<ProductEntity?> AddTechnicalSpecs(Guid productId, List<Guid> specs)
     {
         var updateDefinition = Builders<ProductEntity>.Update.PushEach(p => p.TechnicalSpecs, specs);
 
@@ -84,6 +86,7 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
         return await GetById(productId);
     }
     
+    /*
     public async Task<ProductEntity?> UpdateTechnicalSpecValue(Guid productId, Guid specTemplateId, string newValue)
     {
         var updateResult = await _collection.UpdateOneAsync(
@@ -95,5 +98,5 @@ public class ProductRepository(IMongoCollection<ProductEntity> collection)
         if (updateResult.MatchedCount == 0 || updateResult.ModifiedCount == 0) return null;
 
         return await GetById(productId);
-    }
+    }*/
 }

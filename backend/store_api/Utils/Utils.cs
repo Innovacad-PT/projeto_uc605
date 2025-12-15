@@ -6,6 +6,7 @@ namespace store_api.Utils;
 
 public class Utils
 {
+    private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     public IConfiguration _configuration { get; }
 
     public Utils(IConfiguration configuration)
@@ -42,5 +43,10 @@ public class Utils
         {
             return false;
         }
+    }
+
+    public static DateTime ConvertToDateTime(long timeStamp)
+    {
+        return Epoch.AddMilliseconds(timeStamp);
     }
 }

@@ -65,7 +65,7 @@ export default function CartDrawer({
                     </Text>
                     {item.product.discount?.percentage && (
                       <Badge color="red" variant="filled" size="sm">
-                        -{item.product.discount.percentage}%
+                        {item.product.discount.percentage}% de Desconto
                       </Badge>
                     )}
                   </Group>

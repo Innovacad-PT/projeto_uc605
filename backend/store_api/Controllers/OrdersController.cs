@@ -36,7 +36,7 @@ public class OrdersController(IConfiguration configuration) : Controller
         return Ok(result as Success<OrderEntity>);
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         Result<OrderEntity?> result = await _service.Delete(id);

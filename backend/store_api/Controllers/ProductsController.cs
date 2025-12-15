@@ -118,9 +118,20 @@ public class ProductsController(IConfiguration configuration) : Controller
     }
 
     [HttpPut("{id}/technicalSpecs")]
-    public async Task<IActionResult> AddTechnicalSpecs([FromRoute] Guid id, List<ProductTechnicalSpecsEntity> list)
+    public async Task<IActionResult> AddTechnicalSpecs([FromRoute] Guid id, List<Guid> list)
     {
         Result<ProductEntity?> product = await _productsService.AddTechnicalSpecs(id, list);
+
+        if (product is Failure<ProductEntity?> failure)
+            return BadRequest(failure);
+
+        return Ok(product);
+    }
+
+    [HttpDelete("{id}/technicalSpecs")]
+    public async Task<IActionResult> RemoveTechnicalSpecs([FromRoute] Guid id, [FromBody] Guid specId)
+    {
+        Result<ProductEntity?> product = await _productsService.RemoveTechnicalSpec(id, specId);
 
         if (product is Failure<ProductEntity?> failure)
             return BadRequest(failure);

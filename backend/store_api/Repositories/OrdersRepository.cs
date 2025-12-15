@@ -35,8 +35,9 @@ public class OrdersRepository : IBaseRepository<OrderEntity>
 
         var content = JsonSerializer.Serialize(entity);
         var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
-
+        
         var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/orders"), httpContent);
+        
         if (!response.IsSuccessStatusCode) return null;
 
         var responseBody = await response.Content.ReadAsStringAsync();

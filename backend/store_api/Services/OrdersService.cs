@@ -40,7 +40,7 @@ public class OrdersService(IConfiguration configuration)
                 ProductEntity product = ((Success<ProductEntity?>)productResult).Value!;
                 
                 orderItemEntities.Add(new OrderItemEntity(
-                    0,
+                    Guid.NewGuid(),
                     product.Id,
                     kvp.Value,
                     product.Price
@@ -58,9 +58,9 @@ public class OrdersService(IConfiguration configuration)
             }
             
             var newOrderEntity = new OrderEntity(
-                (int)new Random().NextInt64(),
+                Guid.NewGuid(),
                 orderDto.UserId,
-                DateTime.UtcNow,
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                 orderDto.Total,
                 orderDto.Status,
                 orderItemEntities

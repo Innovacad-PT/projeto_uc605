@@ -43,8 +43,8 @@ public class BrandsController(IConfiguration configuration) : Controller
         return Ok(brand as Success<BrandEntity>);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] BrandUpdateDto<BrandEntity> dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] BrandUpdateDto<BrandEntity> dto)
     {
         Result<BrandEntity?> brand = await _service.Update(id, dto);
 
@@ -54,8 +54,8 @@ public class BrandsController(IConfiguration configuration) : Controller
         return Ok(brand as Success<BrandEntity>);
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         Result<BrandEntity?> brand  = await _service.Delete(id);
 

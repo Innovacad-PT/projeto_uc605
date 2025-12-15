@@ -32,5 +32,26 @@ public class CategoriesController(IConfiguration configuration) : ControllerBase
 
         return Ok(category);
     }
-    
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] CategoryUpdateDto<CategoryEntity> dto)
+    {
+        Result<CategoryEntity?> brand = await _service.Update(id, dto);
+
+        if (brand is Failure<CategoryEntity>)
+            return BadRequest(brand as Failure<CategoryEntity>);
+
+        return Ok(brand as Success<CategoryEntity>);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        Result<CategoryEntity?> brand  = await _service.Delete(id);
+
+        if (brand is Failure<CategoryEntity>)
+            return BadRequest(brand as Failure<CategoryEntity>);
+
+        return Ok(brand as Success<CategoryEntity>);
+    }
 }

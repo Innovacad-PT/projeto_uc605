@@ -62,7 +62,11 @@ async function request<T>(
     body: requestBody,
   });
 
-  if (!response.ok) {
+  if (
+    response.status == 500 ||
+    response.status == 400 ||
+    response.status == 405
+  ) {
     const errorText = await response.text();
     throw new Error(`API error ${response.status}: ${errorText}`);
   }
@@ -71,23 +75,35 @@ async function request<T>(
     return undefined as any;
   }
 
-  let apiResponse: ApiResponse<T>;
   try {
     const responseText = await response.text();
-    apiResponse = JSON.parse(responseText) as ApiResponse<T>;
+    const json = JSON.parse(responseText);
+
+    if (
+      json &&
+      typeof json === "object" &&
+      "value" in json &&
+      "hasError" in json
+    ) {
+      const wrapped = json as ApiResponse<T>;
+      if (wrapped.hasError) {
+        throw new Error(`API Error [${wrapped.code}]: ${wrapped.message}`);
+      }
+      return wrapped.value;
+    }
+
+    return json as T;
   } catch (parseError) {
+    if (
+      parseError instanceof Error &&
+      parseError.message.startsWith("API Error")
+    ) {
+      throw parseError;
+    }
     throw new Error(
       `Invalid JSON response from API. Response was not in expected format.`
     );
   }
-
-  console.log(apiResponse);
-
-  if (apiResponse.hasError) {
-    throw new Error(`API Error [${apiResponse.code}]: ${apiResponse.message}`);
-  }
-
-  return apiResponse.value;
 }
 
 export const apiClient = {

@@ -139,7 +139,7 @@ public class UsersRepository: IBaseRepository<UserEntity>
         if (loginDto.Type == LoginType.EMAIL)
             user = result.FirstOrDefault(u => u.Email == loginDto.Identifier);
 
-        if (user == null || user.Password != Crypto.ToHexString(loginDto.Password)) return null;
+        if (user == null || user.Password != Crypto.ToHexString(loginDto.PasswordHash)) return null;
 
         return user;
     }

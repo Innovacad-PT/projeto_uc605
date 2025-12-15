@@ -6,18 +6,21 @@ using mongo_api.Entities;
 
 namespace mongo_api.Dtos.Orders;
 
-public class CreateOrderDTO(Guid userId, double? total, string? status, List<OrderItemEntity>? orderItems)
+public class CreateOrderDTO
 {
     [BsonId]
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     [SwaggerIgnore]
     public Guid Id { get; set; } = Guid.NewGuid();
+    
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
-    public Guid UserId { get; set; } = userId;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public double? Total { get; set; } = total;
-    public string? Status { get; set; } = status;
-    public List<OrderItemEntity>? OrderItems { get; set; } = orderItems;
+    public Guid UserId { get; set; }
+    
+    [SwaggerIgnore]
+    public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public double? Total { get; set; }
+    public string? Status { get; set; }
+    public List<OrderItemEntity>? OrderItems { get; set; }
 
     public OrderEntity ToEntity()
     {

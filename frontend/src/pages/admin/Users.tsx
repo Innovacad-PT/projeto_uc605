@@ -10,6 +10,8 @@ import {
   ActionIcon,
   Select,
   PasswordInput,
+  Card,
+  Badge,
 } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { getUsers, createUser, updateUser, deleteUser } from "@services/user";
@@ -41,8 +43,8 @@ export const AdminUsers = () => {
       setUsers(data);
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to load users",
+        title: "Erro",
+        message: "Erro ao carregar os utilizadores",
         color: "red",
       });
     } finally {
@@ -71,7 +73,7 @@ export const AdminUsers = () => {
       username: user.username,
       email: user.email,
       role: user.role,
-      password: "", // Don't show password
+      password: "",
     });
     setModalOpen(true);
   };
@@ -89,8 +91,8 @@ export const AdminUsers = () => {
 
         await updateUser(editingUser.id, payload);
         notifications.show({
-          title: "Success",
-          message: "User updated successfully",
+          title: "Sucesso",
+          message: "Utilizador atualizado com sucesso",
           color: "green",
         });
       } else {
@@ -101,11 +103,11 @@ export const AdminUsers = () => {
           username: formData.username,
           email: formData.email,
           role: formData.role,
-          password: formData.password,
+          passwordHash: formData.password,
         });
         notifications.show({
-          title: "Success",
-          message: "User created successfully",
+          title: "Sucesso",
+          message: "Utilizador criado com sucesso",
           color: "green",
         });
       }
@@ -113,87 +115,134 @@ export const AdminUsers = () => {
       loadData();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to save user",
+        title: "Erro",
+        message: "Erro ao guardar o utilizador",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm("Tens a certeza que queres eliminar este utilizador?")) return;
 
     try {
       await deleteUser(id);
       notifications.show({
-        title: "Success",
-        message: "User deleted successfully",
+        title: "Sucesso",
+        message: "Utilizador eliminado com sucesso",
         color: "green",
       });
       loadData();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to delete user",
+        title: "Erro",
+        message: "Erro ao eliminar o utilizador",
         color: "red",
       });
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>A Carregar...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Users
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add User
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Utilizadores
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir o acesso ao sistema e os papéis
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Utilizador
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>Username</Table.Th>
-            <Table.Th>Role</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {users.map((user) => (
-            <Table.Tr key={user.id}>
-              <Table.Td>{`${user.firstName} ${user.lastName}`}</Table.Td>
-              <Table.Td>{user.email}</Table.Td>
-              <Table.Td>{user.username}</Table.Td>
-              <Table.Td>{user.role}</Table.Td>
-              <Table.Td>
-                <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(user)}>
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon color="red" onClick={() => handleDelete(user.id)}>
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={800}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nome</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>Username</Table.Th>
+                <Table.Th>Role</Table.Th>
+                <Table.Th>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {users.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={5} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhum utilizador encontrado
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : (
+                users.map((user) => (
+                  <Table.Tr key={user.id}>
+                    <Table.Td>
+                      <Text fw={500} size="sm">
+                        {user.firstName} {user.lastName}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{user.email}</Table.Td>
+                    <Table.Td>
+                      <Badge variant="dot" color="gray">
+                        {user.username}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={user.role === "admin" ? "blue" : "gray"}
+                        variant="light"
+                      >
+                        {user.role}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={() => handleEdit(user)}
+                        >
+                          <IconEdit size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingUser ? "Edit User" : "Create User"}
+        title={editingUser ? "Editar Utilizador" : "Criar Utilizador"}
       >
         <Stack>
           <Group grow>
             <TextInput
-              label="First Name"
+              label="Nome"
               value={formData.firstName}
               onChange={(e) =>
                 setFormData({ ...formData, firstName: e.target.value })
@@ -201,7 +250,7 @@ export const AdminUsers = () => {
               required
             />
             <TextInput
-              label="Last Name"
+              label="Apelido"
               value={formData.lastName}
               onChange={(e) =>
                 setFormData({ ...formData, lastName: e.target.value })
@@ -248,7 +297,7 @@ export const AdminUsers = () => {
           )}
 
           <Button onClick={handleSubmit}>
-            {editingUser ? "Update" : "Create"}
+            {editingUser ? "Atualizar" : "Criar"}
           </Button>
         </Stack>
       </Modal>

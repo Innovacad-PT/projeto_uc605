@@ -40,7 +40,6 @@ public class BrandController(MongoRepository repository, Redis redis) : Controll
 
         BrandEntity? newBrand = await _repository.Create(dto);
 
-        Console.WriteLine(newBrand);
 
         if (newBrand == null) return NotFound();
 

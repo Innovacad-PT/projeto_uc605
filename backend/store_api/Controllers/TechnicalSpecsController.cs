@@ -57,8 +57,8 @@ public class TechnicalSpecsController(IConfiguration configuration) : Controller
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] TechnicalSpecsUpdateDto<TechnicalSpecsEntity> dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] TechnicalSpecsUpdateDto<TechnicalSpecsEntity> dto)
     {
         Result<TechnicalSpecsEntity?> spec = await _service.Update(id, dto);
 
@@ -68,8 +68,8 @@ public class TechnicalSpecsController(IConfiguration configuration) : Controller
         return Ok(spec as Success<TechnicalSpecsEntity>);
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         Result<TechnicalSpecsEntity?> spec  = await _service.Delete(id);
 

@@ -10,6 +10,8 @@ import {
   ActionIcon,
   TextInput,
   Select,
+  Card,
+  Badge,
 } from "@mantine/core";
 
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
@@ -30,8 +32,8 @@ export const AdminDiscounts = () => {
   const [formData, setFormData] = useState({
     productId: "",
     percentage: 0,
-    startDate: "",
-    endDate: "",
+    startDate: new Date().getTime(),
+    endDate: new Date().getTime(),
   });
 
   useEffect(() => {
@@ -48,8 +50,8 @@ export const AdminDiscounts = () => {
       setProducts(productsData);
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to load data",
+        title: "Erro",
+        message: "Falha ao carregar dados",
         color: "red",
       });
     } finally {
@@ -62,8 +64,8 @@ export const AdminDiscounts = () => {
     setFormData({
       productId: "",
       percentage: 0,
-      startDate: "",
-      endDate: "",
+      startDate: new Date().getTime(),
+      endDate: new Date().getTime(),
     });
     setModalOpen(true);
   };
@@ -73,9 +75,10 @@ export const AdminDiscounts = () => {
     setFormData({
       productId: discount.productId,
       percentage: discount.percentage,
-      startDate: discount.startDate.substring(0, 16),
-      endDate: discount.endDate.substring(0, 16),
+      startDate: discount.startDate,
+      endDate: discount.endDate,
     });
+
     setModalOpen(true);
   };
 
@@ -84,130 +87,187 @@ export const AdminDiscounts = () => {
       const payload = {
         productId: formData.productId,
         percentage: formData.percentage,
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString(),
+        startDate: formData.startDate,
+        endDate: formData.endDate,
       };
 
       logger(LogType.INFO, "Payload Discount", payload);
 
       if (editingDiscount) {
-        await discountService.update(editingDiscount.id, payload);
+        const result = await discountService.update(
+          editingDiscount.id,
+          payload
+        );
+
+        if (!result) {
+          return notifications.show({
+            title: "Erro",
+            message: "Falha ao atualizar desconto",
+            color: "red",
+          });
+        }
+
         notifications.show({
-          title: "Success",
-          message: "Discount updated successfully",
+          title: "Sucesso",
+          message: "Desconto atualizado com sucesso",
           color: "green",
         });
       } else {
-        await discountService.create({
+        const result = await discountService.create({
           id: crypto.randomUUID(),
           ...payload,
         });
-        notifications.show({
-          title: "Success",
-          message: "Discount created successfully",
-          color: "green",
-        });
+
+        if (!result) {
+          return notifications.show({
+            title: "Erro",
+            message: "Falha ao guardar desconto",
+            color: "red",
+          });
+        }
       }
+
+      notifications.show({
+        title: "Sucesso",
+        message: "Desconto criado com sucesso",
+        color: "green",
+      });
+
       setModalOpen(false);
       loadData();
     } catch (error) {
       logger(LogType.ERROR, "Failed to save discount", error);
       notifications.show({
-        title: "Error",
-        message: "Failed to save discount",
+        title: "Erro",
+        message: "Falha ao guardar desconto",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this discount?")) return;
+    if (!confirm("Tens a certeza que queres eliminar este desconto?")) return;
 
     try {
       await discountService.delete(id);
       notifications.show({
-        title: "Success",
-        message: "Discount deleted successfully",
+        title: "Sucesso",
+        message: "Desconto eliminado com sucesso",
         color: "green",
       });
       loadData();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to delete discount",
+        title: "Erro",
+        message: "Falha ao eliminar desconto",
         color: "red",
       });
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>Carregando...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Discounts
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Discount
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Descontos
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir descontos e campanhas
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Desconto
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Product</Table.Th>
-            <Table.Th>Percentage</Table.Th>
-            <Table.Th>Start Date</Table.Th>
-            <Table.Th>End Date</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {discounts &&
-            discounts.map((discount) => {
-              const product = products.find((p) => p.id === discount.productId);
-              logger(LogType.INFO, "DIS PROD", discount);
-              return (
-                <Table.Tr key={discount.id}>
-                  <Table.Td>{product?.name || discount.productId}</Table.Td>
-                  <Table.Td>{discount.percentage}%</Table.Td>
-                  <Table.Td>
-                    {new Date(discount.startDate).toLocaleDateString()}
-                  </Table.Td>
-                  <Table.Td>
-                    {new Date(discount.endDate).toLocaleDateString()}
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap="xs">
-                      <ActionIcon
-                        color="blue"
-                        onClick={() => handleEdit(discount)}
-                      >
-                        <IconEdit size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        color="red"
-                        onClick={() => handleDelete(discount.id)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={800}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Produto</Table.Th>
+                <Table.Th>Percentagem</Table.Th>
+                <Table.Th>Data de Início</Table.Th>
+                <Table.Th>Data de Fim</Table.Th>
+                <Table.Th>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {!discounts || discounts.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={5} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhum desconto encontrado
+                    </Text>
                   </Table.Td>
                 </Table.Tr>
-              );
-            })}
-        </Table.Tbody>
-      </Table>
+              ) : (
+                discounts.map((discount) => {
+                  const product = products.find(
+                    (p) => p.id === discount.productId
+                  );
+                  const startTime = new Date(discount.startDate);
+                  const endTime = new Date(discount.endDate);
+
+                  logger(LogType.INFO, "Start Time", startTime.getTime());
+                  logger(LogType.INFO, "End Time", endTime.getTime());
+                  return (
+                    <Table.Tr key={discount.id}>
+                      <Table.Td>
+                        <Text fw={500} size="sm">
+                          {product?.name || discount.productId}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Badge color="green" variant="light">
+                          {discount.percentage}% de Desconto
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>{startTime.toLocaleString("pt-PT")}</Table.Td>
+                      <Table.Td>{endTime.toLocaleString("pt-PT")}</Table.Td>
+                      <Table.Td>
+                        <Group gap="xs">
+                          <ActionIcon
+                            variant="subtle"
+                            color="blue"
+                            onClick={() => handleEdit(discount)}
+                          >
+                            <IconEdit size={16} />
+                          </ActionIcon>
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            onClick={() => handleDelete(discount.id)}
+                          >
+                            <IconTrash size={16} />
+                          </ActionIcon>
+                        </Group>
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingDiscount ? "Edit Discount" : "Create Discount"}
+        title={editingDiscount ? "Editar Desconto" : "Criar Desconto"}
       >
         <Stack>
           <Select
-            label="Product"
+            label="Produto"
             value={formData.productId}
             onChange={(val) =>
               setFormData({ ...formData, productId: val || "" })
@@ -216,7 +276,7 @@ export const AdminDiscounts = () => {
             required
           />
           <NumberInput
-            label="Percentage"
+            label="Percentagem"
             value={formData.percentage}
             onChange={(val) =>
               setFormData({ ...formData, percentage: Number(val) || 0 })
@@ -226,25 +286,29 @@ export const AdminDiscounts = () => {
             required
           />
           <TextInput
-            label="Start Date"
+            label="Data de Início"
             type="datetime-local"
-            value={formData.startDate}
+            value={new Date(formData.startDate).toISOString().slice(0, 16)}
             onChange={(e) => {
-              setFormData({ ...formData, startDate: e.target.value });
+              const date = new Date(e.target.value);
+              console.log(date.getTime());
+              setFormData({ ...formData, startDate: date.getTime() });
             }}
             required
           />
           <TextInput
-            label="End Date"
+            label="Data de Fim"
             type="datetime-local"
-            value={formData.endDate}
-            onChange={(e) =>
-              setFormData({ ...formData, endDate: e.target.value })
-            }
+            value={new Date(formData.endDate).toISOString().slice(0, 16)}
+            onChange={(e) => {
+              const date = new Date(e.target.value);
+              console.log(date.getTime());
+              setFormData({ ...formData, endDate: date.getTime() });
+            }}
             required
           />
           <Button onClick={handleSubmit}>
-            {editingDiscount ? "Update" : "Create"}
+            {editingDiscount ? "Atualizar" : "Criar"}
           </Button>
         </Stack>
       </Modal>

@@ -6,10 +6,10 @@ namespace store_api.Dtos.Orders;
 public class OrderUpdateDto<T> : IBaseDto<OrderEntity>
 {
     public Decimal? Total { get; set; }
-    public OrderStatus? Status { get; set; }
+    public String? Status { get; set; }
     public List<OrderItemEntity>? OrderItems { get; set; }
 
-    public OrderUpdateDto(decimal? total, OrderStatus? status, List<OrderItemEntity>? items)
+    public OrderUpdateDto(decimal? total, String? status, List<OrderItemEntity>? items)
     {
         Total = total;
         Status = status;

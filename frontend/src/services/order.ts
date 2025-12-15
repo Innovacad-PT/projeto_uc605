@@ -14,7 +14,7 @@ export interface OrderItemEntity {
 }
 
 export interface OrderResult {
-  id: number;
+  id: string;
   userId: string;
   createdAt: string;
   total: number;

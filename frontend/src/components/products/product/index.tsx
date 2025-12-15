@@ -70,7 +70,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                   <Stack align="flex-end" gap={4}>
                     {product.discount?.percentage && (
                       <Badge color="red" variant="filled">
-                        -{product.discount.percentage}%
+                        {product.discount.percentage}% de Desconto
                       </Badge>
                     )}
                     <PriceDisplay
@@ -106,10 +106,18 @@ export default function ProductPage({ product }: ProductPageProps) {
                       <Text size="sm" fw={700}>
                         Especificações Técnicas:
                       </Text>
+                      <Group justify="space-between">
+                        <Text size="sm" fw={600}>
+                          Especificação
+                        </Text>
+                        <Text size="sm" fw={600}>
+                          Valor
+                        </Text>
+                      </Group>
                       {product.technicalSpecs.map((spec) => (
                         <Group key={spec.id} justify="space-between">
                           <Text size="sm" c="dimmed">
-                            {spec.name}
+                            {spec.key}
                           </Text>
                           <Text size="sm">{spec.value}</Text>
                         </Group>

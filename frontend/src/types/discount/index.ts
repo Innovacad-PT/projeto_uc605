@@ -2,6 +2,6 @@ export interface Discount {
   id: string;
   productId: string;
   percentage: number;
-  startDate: string;
-  endDate: string;
+  startDate: number;
+  endDate: number;
 }

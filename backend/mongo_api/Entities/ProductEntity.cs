@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace mongo_api.Entities;
 
 public class ProductEntity(Guid id, string name, string? description, double price, int? stock, string? imageUrl,
-    Guid? categoryId, Guid? brandId, List<TechnicalSpecEntity>? technicalSpecs, List<ReviewEntity>? reviews,
+    Guid? categoryId, Guid? brandId, List<Guid>? technicalSpecs, List<Guid>? reviews,
     DateTime? createdAt, DateTime? updatedAt) : IBaseEntity
 {
     [BsonId]
@@ -21,8 +21,11 @@ public class ProductEntity(Guid id, string name, string? description, double pri
     public Guid? CategoryId { get; set; } = categoryId;
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid? BrandId { get; set; } = brandId;
-    public List<TechnicalSpecEntity>? TechnicalSpecs {get; set;} = technicalSpecs;
-    public List<ReviewEntity>? Reviews { get; set; } = reviews;
+    
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public List<Guid>? TechnicalSpecs {get; set;} = technicalSpecs;
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public List<Guid>? Reviews { get; set; } = reviews;
     public DateTime? CreatedAt { get; set; } = createdAt;
     public DateTime? UpdatedAt { get; set; } = updatedAt;
 }

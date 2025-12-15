@@ -2,12 +2,7 @@
 
 namespace mongo_api.Dtos.Category;
 
-public class UpdateCategoryDTO(string? name)
+public class UpdateCategoryDTO
 {
-    public string? Name { get; set; } = name;
-
-    public CategoryEntity ToEntity(Guid id)
-    {
-        return new(id, Name);
-    }
+    public string? Name { get; set; }
 }

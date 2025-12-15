@@ -8,6 +8,7 @@ import {
   TextInput,
   Stack,
   ActionIcon,
+  Card,
 } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import {
@@ -29,6 +30,7 @@ export const AdminTechSpecs = () => {
 
   const [formData, setFormData] = useState({
     key: "",
+    value: "",
   });
 
   useEffect(() => {
@@ -41,8 +43,8 @@ export const AdminTechSpecs = () => {
       setSpecs(data);
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to load technical specs",
+        title: "Erro",
+        message: "Falha ao carregar especificações técnicas",
         color: "red",
       });
     } finally {
@@ -54,6 +56,7 @@ export const AdminTechSpecs = () => {
     setEditingSpec(null);
     setFormData({
       key: "",
+      value: "",
     });
     setModalOpen(true);
   };
@@ -62,6 +65,7 @@ export const AdminTechSpecs = () => {
     setEditingSpec(spec);
     setFormData({
       key: spec.key,
+      value: spec.value,
     });
     setModalOpen(true);
   };
@@ -71,20 +75,22 @@ export const AdminTechSpecs = () => {
       if (editingSpec) {
         await updateTechSpec(editingSpec.id, {
           key: formData.key,
+          value: formData.value,
         });
         notifications.show({
-          title: "Success",
-          message: "Technical spec updated successfully",
+          title: "Sucesso",
+          message: "Especificação técnica atualizada com sucesso",
           color: "green",
         });
       } else {
         await createTechSpec({
           id: crypto.randomUUID(),
           key: formData.key,
+          value: formData.value,
         });
         notifications.show({
-          title: "Success",
-          message: "Technical spec created successfully",
+          title: "Sucesso",
+          message: "Especificação técnica criada com sucesso",
           color: "green",
         });
       }
@@ -92,88 +98,148 @@ export const AdminTechSpecs = () => {
       loadData();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to save technical spec",
+        title: "Erro",
+        message: "Falha ao guardar especificação técnica",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this spec?")) return;
+    if (
+      !confirm("Tens a certeza que queres eliminar esta especificação técnica?")
+    )
+      return;
 
     try {
       await deleteTechSpec(id);
       notifications.show({
-        title: "Success",
-        message: "Technical spec deleted successfully",
+        title: "Sucesso",
+        message: "Especificação técnica eliminada com sucesso",
         color: "green",
       });
       loadData();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to delete technical spec",
+        title: "Erro",
+        message: "Falha ao eliminar especificação técnica",
         color: "red",
       });
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>A Carregar...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Technical Specifications
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Tech Spec
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Especificações Técnicas
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir as especificações técnicas disponíveis para os produtos
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Especificação Técnica
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Key</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {specs.map((spec) => (
-            <Table.Tr key={spec.id}>
-              <Table.Td>{spec.key}</Table.Td>
-              <Table.Td>
-                <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(spec)}>
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon color="red" onClick={() => handleDelete(spec.id)}>
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={600}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Chave</Table.Th>
+                <Table.Th>Valor</Table.Th>
+                <Table.Th style={{ width: 100 }}>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {specs.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={2} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhuma especificação técnica encontrada
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : (
+                specs.length > 0 &&
+                specs.map((spec) => (
+                  <Table.Tr key={spec.id}>
+                    <Table.Td>
+                      <Text fw={500} size="sm">
+                        {spec.key}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text fw={500} size="sm">
+                        {spec.value}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={() => handleEdit(spec)}
+                        >
+                          <IconEdit size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleDelete(spec.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingSpec ? "Edit Tech Spec" : "Create Tech Spec"}
+        title={
+          editingSpec
+            ? "Editar Especificação Técnica"
+            : "Criar Especificação Técnica"
+        }
       >
         <Stack>
           <TextInput
-            label="Key"
+            label="Chave"
             placeholder="e.g., Processor, RAM"
             value={formData.key}
             onChange={(e) => setFormData({ ...formData, key: e.target.value })}
             required
           />
 
+          <TextInput
+            label="Valor"
+            placeholder="e.g, Quantity"
+            value={formData.value}
+            onChange={(e) =>
+              setFormData({ ...formData, value: e.target.value })
+            }
+            required
+          />
+
           <Button onClick={handleSubmit}>
-            {editingSpec ? "Update" : "Create"}
+            {editingSpec ? "Atualizar" : "Criar"}
           </Button>
         </Stack>
       </Modal>

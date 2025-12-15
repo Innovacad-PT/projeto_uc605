@@ -2,12 +2,8 @@
 
 namespace mongo_api.Dtos.TechnicalSpecs;
 
-public class UpdateTechSpecDTO(string? key)
+public class UpdateTechSpecDTO
 {
-    public string? Key { get; set; } = key; 
-
-    public TechnicalSpecEntity ToEntity(Guid id)
-    {
-        return new(id, Key, null);
-    }
+    public string? Key { get; set; }
+    public string? Value { get; set; }
 }

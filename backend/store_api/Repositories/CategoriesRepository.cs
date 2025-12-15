@@ -36,15 +36,12 @@ public class CategoriesRepository: IBaseRepository<CategoryEntity>
         var content = JsonSerializer.Serialize(entity);
         var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-        Console.WriteLine(_mongoBaseUrl + $"/categories");
         
         var response = await _client.PostAsync(new Uri(_mongoBaseUrl + "/categories"), httpContent);
         if (!response.IsSuccessStatusCode) return null;
 
-        Console.WriteLine(response);
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        Console.WriteLine(responseBody);
         return JsonSerializer.Deserialize<CategoryEntity>(responseBody, _jsonOptions);
     }
 

@@ -22,7 +22,7 @@ public class TechnicalSpecsService(IConfiguration configuration)
                     "The Technical Spec couldn't be created!");
 
             return new Success<TechnicalSpecsEntity?>(ResultCode.TECHNICAL_SPEC_FOUND,
-                "The Technical Spec with key ({dto.Key}) has been created!", result);
+                $"The Technical Spec with key ({dto.Key}) has been created!", result);
         }
         catch (Exception e)
         {

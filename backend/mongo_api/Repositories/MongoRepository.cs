@@ -28,7 +28,6 @@ public class MongoRepository
         var client = new MongoClient(settings);
         var database = client.GetDatabase(mongoDbSettings.Value.Database);
 
-        Console.WriteLine(database);
         
         BrandRepo = new BrandRepository(database.GetCollection<BrandEntity>("brands"));
         CategoryRepo = new CategoryRepository(database.GetCollection<CategoryEntity>("categories"));

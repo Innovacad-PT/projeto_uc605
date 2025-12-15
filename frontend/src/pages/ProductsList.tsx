@@ -180,10 +180,14 @@ export default function ProductsListPage() {
                   <Select
                     placeholder="Todas as Categorias"
                     label="Categoria"
-                    data={categories.map((c) => ({
-                      value: c.id,
-                      label: c.name,
-                    }))}
+                    data={
+                      categories.length > 0
+                        ? categories.map((c) => ({
+                            value: c.id,
+                            label: c.name,
+                          }))
+                        : []
+                    }
                     value={selectedCategory}
                     onChange={setSelectedCategory}
                     clearable

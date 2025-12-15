@@ -11,12 +11,14 @@ import {
   ActionIcon,
   Select,
   FileInput,
+  Card,
+  Badge,
 } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { productService } from "@services/products";
 import { brandService } from "@services/brands";
 import { categoryService } from "@services/categories";
-import type { Product } from "@_types/product";
+import type { Product, TechnicalSpec } from "@_types/product";
 import type { Brand } from "@_types/brand";
 import type { Category } from "@_types/category";
 import { notifications } from "@mantine/notifications";
@@ -43,10 +45,12 @@ export const AdminProducts = () => {
   const [availableSpecs, setAvailableSpecs] = useState<TechnicalSpecsEntity[]>(
     []
   );
-  const [productSpecs, setProductSpecs] = useState<
-    { id: string; key: string; value: string }[]
-  >([]);
-  const [newSpec, setNewSpec] = useState({ id: "", value: "" });
+  const [productSpecs, setProductSpecs] = useState<TechnicalSpec[]>([]);
+  const [newSpec, setNewSpec] = useState<TechnicalSpec>({
+    id: "",
+    value: "",
+    key: "",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,6 +60,7 @@ export const AdminProducts = () => {
     brandId: "",
     categoryId: "",
     imageUrl: "null | string",
+    technicalSpecs: [] as TechnicalSpec[],
   });
 
   useEffect(() => {
@@ -72,14 +77,18 @@ export const AdminProducts = () => {
           getAllTechSpecs(),
         ]);
       setProducts(productsData);
-      setBrands(brandsData);
-      setCategories(categoriesData);
-      setAvailableSpecs(specsData);
+      console.log("Brands:", brandsData);
+      console.log("Categories:", categoriesData);
+      setBrands(brandsData || []);
+      setCategories(categoriesData || []);
+      setAvailableSpecs(specsData || []);
     } catch (error) {
+      console.error("LoadData Error:", error);
       notifications.show({
-        title: "Error",
-        message: "Failed to load data",
+        title: "Erro",
+        message: "Erro ao carregar os dados",
         color: "red",
+        autoClose: false,
       });
     } finally {
       setLoading(false);
@@ -96,10 +105,11 @@ export const AdminProducts = () => {
       brandId: "",
       categoryId: "",
       imageUrl: "",
+      technicalSpecs: [],
     });
     setImageFile(null);
     setProductSpecs([]);
-    setNewSpec({ id: "", value: "" });
+    setNewSpec({ id: "", value: "", key: "" });
     setModalOpen(true);
   };
 
@@ -110,25 +120,14 @@ export const AdminProducts = () => {
       description: product.description || "",
       price: formatPriceForApi(product.price),
       stock: product.stock || 0,
-      brandId: product.brand?.id || "",
-      categoryId: product.category?.id || "",
+      brandId: product.brand?.id ? String(product.brand.id) : "",
+      categoryId: product.category?.id ? String(product.category.id) : "",
       imageUrl: product.imageUrl || "",
+      technicalSpecs: product.technicalSpecs || [],
     });
     setImageFile(null);
-    setProductSpecs(
-      product.technicalSpecs?.map((spec) => {
-        // Use id if present (definition ID), otherwise fallback to id
-        // This is crucial because 'id' might be the instance ID, but we need definition ID for updates
-        const defId = spec.id || spec.id;
-        return {
-          id: defId,
-          key:
-            spec.name || availableSpecs.find((s) => s.id === defId)?.key || "",
-          value: spec.value || "",
-        };
-      }) || []
-    );
-    setNewSpec({ id: "", value: "" });
+    setProductSpecs(product.technicalSpecs || []);
+    setNewSpec({ id: "", value: "", key: "" });
     setModalOpen(true);
   };
 
@@ -143,49 +142,59 @@ export const AdminProducts = () => {
       formDataObj.append("Price", formatPriceForApi(formData.price));
       formDataObj.append("Stock", (formData.stock || 0).toString());
       formDataObj.append("Details", formData.description);
-      formDataObj.append("BrandId", formData.brandId);
-      formDataObj.append("CategoryId", formData.categoryId);
 
-      if (imageFile) {
-        formDataObj.append("Image", imageFile);
+      if (formData.brandId) {
+        formDataObj.append("BrandId", formData.brandId);
+      }
+      if (formData.categoryId) {
+        formDataObj.append("CategoryId", formData.categoryId);
       }
 
+      if (imageFile) {
+        formDataObj.append("ImageFile", imageFile);
+      }
+
+      console.log("Submitting specs:", productSpecs);
+
       productSpecs.forEach((spec, index) => {
-        formDataObj.append(`TechnicalSpecs[${index}].id`, spec.id);
-        formDataObj.append(`TechnicalSpecs[${index}].Value`, spec.value);
+        formDataObj.append(`TechnicalSpecs[${index}]`, spec.id);
       });
+
+      console.log(formDataObj);
 
       if (editingProduct) {
         await productService.update(editingProduct.id, formDataObj);
         notifications.show({
-          title: "Success",
-          message: "Product updated successfully",
+          title: "Sucesso",
+          message: "Produto atualizado com sucesso",
           color: "green",
         });
       } else {
         await productService.create(formDataObj);
         notifications.show({
-          title: "Success",
-          message: "Product created successfully",
+          title: "Sucesso",
+          message: "Produto criado com sucesso",
           color: "green",
         });
       }
       setModalOpen(false);
       loadData();
-    } catch (error) {
+    } catch {
       notifications.show({
-        title: "Error",
-        message: "Failed to save product",
+        title: "Erro",
+        message: "Erro ao guardar o produto",
         color: "red",
       });
     }
   };
 
   const handleAddSpec = () => {
-    if (!newSpec.id || !newSpec.value) return;
-    const specKey = availableSpecs.find((s) => s.id === newSpec.id)?.key || "";
-    setProductSpecs([...productSpecs, { ...newSpec, key: specKey }]);
-    setNewSpec({ id: "", value: "" });
+    console.log(newSpec);
+    if (!newSpec.key || !newSpec.value) return;
+
+    console.log(productSpecs);
+    setProductSpecs([...productSpecs, newSpec]);
+    setNewSpec({ id: "", value: "", key: "" });
   };
 
   const handleRemoveSpec = (index: number) => {
@@ -193,17 +202,17 @@ export const AdminProducts = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm("Tem a certeza que deseja eliminar este produto?")) return;
 
     try {
       await productService.delete(id);
       notifications.show({
-        title: "Success",
-        message: "Product deleted successfully",
+        title: "Sucesso",
+        message: "Produto eliminado com sucesso",
         color: "green",
       });
       loadData();
-    } catch (error) {
+    } catch {
       notifications.show({
         title: "Error",
         message: "Failed to delete product",
@@ -212,86 +221,143 @@ export const AdminProducts = () => {
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>A Carregar...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Products
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Product
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Produtos
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir o inventário de produtos
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Produto
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Id</Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Price</Table.Th>
-            <Table.Th>Stock</Table.Th>
-            <Table.Th>Brand</Table.Th>
-            <Table.Th>Category</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {products.map((product) => (
-            <Table.Tr key={product.id}>
-              <Table.Td>{product.id}</Table.Td>
-              <Table.Td>{product.name}</Table.Td>
-              <Table.Td>€{formatPriceForApi(product.price)}</Table.Td>
-              <Table.Td>{product.stock || 0}</Table.Td>
-              <Table.Td>{product.brand?.name || "-"}</Table.Td>
-              <Table.Td>{product.category?.name || "-"}</Table.Td>
-              <Table.Td>
-                <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(product)}>
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={() => handleDelete(product.id)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={800}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nome</Table.Th>
+                <Table.Th>Preço</Table.Th>
+                <Table.Th>Stock</Table.Th>
+                <Table.Th>Marca</Table.Th>
+                <Table.Th>Categoria</Table.Th>
+                <Table.Th>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {products.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={7} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhum produto encontrado
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : (
+                products.map((product) => (
+                  <Table.Tr key={product.id}>
+                    <Table.Td>
+                      <Group gap="sm">
+                        {product.imageUrl &&
+                          product.imageUrl !== "null | string" && (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 4,
+                                objectFit: "cover",
+                              }}
+                            />
+                          )}
+                        <Text fw={500} size="sm">
+                          {product.name}
+                        </Text>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text fw={600} size="sm">
+                        €{formatPriceForApi(product.price)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={product.stock > 0 ? "green" : "red"}
+                        variant="light"
+                      >
+                        {product.stock || 0} em stock
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>{product.brand?.name || "-"}</Table.Td>
+                    <Table.Td>{product.category?.name || "-"}</Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <IconEdit size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingProduct ? "Edit Product" : "Create Product"}
+        title={editingProduct ? "Editar Produto" : "Criar Produto"}
       >
         <Stack>
           <TextInput
-            label="Name"
+            label="Nome"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <TextInput
-            label="Description"
+            label="Descrição"
             value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
           />
           <FileInput
-            label="Product Image"
-            placeholder="Choose image file"
+            label="Imagem do Produto"
+            placeholder="Escolha o ficheiro da imagem"
             value={imageFile}
             onChange={(file) => setImageFile(file)}
             accept="image/*"
           />
           <NumberInput
-            label="Price"
+            label="Preço"
             value={Number(formData.price.replace(",", "."))}
             onChange={(val) =>
               setFormData({
@@ -312,45 +378,64 @@ export const AdminProducts = () => {
             min={0}
           />
           <Select
-            label="Brand"
+            label="Marca"
             value={formData.brandId}
-            onChange={(val) => setFormData({ ...formData, brandId: val || "" })}
-            data={brands.map((b) => ({ value: b.id, label: b.name }))}
+            onChange={(val) => {
+              console.log(val);
+              return setFormData({ ...formData, brandId: val || "" });
+            }}
+            data={
+              brands.length > 0
+                ? brands.map((b) => ({
+                    value: String(b.id),
+                    label: b.name,
+                  }))
+                : []
+            }
+            comboboxProps={{ withinPortal: false }}
           />
           <Select
-            label="Category"
+            label="Categoria"
             value={formData.categoryId}
-            onChange={(val) =>
-              setFormData({ ...formData, categoryId: val || "" })
+            onChange={(val) => {
+              console.log(val);
+              return setFormData({ ...formData, categoryId: val || "" });
+            }}
+            data={
+              categories.length > 0
+                ? categories.map((c) => ({
+                    value: String(c.id),
+                    label: c.name,
+                  }))
+                : []
             }
-            data={categories.map((c) => ({ value: c.id, label: c.name }))}
+            comboboxProps={{ withinPortal: false }}
           />
 
           <Text size="sm" fw={700} mt="md">
-            Technical Specifications
+            Especificações Técnicas
           </Text>
           <Group align="flex-end">
             <Select
-              label="Spec Key"
-              placeholder="Select spec"
-              data={availableSpecs.map((s) => ({
-                value: s.id,
-                label: s.key,
-              }))}
-              value={newSpec.id}
-              onChange={(val) => setNewSpec({ ...newSpec, id: val || "" })}
-              style={{ flex: 1 }}
-            />
-            <TextInput
-              label="Value"
-              placeholder="Value"
-              value={newSpec.value}
-              onChange={(e) =>
-                setNewSpec({ ...newSpec, value: e.target.value })
+              label="Especificação"
+              placeholder="Selecione a especificação"
+              data={
+                availableSpecs.length > 0
+                  ? availableSpecs.map((s) => ({
+                      value: JSON.stringify(s),
+                      label: `${s.key} - ${s.value}`,
+                    }))
+                  : []
               }
+              value={JSON.stringify(newSpec)}
+              onChange={(val, opt) => {
+                console.log(val, opt);
+                console.log(JSON.parse(val!));
+                return setNewSpec(JSON.parse(val!));
+              }}
               style={{ flex: 1 }}
             />
-            <Button onClick={handleAddSpec} variant="outline">
+            <Button onClick={() => handleAddSpec()} variant="outline">
               <IconPlus size={16} />
             </Button>
           </Group>
@@ -359,9 +444,9 @@ export const AdminProducts = () => {
               <Group
                 key={index}
                 justify="space-between"
-                bg="gray.1"
+                bg="gray.9"
                 p="xs"
-                style={{ borderRadius: 4 }}
+                style={{ borderRadius: 4, border: "1px solid gray" }}
               >
                 <Text size="sm">
                   {spec.key}: {spec.value}
@@ -377,7 +462,7 @@ export const AdminProducts = () => {
             ))}
           </Stack>
           <Button onClick={handleSubmit}>
-            {editingProduct ? "Update" : "Create"}
+            {editingProduct ? "Atualizar" : "Criar"}
           </Button>
         </Stack>
       </Modal>

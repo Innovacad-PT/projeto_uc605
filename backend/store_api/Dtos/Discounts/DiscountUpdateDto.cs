@@ -6,10 +6,10 @@ public class DiscountUpdateDto<T> : IBaseDto<DiscountEntity>
 {
     public Guid? ProductId { get; set; }
     public int? Percentage { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public long? StartDate { get; set; }
+    public long? EndDate { get; set; }
 
-    public DiscountUpdateDto(Guid? productId, int? percentage, DateTime? startDate, DateTime? endDate)
+    public DiscountUpdateDto(Guid? productId, int? percentage, long? startDate, long? endDate)
     {
         ProductId = productId;
         Percentage = percentage;

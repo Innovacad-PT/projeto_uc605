@@ -67,6 +67,13 @@ public class DiscountService(IConfiguration configuration)
             if (product == null)
                 return new Failure<DiscountEntity?>(ResultCode.DISCOUNT_NOT_CREATED, "Product not found");
 
+            DiscountEntity? prod = await _discountsRepository.GetActiveDiscount(product.Id);
+
+            if (prod != null)
+            {
+                return new Failure<DiscountEntity?>(ResultCode.DISCOUNT_NOT_CREATED, "A discount to this product already exists.");
+            }
+            
             DiscountEntity? discount = await _discountsRepository.Add(dto.ToEntity());
         
             return new Success<DiscountEntity?>(ResultCode.DISCOUNT_CREATED, "Discount was created", discount);

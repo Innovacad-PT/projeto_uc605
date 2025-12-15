@@ -30,9 +30,8 @@ export interface Brand {
 
 export interface TechnicalSpec {
   id: string;
-  technicalSpecsId?: string;
-  name: string;
-  value?: string;
+  key: string;
+  value: string;
 }
 
 export interface Review {

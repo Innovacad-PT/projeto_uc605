@@ -7,6 +7,7 @@ import {
   Button,
   Skeleton,
   ActionIcon,
+  Badge,
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import type { Product } from "@_types/product";
@@ -121,9 +122,13 @@ export default function FeaturedProducts({
             <Text mt="sm" fw={500} lineClamp={1}>
               {p.name}{" "}
               {p.discount != undefined ? (
-                <span style={{ color: "red", fontSize: "0.7em" }}>
-                  (-{p.discount.percentage}%)
-                </span>
+                <Badge
+                  variant="filled"
+                  color="red"
+                  style={{ color: "white", fontSize: "0.7em" }}
+                >
+                  {p.discount.percentage}% de Desconto
+                </Badge>
               ) : (
                 ""
               )}

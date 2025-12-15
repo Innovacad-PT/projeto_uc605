@@ -34,7 +34,7 @@ export default function ProductCard({
         {product.name}{" "}
         {product.discount ? (
           <span style={{ color: "red", fontSize: "0.6em" }}>
-            ({product.discount.percentage}%)
+            {product.discount.percentage}% de Desconto
           </span>
         ) : (
           ""

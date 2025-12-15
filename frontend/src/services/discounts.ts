@@ -14,8 +14,8 @@ export const discountService = {
     id: string;
     productId: string;
     percentage: number;
-    startDate: string;
-    endDate: string;
+    startDate: number;
+    endDate: number;
   }): Promise<Discount> => {
     return apiClient.post<Discount>("/discounts", data);
   },
@@ -23,10 +23,10 @@ export const discountService = {
   update: async (
     id: string,
     data: {
-      productId?: string;
-      percentage?: number;
-      startDate?: string;
-      endDate?: string;
+      productId: string;
+      percentage: number;
+      startDate: number;
+      endDate: number;
     }
   ): Promise<Discount> => {
     return apiClient.put<Discount>(`/discounts/${id}`, data);

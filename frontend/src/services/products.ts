@@ -5,7 +5,11 @@ import { LogType } from "@_types/debug";
 
 export const productService = {
   getAll: async (): Promise<Product[]> => {
-    let products: Product[] = await apiClient.get<Product[]>("/products");
+    const products: Product[] = await apiClient.get<Product[]>("/products");
+
+    if (!products || !Array.isArray(products)) {
+      return [];
+    }
 
     await Promise.all(
       products.map(async (product) => {
@@ -75,9 +79,16 @@ export const productService = {
       const token = localStorage.getItem("accessToken");
       const baseUrl = import.meta.env.VITE_API_URL || "";
 
+      const requestHeaders: HeadersInit = {};
+      if (token) {
+        requestHeaders["Authorization"] = `Bearer ${token}`;
+      }
+
+      console.log(payload);
+
       const response = await fetch(`${baseUrl}/products/${id}`, {
         method: "PUT",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: requestHeaders,
         body: payload,
       });
 

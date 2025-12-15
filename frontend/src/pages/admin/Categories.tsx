@@ -8,6 +8,7 @@ import {
   TextInput,
   Stack,
   ActionIcon,
+  Card,
 } from "@mantine/core";
 import { IconPlus, IconEdit, IconTrash } from "@tabler/icons-react";
 import { categoryService } from "@services/categories";
@@ -59,8 +60,8 @@ export const AdminCategories = () => {
           name: formData.name,
         });
         notifications.show({
-          title: "Success",
-          message: "Category updated successfully",
+          title: "Sucesso",
+          message: "Categoria atualizada com sucesso",
           color: "green",
         });
       } else {
@@ -69,8 +70,8 @@ export const AdminCategories = () => {
           name: formData.name,
         });
         notifications.show({
-          title: "Success",
-          message: "Category created successfully",
+          title: "Sucesso",
+          message: "Categoria criada com sucesso",
           color: "green",
         });
       }
@@ -78,89 +79,123 @@ export const AdminCategories = () => {
       loadCategories();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to save category",
+        title: "Erro",
+        message: "Falha ao guardar categoria",
         color: "red",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm("Tens a certeza que queres eliminar esta categoria?")) return;
 
     try {
       await categoryService.delete(id);
       notifications.show({
-        title: "Success",
-        message: "Category deleted successfully",
+        title: "Sucesso",
+        message: "Categoria eliminada com sucesso",
         color: "green",
       });
       loadCategories();
     } catch (error) {
       notifications.show({
-        title: "Error",
-        message: "Failed to delete category",
+        title: "Erro",
+        message: "Falha ao eliminar categoria",
         color: "red",
       });
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
+  if (loading) return <Text>A Carregar...</Text>;
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <Text size="xl" fw={700}>
-          Categories
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
-          Add Category
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <div>
+          <Text size="xl" fw={700}>
+            Categorias
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gerir categorias de produtos
+          </Text>
+        </div>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleCreate}
+          variant="filled"
+          color="blue"
+        >
+          Adicionar Categoria
         </Button>
       </Group>
 
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {categories.map((category) => (
-            <Table.Tr key={category.id}>
-              <Table.Td>{category.name}</Table.Td>
-              <Table.Td>
-                <Group gap="xs">
-                  <ActionIcon color="blue" onClick={() => handleEdit(category)}>
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={() => handleDelete(category.id)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Table.ScrollContainer minWidth={600}>
+          <Table striped highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nome</Table.Th>
+                <Table.Th style={{ width: 100 }}>Ações</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {categories.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={2} align="center">
+                    <Text c="dimmed" py="xl">
+                      Nenhuma categoria encontrada
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : (
+                categories.length > 0 &&
+                categories.map((category) => (
+                  <Table.Tr key={category.id}>
+                    <Table.Td>
+                      <Text fw={500} size="sm">
+                        {category.name}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          color="blue"
+                          onClick={() => handleEdit(category)}
+                        >
+                          <IconEdit size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => handleDelete(category.id)}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Card>
 
       <Modal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingCategory ? "Edit Category" : "Create Category"}
+        title={editingCategory ? "Editar Categoria" : "Criar Categoria"}
       >
         <Stack>
           <TextInput
-            label="Name"
+            label="Nome"
             value={formData.name}
             onChange={(e) => setFormData({ name: e.target.value })}
             required
           />
           <Button onClick={handleSubmit}>
-            {editingCategory ? "Update" : "Create"}
+            {editingCategory ? "Atualizar" : "Criar"}
           </Button>
         </Stack>
       </Modal>

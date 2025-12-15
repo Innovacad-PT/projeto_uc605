@@ -15,7 +15,7 @@ public class OrderController(MongoRepository repository, Redis redis) : Controll
     public async Task<IActionResult> GetAll()
     {
         var orders = await redis.GetOrSetCache("orders", async () => await _repository.GetAll());
-        if (orders.Count == 0) return NotFound();
+        if (orders == null || orders.Count == 0) return NotFound();
 
         return Ok(orders);
     }

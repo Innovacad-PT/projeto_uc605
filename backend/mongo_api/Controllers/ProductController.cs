@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using mongo_api.Dtos;
 using mongo_api.Repositories;
 using mongo_api.Utils;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace mongo_api.Controllers;
 
@@ -15,7 +17,7 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
     public async Task<IActionResult> GetAll()
     {
         var products = await redis.GetOrSetCache("products", async () => await _repository.GetAll());
-        if (products.Count == 0) return NotFound();
+        if (products?.Count == 0) return NotFound();
 
         return Ok(products);
     }
@@ -43,6 +45,8 @@ public class ProductController(MongoRepository repository, Redis redis) : Contro
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductsDTO dto)
     {
+        
+        
         var discount = await _repository.GetById(id);
         if (discount == null) return NotFound();
 
